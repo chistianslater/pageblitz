@@ -91,6 +91,23 @@ describe("SSR routes", () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('id="leistungen"');
   });
+  test("dev-preview: headline, kapitel, ohnefoto setzen Einstieg und Leistungs-Titel (Plakat-Umbruch)", async () => {
+    const app = express();
+    registerSsrRoutes(app);
+    const res = await request(app).get(
+      "/dev/site-preview?system=plakat&pack=werkbank&fixture=full&ohnefoto=1" +
+        "&headline=" + encodeURIComponent("Steuerberatungsgesellschaft am Markt") +
+        "&kapitel=" + encodeURIComponent("Öffnungszeiten")
+    );
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("pk-entry--type");
+    expect(res.text).toContain("<span>Steuerberatungsgesellschaft</span>");
+    expect(res.text).toMatch(/class="pk-title" id="leistungen-titel" style="--pk-word:[\d.]+">Öffnungszeiten/);
+    const long = await request(app).get(
+      "/dev/site-preview?system=plakat&pack=werkbank&headline=" + "x".repeat(91)
+    );
+    expect(long.text).not.toContain("x".repeat(91));
+  });
   test("dev-preview reicht eine feste Demo-Begrüßung an die Chat-Insel durch (fixture=features)", async () => {
     const app = express();
     registerSsrRoutes(app);

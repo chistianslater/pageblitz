@@ -375,12 +375,46 @@ function resolveSiteRequest(req: Request): {
   return null;
 }
 
+/** Dev-Text kurz genug, sonst ignoriert (React escapt den Text). */
+const devText = (v: unknown, max: number) =>
+  typeof v === "string" && v.trim() && v.trim().length <= max
+    ? v.trim()
+    : undefined;
+
+/**
+ * Dev-only (Bildvergleich Umbruch): `?headline=` große Zeile des Einstiegs,
+ * `?kapitel=` Titel der Leistungen, `?ohnefoto=1` Einstieg ohne Foto.
+ */
+export function withDevTexts(
+  doc: WebsiteDataV2,
+  query: Request["query"]
+): WebsiteDataV2 {
+  const headline = devText(query.headline, 90);
+  const kapitel = devText(query.kapitel, 60);
+  const noPhoto = query.ohnefoto === "1";
+  if (!headline && !kapitel && !noPhoto) return doc;
+  return {
+    ...doc,
+    sections: doc.sections.map(s => {
+      if (s.type === "hero")
+        return {
+          ...s,
+          ...(headline ? { headline } : {}),
+          ...(noPhoto ? { imageUrl: undefined } : {}),
+        };
+      if (s.type === "services" && kapitel) return { ...s, headline: kapitel };
+      return s;
+    }),
+  };
+}
+
 /**
  * GET /dev/site-preview?system=<id>&palette=<id>&pack=<fixture>&fixture=<full|minimal|features>&seite=<page-slug>
  * — nur außerhalb production. `?pack=` wählt nur noch die Fixture (Schlüssel
  * = Textstimme, Standard `salon-noir`); ohne `?system=` rendert das
  * Hauptsystem der Fixture. `?seite=` rendert eine Unterseite der Fixture
- * (nur bekannte, sonst 404). Parameter werden nie in die Antwort gespiegelt.
+ * (nur bekannte, sonst 404). Parameter werden nie in die Antwort gespiegelt
+ * (Ausnahme Dev-Texte `name`, `headline`, `kapitel` — escapt, Länge begrenzt).
  */
 function handleDevPreview(req: Request, res: Response): void {
   if (process.env.NODE_ENV === "production") {
@@ -415,10 +449,11 @@ function handleDevPreview(req: Request, res: Response): void {
     // Fuß-Wortmarke). React escapt den Text; Länge begrenzt.
     const nameParam =
       typeof req.query.name === "string" ? req.query.name.trim() : "";
-    const base =
+    const named =
       nameParam && nameParam.length <= 80
         ? { ...fixture, businessName: nameParam }
         : fixture;
+    const base = withDevTexts(named, req.query);
     // Fixtures sind keine Betriebe: ohne `?palette` immer die erste
     // Farbstimmung des Systems (stabile Bildvergleiche), nicht die
     // Standard-Regel neuer Seiten [E3].
