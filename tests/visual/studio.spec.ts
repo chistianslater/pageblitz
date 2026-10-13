@@ -222,27 +222,28 @@ test.describe("Studio", () => {
     await expect(palettes).toBeVisible();
     await Promise.all([
       page.waitForResponse(
-        res =>
-          res.url().includes("onboardingV2.selectDesignSystem") && res.ok()
+        res => res.url().includes("onboardingV2.selectDesignSystem") && res.ok()
       ),
       palettes.getByRole("radio").nth(1).click(),
     ]);
-    await expect(
-      page.locator(".pb-design-center iframe")
-    ).toHaveAttribute("src", /system=[a-z]+&palette=[a-z]+/);
+    await expect(page.locator(".pb-design-center iframe")).toHaveAttribute(
+      "src",
+      /system=[a-z]+&palette=[a-z]+/
+    );
 
     // „Andere Designs zeigen“: Runde 1 bietet die übrigen Systeme an.
     const tabs = page.getByRole("group", { name: "Designrichtungen" });
     const before = await tabs.getByRole("button").allTextContents();
     await page.getByRole("button", { name: "Andere Designs zeigen" }).click();
     await expect
-      .poll(async () => (await tabs.getByRole("button").allTextContents()).join("|"))
+      .poll(async () =>
+        (await tabs.getByRole("button").allTextContents()).join("|")
+      )
       .not.toBe(before.join("|"));
 
     await Promise.all([
       page.waitForResponse(
-        res =>
-          res.url().includes("onboardingV2.selectDesignSystem") && res.ok()
+        res => res.url().includes("onboardingV2.selectDesignSystem") && res.ok()
       ),
       page.getByRole("button", { name: "Mit diesem Design weiter" }).click(),
     ]);
@@ -501,7 +502,10 @@ test.describe("Studio", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     const preview = page.frameLocator(".pb-studio-device iframe");
-    const headline = preview.locator("#start h1");
+    // Systeme (rev 3): h1 ist der Betriebsname, die Überschrift ein Absatz.
+    const headline = preview.locator(
+      '#start [data-pb-inline-edit="sections.0.headline"]'
+    );
     await expect(headline).toHaveAttribute(
       "title",
       "Klicken und direkt bearbeiten"
@@ -519,7 +523,7 @@ test.describe("Studio", () => {
     // onApplied bumpPreview remountet das iframe; persistierter Text muss im
     // neuen SSR-Dokument wieder erscheinen.
     await expect(
-      page.frameLocator(".pb-studio-device iframe").locator("#start h1")
+      page.frameLocator(".pb-studio-device iframe").locator("#start")
     ).toContainText("Direkt in der Vorschau geändert");
   });
 
