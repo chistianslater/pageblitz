@@ -307,6 +307,45 @@ describe("SSR routes", () => {
       }
     });
 
+    test("Demo-Rechtsseiten: Impressum/Datenschutz im System, Hinweistext, noindex", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const page of ["impressum", "datenschutz"]) {
+        const res = await request(app).get(
+          `/demo/system/journal/friseur/${page}`
+        );
+        expect(res.status).toBe(200);
+        expect(res.text).toContain('data-pb-system="journal"');
+        expect(res.text).toContain("Beispielseite");
+        expect(res.headers["x-robots-tag"]).toContain("noindex");
+      }
+    });
+
+    test("Demo-Seite: Footer-Links auf Impressum/Datenschutz lösen auf 200 auf", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      const demo = await request(app).get("/demo/system/nacht/restaurant");
+      const links = [
+        ...demo.text.matchAll(
+          /href="(\/demo\/system\/nacht\/restaurant\/(?:impressum|datenschutz))"/g
+        ),
+      ].map(m => m[1]);
+      expect(links.length).toBeGreaterThanOrEqual(2);
+      for (const href of new Set(links)) {
+        expect((await request(app).get(href)).status).toBe(200);
+      }
+    });
+
+    test("Demo-Rechtsseiten: unbekanntes System/Betrieb -> 404 ohne Echo", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      const a = await request(app).get("/demo/system/gibtsnicht/friseur/impressum");
+      const b = await request(app).get("/demo/system/journal/xyz123/datenschutz");
+      expect(a.status).toBe(404);
+      expect(b.status).toBe(404);
+      expect(a.text + b.text).not.toMatch(/gibtsnicht|xyz123/);
+    });
+
     test("Demo-Route: unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);

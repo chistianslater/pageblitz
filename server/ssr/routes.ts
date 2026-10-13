@@ -547,6 +547,56 @@ function handleSystemDemoRoute(req: Request, res: Response): void {
   }
 }
 
+/** Hinweis auf den Demo-Rechtsseiten: der Beispielbetrieb ist erfunden. */
+const DEMO_LEGAL_NOTICE =
+  "<p>Beispielseite – dieser Betrieb ist erfunden. Echte Rechtstexte (Impressum, Datenschutz) werden automatisch erzeugt, sobald für ein Unternehmen eine Website erstellt wird.</p>";
+
+/**
+ * Demo-Rechtsseiten (`/demo/system/:system/:id/impressum|datenschutz`): wie
+ * die Demo-Seite, aber `legal` trägt den Beispiel-Hinweis, damit die
+ * Footer-Links der Demo auf Inhalt statt 404 treffen. Unbekanntes
+ * System/Beispiel → 404 ohne Spiegeln der Parameter.
+ */
+function handleSystemDemoLegalRoute(req: Request, res: Response): void {
+  const def = renderableSystem(String(req.params.system ?? ""));
+  const showcase = findShowcase(String(req.params.id ?? ""));
+  if (!def || !showcase) {
+    res.status(404).type("text/plain").send("Unbekannte Vorschau");
+    return;
+  }
+  const paletteParam =
+    typeof req.query.palette === "string" ? req.query.palette : "";
+  const palette = def.palettes.some(p => p.id === paletteParam)
+    ? paletteParam
+    : undefined;
+  try {
+    const data = {
+      ...systemShowcaseDoc(showcase, def.id, palette),
+      legal: {
+        impressumHtml: DEMO_LEGAL_NOTICE,
+        datenschutzHtml: DEMO_LEGAL_NOTICE,
+      },
+    };
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      basePath: `/demo/system/${def.id}/${showcase.id}`,
+      pathname:
+        req.params.page === "datenschutz" ? "/datenschutz" : "/impressum",
+      slug: "demo",
+      site: {},
+      islandsMode: "preview",
+      now: new Date("2026-08-19T10:00:00"),
+    });
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] Demo-Rechtsseite-Render fehlgeschlagen:", err);
+    res.status(500).send("Demo konnte nicht gerendert werden");
+  }
+}
+
 /**
  * Kundenseiten-SSR hinter Flag: rendert `websiteData` server-seitig, wenn
  * `SSR_SITES !== "off"` UND das geladene Dokument gegen WebsiteDataV2Schema
@@ -728,6 +778,10 @@ export function registerSsrRoutes(app: Express): void {
   app.get(
     "/demo/bauplan/:id([a-z0-9-]+)/:entry(stage|colorfield)",
     handleBauplanDemoRedirect
+  );
+  app.get(
+    "/demo/system/:system([a-z]+)/:id([a-z0-9-]+)/:page(impressum|datenschutz)",
+    handleSystemDemoLegalRoute
   );
   app.get(
     "/demo/system/:system([a-z]+)/:id([a-z0-9-]+)",
