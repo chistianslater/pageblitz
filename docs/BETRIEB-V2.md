@@ -418,10 +418,14 @@ im selben Ort nicht gleich aussehen. Geändert wird **nur `palette`** (System,
 Texte, Fotos bleiben; der Top-Level-Diff wird geprüft). Ort = `city` der
 Kontakt-Sektion (normalisiert; ohne Ort: Gruppe „ohne Ort“).
 
+Paletten ausgelassener Seiten gelten in ihrer Gruppe als belegt: Kandidaten
+bekommen zuerst die am wenigsten genutzten Paletten.
+
 Ausgelassen (`SKIP` mit Grund): nicht rev 3, System nicht freigeschaltet,
 und alle Seiten, bei denen der Inhaber im Studio gewählt hat — Verlauf mit
-Auslöser `panel` und Label ab „Design“ („Design: Nacht · Petrol“, „Design
-angepasst“), „Wiederhergestellt: Design …“/„Rückgängig: Design …“ oder jedes
+Auslöser `panel` und Label „Design: …“ bzw. „Designrichtung …“ (z. B.
+„Design: Nacht · Petrol“; „Design angepasst“ = nur ausgeblendete Elemente
+zählt nicht), „Wiederhergestellt: Design: …“/„Rückgängig: Design …“ oder jedes
 andere Label mit „Farbstimmung“. Eigene Labels („Designsystem umgestellt“,
 „Farbstimmung verteilt“) zählen nicht, ein zweiter Lauf ist daher
 idempotent.

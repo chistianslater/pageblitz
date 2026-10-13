@@ -66,6 +66,15 @@ describe("ownerChoiceReason", () => {
       ])
     ).not.toBeNull();
   });
+  test("„Design angepasst“ (nur ausgeblendete Elemente) und dessen Undo zählen nicht", () => {
+    expect(
+      ownerChoiceReason([
+        { trigger: "panel", label: "Design angepasst" },
+        { trigger: "restore", label: "Rückgängig: Design angepasst" },
+        { trigger: "restore", label: "Wiederhergestellt: Design angepasst" },
+      ])
+    ).toBeNull();
+  });
   test("eigene Werkzeug-Labels und andere Änderungen zählen nicht", () => {
     expect(
       ownerChoiceReason([
@@ -162,6 +171,32 @@ describe("planDistribution", () => {
     ]);
     expect(rows[0].kind).toBe("skip");
     expect(rows[1].kind === "candidate" && rows[1].newPalette).toBe(palettes[0]);
+  });
+
+  test("ausgelassene Seiten reservieren ihre Palette", () => {
+    const owner = [{ trigger: "panel", label: "Design: Journal · Papier" }];
+    const rows = planDistribution([
+      site(1, salon("A", "Köln", "papier"), owner),
+      site(2, salon("B", "Köln")),
+      site(3, salon("C", "Köln")),
+      site(4, salon("D", "Köln")),
+    ]);
+    const pal = (id: number) => {
+      const r = rows.find(x => x.id === id)!;
+      return r.kind === "candidate" ? r.newPalette : null;
+    };
+    // papier ist belegt → zuerst salbei und ton, dann (Gleichstand) papier.
+    expect([pal(2), pal(3), pal(4)]).toEqual(["salbei", "ton", "papier"]);
+  });
+
+  test("Reservierung gilt nur im selben Ort und System", () => {
+    const owner = [{ trigger: "panel", label: "Design: Journal · Papier" }];
+    const rows = planDistribution([
+      site(1, salon("A", "Bonn", "papier"), owner),
+      site(2, salon("B", "Köln")),
+    ]);
+    const r = rows.find(x => x.id === 2)!;
+    expect(r.kind === "candidate" && r.newPalette).toBe("papier");
   });
 
   test("Zusammenfassung je Ort", () => {

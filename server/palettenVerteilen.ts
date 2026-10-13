@@ -49,9 +49,10 @@ export function ownerChoiceReason(
     if (label === "Designsystem umgestellt" || label === "Stand vor Designsystem")
       continue;
     if (label === LABEL_NACHHER || label === LABEL_VORHER) continue;
-    if (v.trigger === "panel" && label.startsWith("Design"))
+    // „Design angepasst" (nur ausgeblendete Elemente) lässt die Palette frei.
+    if (v.trigger === "panel" && /^Design(: |richtung)/.test(label))
       return `Design im Studio gewählt („${label}")`;
-    if (/^(Wiederhergestellt|Rückgängig): Design/.test(label))
+    if (/^(Wiederhergestellt|Rückgängig): Design(: |richtung)/.test(label))
       return `Design im Studio gewählt („${label}")`;
     // Jede andere Farbstimmungs-Änderung (nicht von uns) bleibt unangetastet.
     if (/Farbstimmung/i.test(label))
@@ -151,8 +152,10 @@ export type PlanRow =
   | Skipped;
 
 /**
- * Verteilung: je (Ort, System) nach ID sortiert reihum über die Paletten
- * des Systems (Reihenfolge `DESIGN_SYSTEMS[system].palettes`). Deterministisch.
+ * Verteilung: je (Ort, System) nach ID sortiert, jeweils die am wenigsten
+ * genutzte Palette des Systems (Gleichstand: Reihenfolge `palettes`), also
+ * reihum; Paletten ausgelassener Seiten der Gruppe gelten als belegt.
+ * Deterministisch.
  * Orte ohne Angabe (NO_TOWN) bilden eine Gruppe — dort gibt es keinen
  * Nachbarschaftsbezug, die Verteilung schadet aber nicht.
  */
@@ -164,12 +167,28 @@ export function planDistribution(sites: readonly SiteInput[]): PlanRow[] {
     const key = `${c.town}\u0000${c.system}`;
     groups.set(key, [...(groups.get(key) ?? []), c]);
   }
+  // Paletten ausgelassener Seiten je (Ort, System) sind belegt.
+  const reserved = new Map<string, string[]>();
+  for (const c of classified) {
+    if (c.kind !== "skip" || !c.system || !c.oldPalette) continue;
+    const key = `${c.town}\u0000${c.system}`;
+    reserved.set(key, [...(reserved.get(key) ?? []), c.oldPalette]);
+  }
   const assigned = new Map<number, string>();
-  for (const members of groups.values()) {
-    const palettes = getSystem(members[0].system)!.palettes;
-    [...members]
-      .sort((a, b) => a.id - b.id)
-      .forEach((m, i) => assigned.set(m.id, palettes[i % palettes.length].id));
+  for (const [key, members] of groups) {
+    const palettes = getSystem(members[0].system)!.palettes.map(p => p.id);
+    const used = new Map(palettes.map(id => [id, 0]));
+    for (const id of reserved.get(key) ?? [])
+      if (used.has(id)) used.set(id, used.get(id)! + 1);
+    // Je Seite die am wenigsten genutzte Palette (Gleichstand: Reihenfolge
+    // des Systems) — ohne Reservierung ist das reihum.
+    for (const m of [...members].sort((a, b) => a.id - b.id)) {
+      const pick = palettes.reduce((best, id) =>
+        used.get(id)! < used.get(best)! ? id : best
+      );
+      assigned.set(m.id, pick);
+      used.set(pick, used.get(pick)! + 1);
+    }
   }
   const rows: PlanRow[] = classified.map(c => {
     if (c.kind === "skip") return c;
