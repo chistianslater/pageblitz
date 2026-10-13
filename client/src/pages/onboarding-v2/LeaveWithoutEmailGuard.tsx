@@ -1,5 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { TriangleAlert, X } from "lucide-react";
+import { trackStudioEvent } from "@/lib/studioEvents";
+import {
+  exitIntentAlreadyShown,
+  isFinePointerDevice,
+  markExitIntentShown,
+  noteStudioEntered,
+  noteStudioInteraction,
+  otherDialogOpen,
+  shouldShowExitIntent,
+  studioCheckoutInProgress,
+  studioInteracted,
+  upwardSpeed,
+} from "./exitIntent";
 
 export const LEAVE_WITHOUT_EMAIL = {
   modalTitle: "Achtung — wenn du jetzt gehst, ist deine Website weg.",
@@ -11,6 +24,22 @@ export const LEAVE_WITHOUT_EMAIL = {
   leave: "Trotzdem verlassen",
   errorInvalid: "Bitte gib eine gültige E-Mail-Adresse ein.",
   errorSave: "Speichern hat nicht geklappt — bitte versuch es noch einmal.",
+};
+
+export type LeaveDialogCopy = typeof LEAVE_WITHOUT_EMAIL;
+
+/**
+ * Exit-Intent (Maus schnell nach oben aus dem Fenster): kein Ziel, das man
+ * „trotzdem“ ansteuern könnte — der zweite Knopf schließt nur. Fakten wie im
+ * Leave-Modal (24 Stunden ohne, sieben Tage mit E-Mail).
+ */
+export const EXIT_INTENT: LeaveDialogCopy = {
+  ...LEAVE_WITHOUT_EMAIL,
+  modalTitle: "Achtung — deine Website ist noch nicht gesichert.",
+  modalBody:
+    "Ohne E-Mail wird diese Vorschau nach 24 Stunden gelöscht — mit allen Änderungen. Trag hier deine E-Mail ein: Dann bleibt sie sieben Tage, und du bekommst einen Link, um genau hier weiterzumachen.",
+  stay: "Website sichern",
+  leave: "Ohne E-Mail weiter",
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,6 +90,8 @@ interface LeaveWithoutEmailDialogProps {
   onLeave: () => void;
   /** Einfach schließen: bleiben, ohne E-Mail und ohne zu verlassen. */
   onDismiss: () => void;
+  /** Texte; Standard ist das Leave-Modal, Exit-Intent nutzt EXIT_INTENT. */
+  copy?: LeaveDialogCopy;
 }
 
 /**
@@ -74,6 +105,7 @@ export function LeaveWithoutEmailDialog({
   onSubmitEmail,
   onLeave,
   onDismiss,
+  copy = LEAVE_WITHOUT_EMAIL,
 }: LeaveWithoutEmailDialogProps) {
   const emailRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState("");
@@ -102,7 +134,7 @@ export function LeaveWithoutEmailDialog({
     event.preventDefault();
     if (saving) return;
     if (!valid) {
-      setError(LEAVE_WITHOUT_EMAIL.errorInvalid);
+      setError(copy.errorInvalid);
       emailRef.current?.focus();
       return;
     }
@@ -111,7 +143,7 @@ export function LeaveWithoutEmailDialog({
     try {
       await onSubmitEmail(trimmed);
     } catch {
-      setError(LEAVE_WITHOUT_EMAIL.errorSave);
+      setError(copy.errorSave);
       setSaving(false);
     }
   };
@@ -136,18 +168,18 @@ export function LeaveWithoutEmailDialog({
         <span className="pb-studio-leave-modal-icon" aria-hidden="true">
           <TriangleAlert />
         </span>
-        <h2 id="pb-leave-title">{LEAVE_WITHOUT_EMAIL.modalTitle}</h2>
-        <p id="pb-leave-body">{LEAVE_WITHOUT_EMAIL.modalBody}</p>
+        <h2 id="pb-leave-title">{copy.modalTitle}</h2>
+        <p id="pb-leave-body">{copy.modalBody}</p>
         <form className="pb-studio-leave-modal-form" onSubmit={submit}>
           <label htmlFor="pb-leave-email">
-            {LEAVE_WITHOUT_EMAIL.emailLabel}
+            {copy.emailLabel}
           </label>
           <input
             ref={emailRef}
             id="pb-leave-email"
             type="email"
             autoComplete="email"
-            placeholder={LEAVE_WITHOUT_EMAIL.emailPlaceholder}
+            placeholder={copy.emailPlaceholder}
             value={email}
             onChange={event => {
               setEmail(event.target.value);
@@ -165,7 +197,7 @@ export function LeaveWithoutEmailDialog({
               className="pb-studio-btn"
               disabled={saving || trimmed.length === 0}
             >
-              {saving ? "Wird gespeichert …" : LEAVE_WITHOUT_EMAIL.stay}
+              {saving ? "Wird gespeichert …" : copy.stay}
             </button>
             <button
               type="button"
@@ -174,7 +206,7 @@ export function LeaveWithoutEmailDialog({
               onClick={onLeave}
               disabled={saving}
             >
-              {LEAVE_WITHOUT_EMAIL.leave}
+              {copy.leave}
             </button>
           </div>
         </form>
@@ -192,9 +224,17 @@ interface LeaveWithoutEmailGuardProps {
    * jemand einen Outbound-Link geklickt. Produktion setzt das nicht.
    */
   initialPendingHref?: string | null;
+  /**
+   * Exit-Intent zählt ohne eigene Interaktion als „beschäftigt“ (z. B.
+   * Generierung fertig, Studio steht). Sonst erst nach Klick/Taste.
+   */
+  exitIntentEngaged?: boolean;
 }
 
-type PendingLeave = { kind: "href"; href: string } | { kind: "back" };
+type PendingLeave =
+  | { kind: "href"; href: string }
+  | { kind: "back" }
+  | { kind: "exit" };
 
 /**
  * Best-effort-Schutz, wenn jemand Studio schließt ohne E-Mail:
@@ -212,11 +252,16 @@ export function LeaveWithoutEmailGuard({
   armed,
   onSubmitEmail,
   initialPendingHref = null,
+  exitIntentEngaged = false,
 }: LeaveWithoutEmailGuardProps) {
   const [pending, setPending] = useState<PendingLeave | null>(() =>
     initialPendingHref ? { kind: "href", href: initialPendingHref } : null
   );
   const allowBackRef = useRef(false);
+  const pendingRef = useRef<PendingLeave | null>(pending);
+  pendingRef.current = pending;
+  const engagedRef = useRef(exitIntentEngaged);
+  engagedRef.current = exitIntentEngaged;
 
   useEffect(() => {
     if (!armed) return;
@@ -276,14 +321,64 @@ export function LeaveWithoutEmailGuard({
     return () => window.removeEventListener("popstate", onPopState);
   }, [armed]);
 
+  // Exit-Intent: Maus verlässt das Fenster schnell über die Oberkante
+  // (Regeln in ./exitIntent.ts). Desktop only, einmal pro Sitzung.
+  useEffect(() => {
+    if (!armed) return;
+    if (!isFinePointerDevice(window)) return;
+    const enteredAt = noteStudioEntered(Date.now());
+    let last: { y: number; t: number } | null = null;
+    const onMove = (event: MouseEvent) => {
+      last = { y: event.clientY, t: Date.now() };
+    };
+    const onInteract = () => noteStudioInteraction();
+    const onOut = (event: MouseEvent) => {
+      if (event.relatedTarget !== null) return;
+      const now = Date.now();
+      const show = shouldShowExitIntent({
+        armed: true,
+        finePointer: true,
+        alreadyShown: exitIntentAlreadyShown(),
+        checkoutInProgress: studioCheckoutInProgress(),
+        otherDialogOpen: otherDialogOpen(document),
+        modalOpen: pendingRef.current !== null,
+        dwellMs: now - enteredAt,
+        engaged: engagedRef.current || studioInteracted(),
+        leftWindow: true,
+        clientY: event.clientY,
+        speed: upwardSpeed(last, event.clientY, now),
+      });
+      if (!show) return;
+      markExitIntentShown();
+      setPending({ kind: "exit" });
+      trackStudioEvent("exit_intent_gezeigt");
+    };
+    document.addEventListener("mousemove", onMove, { passive: true });
+    document.addEventListener("mouseout", onOut);
+    document.addEventListener("pointerdown", onInteract, true);
+    document.addEventListener("keydown", onInteract, true);
+    return () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseout", onOut);
+      document.removeEventListener("pointerdown", onInteract, true);
+      document.removeEventListener("keydown", onInteract, true);
+    };
+  }, [armed]);
+
   if (!armed) return null;
 
-  const dismiss = () => setPending(null);
+  const isExit = pending?.kind === "exit";
+  const dismiss = () => {
+    if (pendingRef.current?.kind === "exit") {
+      trackStudioEvent("exit_intent_geschlossen");
+    }
+    setPending(null);
+  };
 
   const confirmLeave = () => {
     const next = pending;
     dismiss();
-    if (!next) return;
+    if (!next || next.kind === "exit") return;
     if (next.kind === "href") {
       window.location.assign(next.href);
       return;
@@ -297,9 +392,13 @@ export function LeaveWithoutEmailGuard({
   return (
     <LeaveWithoutEmailDialog
       open={pending !== null}
+      copy={isExit ? EXIT_INTENT : LEAVE_WITHOUT_EMAIL}
       onSubmitEmail={async email => {
         await onSubmitEmail(email);
-        dismiss();
+        if (pendingRef.current?.kind === "exit") {
+          trackStudioEvent("exit_intent_email");
+        }
+        setPending(null);
       }}
       onLeave={confirmLeave}
       onDismiss={dismiss}

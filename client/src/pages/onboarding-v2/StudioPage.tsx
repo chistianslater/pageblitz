@@ -360,6 +360,8 @@ export default function StudioPage({ token }: { token: string }) {
   const leaveGuard = (
     <LeaveWithoutEmailGuard
       armed={shouldWarnOnLeave(state.status, state.customerEmail)}
+      // Exit-Intent: fertige Website zählt als „beschäftigt“ (exitIntent.ts).
+      exitIntentEngaged={!!state.doc && !generationInProgress(state.job)}
       onSubmitEmail={async email => {
         await guardSaveEmail.mutateAsync({ token, email });
         trackStudioEvent("email_gespeichert");

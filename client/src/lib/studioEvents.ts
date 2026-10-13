@@ -48,6 +48,10 @@ export type StudioEvent =
   | "ki_assistent_geoeffnet"
   // Abschluss
   | "email_gespeichert"
+  // Exit-Intent (Maus schnell nach oben aus dem Fenster, 2026-10-13)
+  | "exit_intent_gezeigt"
+  | "exit_intent_email"
+  | "exit_intent_geschlossen"
   | "kauf_blockiert"
   | "kauf_gestartet";
 

@@ -21,6 +21,7 @@ import {
 } from "@shared/pricingText";
 import type { StudioState } from "../../../../server/onboardingV2/state";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
+import { markStudioCheckoutStarted } from "./exitIntent";
 import { trackStudioEvent } from "@/lib/studioEvents";
 import { trackConversion } from "@/lib/tracking";
 
@@ -208,10 +209,13 @@ export function CheckoutBar({
   const firstMissingStep = missingSteps[0] ?? null;
   const addonNote = addonSetupNote(sanitizeAddOns(state.addOns));
 
-  const startCheckout = () =>
+  const startCheckout = () => {
+    // Exit-Intent nicht mehr dazwischenfunken lassen (Sprung zu Stripe).
+    markStudioCheckoutStarted(true);
     checkout.mutate(
       { token, billingInterval, b2bConfirmed: true },
       {
+        onError: () => markStudioCheckoutStarted(false),
         onSuccess: ({ url }) => {
           trackStudioEvent("kauf_gestartet");
           trackConversion("close_convert_lead");
@@ -219,6 +223,7 @@ export function CheckoutBar({
         },
       }
     );
+  };
 
   const handleCta = async () => {
     // Fehlt ein Pflicht-Schritt, führt der Knopf direkt dorthin — vorher hieß
