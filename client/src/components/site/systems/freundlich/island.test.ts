@@ -43,8 +43,8 @@ describe("Freundlich: Chat- und Termin-Insel", () => {
       }
       // Nutzer-Blasen, Senden, gewählte Termine: Schrift auf Akzent
       expect(contrastRatio(pb["--pb-accent-contrast"], p.accent)).toBeGreaterThanOrEqual(4.5);
-      // Insel-Knopf in der Seite: Signal + Schrift wie der Hauptknopf
-      expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+      // Insel-Knopf in der Seite: Tinte auf Weiß wie der Zweitknopf
+      expect(contrastRatio(p.ink, p.surface)).toBeGreaterThanOrEqual(7);
       // Fokus des Knopfs auf Papier
       expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(3);
     }
@@ -60,12 +60,12 @@ describe("Freundlich: Chat- und Termin-Insel", () => {
     expect(rest.match(/\d+(\.\d+)?px\b/g) ?? []).toEqual([]);
   });
 
-  test("Knöpfe: Pille in Signal mit Druckkante, ≥ 48 px, über der Handy-Leiste", () => {
+  test("Knöpfe: weiße Pille mit Tintenrand und Druckkante, ≥ 48 px, über der Handy-Leiste", () => {
     expect(ISLAND_CSS).toContain(
       ".pb-freundlich .pb-island-fab-btn{font-family:var(--sys-font-text)"
     );
     expect(ISLAND_CSS).toMatch(
-      /\.pb-island-fab-btn\{[^}]*min-height:calc\(var\(--sys-space-xl\) \* \.75\);border-radius:var\(--sys-radius-pill\);background:var\(--sys-signal\);color:var\(--sys-on-signal\);box-shadow:inset 0 0 0 1\.5px var\(--sys-edge-color\),0 var\(--sys-press\) 0 var\(--sys-edge-color\)\}/
+      /\.pb-island-fab-btn\{[^}]*min-height:calc\(var\(--sys-space-xl\) \* \.75\);border-radius:var\(--sys-radius-pill\);background:var\(--sys-surface\);color:var\(--sys-ink\);box-shadow:inset 0 0 0 1\.5px var\(--sys-ink\),0 var\(--sys-press\) 0 var\(--sys-ink\),/
     );
     expect(ISLAND_CSS).toContain(
       ".pb-freundlich .pb-island-fab-btn:focus-visible{outline:3px solid var(--sys-accent)"

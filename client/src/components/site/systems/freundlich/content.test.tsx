@@ -663,3 +663,13 @@ describe("Freundlich: Reste aus dem F3-Review", () => {
     }
   );
 });
+
+describe("Freundlich: Audit-Feinschliff (F4)", () => {
+  test("keine Schrift unter 1 rem: Frage mindestens small, „heute“ in small", () => {
+    expect(FREUNDLICH_CSS).toContain(
+      "font-size:max(var(--sys-small-size),calc(var(--sys-h3-size) * .72))"
+    );
+    expect(FREUNDLICH_CSS).toMatch(/\.fr-now-tag\{[^}]*\}/);
+    expect(FREUNDLICH_CSS.match(/\.fr-now-tag\{[^}]*\}/)![0]).not.toMatch(/font-size:calc/);
+  });
+});

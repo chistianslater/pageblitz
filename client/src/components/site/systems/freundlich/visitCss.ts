@@ -28,7 +28,7 @@ export const VISIT_CSS = `
 .pb-freundlich .fr-q summary{display:flex;align-items:center;justify-content:space-between;gap:var(--sys-space-s);min-height:${H_MIN};padding:var(--sys-space-s) calc(var(--sys-space-m) * .85);
   list-style:none;cursor:pointer;border-radius:var(--sys-radius-m)}
 .pb-freundlich .fr-q summary::-webkit-details-marker{display:none}
-.pb-freundlich .fr-q-text{${step("h3")};font-size:calc(var(--sys-h3-size) * .72);line-height:1.3;min-width:0;overflow-wrap:break-word}
+.pb-freundlich .fr-q-text{${step("h3")};font-size:max(var(--sys-small-size),calc(var(--sys-h3-size) * .72));line-height:1.3;min-width:0;overflow-wrap:break-word}
 .pb-freundlich .fr-tile--toggle{width:${TOGGLE};height:${TOGGLE}}
 .pb-freundlich .fr-q-minus,.pb-freundlich .fr-q[open] .fr-q-plus{display:none}
 .pb-freundlich .fr-q[open] .fr-q-minus{display:grid}
@@ -51,7 +51,7 @@ export const VISIT_CSS = `
 .pb-freundlich .fr-now th,.pb-freundlich .fr-now td{background:${NOW_BG}}
 .pb-freundlich .fr-now th{border-radius:var(--sys-radius-s) 0 0 var(--sys-radius-s)}
 .pb-freundlich .fr-now td{border-radius:0 var(--sys-radius-s) var(--sys-radius-s) 0}
-.pb-freundlich .fr-hv .fr-now-tag{${step("small")};font-size:calc(var(--sys-small-size) * .8125);font-weight:600;line-height:1.6;padding:0 var(--sys-space-xs);border-radius:var(--sys-radius-pill);
+.pb-freundlich .fr-hv .fr-now-tag{${step("small")};font-weight:600;line-height:1.5;padding:0 var(--sys-space-xs);border-radius:var(--sys-radius-pill);
   background:var(--sys-signal);color:var(--sys-on-signal)}
 .pb-freundlich .fr-place{display:grid;border-radius:var(--sys-radius-l);background:var(--sys-surface);color:var(--sys-ink);overflow:hidden;min-width:0}
 .pb-freundlich .fr-map{position:relative;height:${MAP_H};background:var(--sys-band);overflow:hidden}
