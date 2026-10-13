@@ -18,13 +18,14 @@ import {
   Zap,
   Package,
   ExternalLink,
-  Trash2,
   Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, useReducedMotion } from "framer-motion";
 import "./dashboard/customer.css";
+import { SubscriptionSummary } from "./dashboard/SubscriptionSummary";
+import { formatDateDe } from "@shared/pricingTerm";
 
 // ── Components ───────────────────────────────────────────
 
@@ -146,6 +147,32 @@ export default function AccountPage() {
       },
     });
 
+  const utils = trpc.useUtils();
+  const refreshSubscription = () => utils.customer.getMyWebsites.invalidate();
+  const cancelMutation = trpc.customer.cancelSubscription.useMutation({
+    onSuccess: data => {
+      toast.success(
+        `Gekündigt zum ${formatDateDe(data.endsAt)}. Bis dahin bleibt deine Website online.`
+      );
+      void refreshSubscription();
+    },
+    onError: error => toast.error(error.message || "Kündigung fehlgeschlagen"),
+  });
+  const withdrawMutation = trpc.customer.withdrawCancellation.useMutation({
+    onSuccess: () => {
+      toast.success("Kündigung zurückgenommen — dein Abo läuft weiter.");
+      void refreshSubscription();
+    },
+    onError: error => toast.error(error.message || "Das hat nicht geklappt"),
+  });
+  const switchMutation = trpc.customer.switchToYearly.useMutation({
+    onSuccess: () => {
+      toast.success("Jahrestarif gilt ab der nächsten Abbuchung.");
+      void refreshSubscription();
+    },
+    onError: error => toast.error(error.message || "Wechsel fehlgeschlagen"),
+  });
+
   // Fetch user's websites and subscriptions
   const { data: myWebsites, isLoading: websitesLoading } =
     trpc.customer.getMyWebsites.useQuery(undefined, { enabled: !!user });
@@ -219,24 +246,16 @@ export default function AccountPage() {
     subscription?.status === "canceling";
   const isCanceling = subscription?.status === "canceling";
 
-  // Compute active paid add-ons from subscription.addOns (supports both storage formats)
-  const subAddOns = (subscription?.addOns ?? {}) as Record<string, any>;
-  const ADDON_INFO: Record<string, { label: string; priceCents: number }> = {
-    contactForm: { label: "Kontaktformular", priceCents: 390 },
-    gallery: { label: "Bildergalerie", priceCents: 390 },
-    menu: { label: "Speisekarte", priceCents: 390 },
-    pricelist: { label: "Preisliste", priceCents: 390 },
-    aiChat: { label: "KI-Chat", priceCents: 990 },
-    booking: { label: "Terminbuchung", priceCents: 490 },
-  };
-  const activeAddOns = (
-    Object.keys(ADDON_INFO) as Array<keyof typeof ADDON_INFO>
-  ).filter(k => subAddOns[k] === true || subAddOns.features?.[k] === true);
-  const BASE_PRICE_CENTS = 1990; // Monatsabo-Basis (Brutto inkl. MwSt.)
-  const totalCents =
-    BASE_PRICE_CENTS +
-    activeAddOns.reduce((sum, k) => sum + ADDON_INFO[k].priceCents, 0);
-  const totalStr = (totalCents / 100).toFixed(2).replace(".", ",");
+  const nowSec = Math.floor(Date.now() / 1000);
+  const subscriptionPending = cancelMutation.isPending
+    ? "cancel"
+    : withdrawMutation.isPending
+      ? "withdraw"
+      : switchMutation.isPending
+        ? "switch"
+        : billingPortalMutation.isPending
+          ? "portal"
+          : null;
 
   return (
     <div className="min-h-screen bg-lp-canvas text-lp-ink pb-dash lp">
@@ -505,115 +524,37 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {/* Status Card */}
-                      <div className="bg-lp-accent/10 border border-lp-accent/30 rounded-xl p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h3 className="text-lp-ink font-semibold text-lg">
-                              Pageblitz
-                              {activeAddOns.length > 0
-                                ? ` + ${activeAddOns.length} Add-on${activeAddOns.length > 1 ? "s" : ""}`
-                                : ""}
-                            </h3>
-                            <p className="text-lp-muted text-sm">
-                              Alle Preise inkl. MwSt.
-                            </p>
-                          </div>
-                          <StatusBadge
-                            status={subscription?.status || "incomplete"}
-                          />
+                      {subscription && (
+                        <div className="flex justify-end">
+                          <StatusBadge status={subscription.status} />
                         </div>
-
-                        {/* Itemized breakdown */}
-                        <div className="space-y-2 mb-4">
-                          {/* Base plan */}
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-lp-ink/80">
-                              Basis-Paket (Jahresabo)
-                            </span>
-                            <span className="text-lp-ink font-semibold">
-                              19,90 €/Mo
-                            </span>
-                          </div>
-                          {/* Active add-ons */}
-                          {activeAddOns.map(key => (
-                            <div
-                              key={key}
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-lp-ink/80">
-                                  {ADDON_INFO[key].label}
-                                </span>
-                                <span className="text-xs text-lp-accent bg-emerald-400/10 px-1.5 py-0.5 rounded-full">
-                                  Aktiv
-                                </span>
-                              </div>
-                              <span className="text-lp-accent font-semibold">
-                                +
-                                {(ADDON_INFO[key].priceCents / 100)
-                                  .toFixed(2)
-                                  .replace(".", ",")}{" "}
-                                €/Mo
-                              </span>
-                            </div>
-                          ))}
-                          {/* Total – only if add-ons active */}
-                          {activeAddOns.length > 0 && (
-                            <div className="flex items-center justify-between text-sm border-t border-lp-line/60 pt-2 mt-2">
-                              <span className="text-lp-ink font-bold">
-                                Gesamt
-                              </span>
-                              <span className="text-lp-ink font-bold">
-                                {totalStr} €/Mo
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {hasActiveSubscription && (
-                          <div className="space-y-2 text-sm border-t border-lp-line pt-3 mt-1">
-                            <div className="flex items-center gap-2 text-lp-accent">
-                              <CheckCircle className="w-4 h-4" />
-                              <span>
-                                Website aktiv: {website?.slug}.pageblitz.de
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-lp-muted">
-                              <Calendar className="w-4 h-4" />
-                              <span>
-                                {isCanceling
-                                  ? "Läuft ab am: "
-                                  : "Nächste Zahlung: "}
-                                {subscription?.currentPeriodEnd
-                                  ? new Date(
-                                      subscription.currentPeriodEnd * 1000
-                                    ).toLocaleDateString("de-DE")
-                                  : "Unbekannt"}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Canceling info banner */}
-                        {isCanceling && (
-                          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                            <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
-                            <p className="text-sm text-amber-300">
-                              Dein Abo wurde gekündigt. Deine Website bleibt bis
-                              zum{" "}
-                              <strong>
-                                {subscription?.currentPeriodEnd
-                                  ? new Date(
-                                      subscription.currentPeriodEnd * 1000
-                                    ).toLocaleDateString("de-DE")
-                                  : "Periodenende"}
-                              </strong>{" "}
-                              online und wird danach automatisch deaktiviert.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      )}
+                      {subscription ? (
+                        <SubscriptionSummary
+                          subscription={subscription}
+                          websiteSlug={hasActiveSubscription ? website?.slug : null}
+                          nowSec={nowSec}
+                          pending={subscriptionPending}
+                          onCancel={() =>
+                            cancelMutation.mutate({ websiteId: website!.id })
+                          }
+                          onWithdraw={() =>
+                            withdrawMutation.mutate({ websiteId: website!.id })
+                          }
+                          onSwitchToYearly={() =>
+                            switchMutation.mutate({ websiteId: website!.id })
+                          }
+                          onOpenPortal={() =>
+                            billingPortalMutation.mutate({
+                              websiteId: website!.id,
+                            })
+                          }
+                        />
+                      ) : (
+                        <p className="text-lp-muted text-sm">
+                          Für diese Website ist noch kein Abo abgeschlossen.
+                        </p>
+                      )}
 
                       {/* Quick Actions */}
                       <div className="flex flex-wrap gap-3">
@@ -633,25 +574,6 @@ export default function AccountPage() {
                           <Zap className="w-4 h-4 mr-2" />
                           Bearbeiten
                         </Button>
-                        {hasActiveSubscription && !isCanceling && (
-                          <Button
-                            variant="outline"
-                            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                            disabled={billingPortalMutation.isPending}
-                            onClick={() =>
-                              billingPortalMutation.mutate({
-                                websiteId: website!.id,
-                              })
-                            }
-                          >
-                            {billingPortalMutation.isPending ? (
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4 mr-2" />
-                            )}
-                            Kündigen
-                          </Button>
-                        )}
                       </div>
                     </div>
                   )}

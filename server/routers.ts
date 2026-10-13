@@ -2,11 +2,14 @@ import { withStagePhoto } from "./generationV2/heroPhoto";
 import { COOKIE_NAME } from "@shared/const";
 import { postkartenRouter } from "./postkarten/router";
 import {
-  PRICING,
-  ADDON_NAMES,
-  addonPrice,
-  type AddOnKey,
-} from "@shared/pricing";
+  ensurePortalConfiguration,
+  requestCancellation,
+  SubscriptionActionError,
+  switchToYearly,
+  withdrawCancellation,
+  type PortalConfigClient,
+} from "./subscriptionTerm";
+import { TermUnknownError } from "../shared/pricingTerm";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import {
@@ -146,6 +149,57 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10" as any,
 });
+
+/** Abo des eingeloggten Kunden zu einer seiner Websites (sonst FORBIDDEN/NOT_FOUND). */
+async function ownedSubscription(userId: number, websiteId: number) {
+  const rows = await getWebsitesByUserId(userId);
+  const row = rows.find(r => r.website.id === websiteId);
+  if (!row) throw new TRPCError({ code: "FORBIDDEN" });
+  if (!row.subscription)
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Für diese Website gibt es kein Abo.",
+    });
+  return row.subscription;
+}
+
+/** Stripe/DB-Deps für Kündigung und Tarifwechsel (server/subscriptionTerm.ts). */
+function subscriptionActionDeps() {
+  return {
+    updateSubscription,
+    stripe: {
+      subscriptions: {
+        // Compat-Client: current_period_end/billing_cycle_anchor an der Wurzel.
+        retrieve: (id: string) => stripeCompat.subscriptions.retrieve(id),
+        update: (id: string, params: any) =>
+          stripe.subscriptions.update(id, params),
+      },
+    },
+  };
+}
+
+/** Fachliche Fehler als BAD_REQUEST mit deutscher Meldung, Rest als 500. */
+async function runSubscriptionAction<T>(action: () => Promise<T>): Promise<T> {
+  try {
+    return await action();
+  } catch (err) {
+    if (err instanceof SubscriptionActionError) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: err.message });
+    }
+    if (err instanceof TermUnknownError) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "Das Laufzeitende lässt sich gerade nicht berechnen — bitte melde dich beim Support.",
+      });
+    }
+    console.error("[Abo] Stripe-Aktion fehlgeschlagen:", err);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Stripe ist gerade nicht erreichbar — bitte versuche es gleich noch einmal.",
+    });
+  }
+}
 
 function slugify(text: string): string {
   return text
@@ -1850,100 +1904,11 @@ export const appRouter = router({
     }),
   }),
 
-  // ── Checkout & Subscriptions ─────────────────────────
-  checkout: router({
-    createSession: publicProcedure
-      .input(
-        z.object({
-          websiteId: z.number(),
-          billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
-          addOns: z
-            .object({
-              contactForm: z.boolean().default(false),
-              gallery: z.boolean().default(false),
-              menu: z.boolean().default(false),
-              pricelist: z.boolean().default(false),
-              aiChat: z.boolean().default(false),
-              booking: z.boolean().default(false),
-            })
-            .default({
-              contactForm: false,
-              gallery: false,
-              menu: false,
-              pricelist: false,
-              aiChat: false,
-              booking: false,
-            }),
-        })
-      )
-      .mutation(async ({ input, ctx }) => {
-        const website = await getWebsiteById(input.websiteId);
-        if (!website) throw new TRPCError({ code: "NOT_FOUND" });
-
-        const baseAmount = PRICING.base[input.billingInterval];
-        const activeAddOns = (
-          Object.entries(input.addOns) as [AddOnKey, boolean][]
-        ).filter(([, v]) => v);
-        const totalAmount =
-          baseAmount +
-          activeAddOns.reduce((sum, [k]) => sum + addonPrice(k), 0);
-
-        const basePriceStr = (baseAmount / 100).toFixed(2).replace(".", ",");
-        const intervalLabel =
-          input.billingInterval === "yearly" ? "Jahresabo" : "monatlich";
-        const description = [
-          `${basePriceStr} €/Mo Basis (${intervalLabel})`,
-          ...activeAddOns.map(([k]) => ADDON_NAMES[k]),
-        ].join(" + ");
-
-        const origin = ctx.req.headers.origin || "https://pageblitz.de";
-        const session = await stripe.checkout.sessions.create({
-          payment_method_types: ["card"],
-          mode: "subscription",
-          customer_email: ctx.user?.email || undefined,
-          line_items: [
-            {
-              price_data: {
-                currency: "eur",
-                product_data: {
-                  name: `Pageblitz – ${(website.websiteData as any)?.businessName || "Deine Website"}`,
-                  description,
-                },
-                unit_amount: totalAmount,
-                recurring: { interval: "month" },
-                // Alle Preise sind Bruttopreise inkl. MwSt. – Stripe rechnet KEINE Steuer drauf
-                tax_behavior: "inclusive" as const,
-              },
-              quantity: 1,
-            },
-          ],
-          subscription_data: {
-            trial_period_days: 7,
-          },
-          success_url: `${origin}/my-website?checkout=success`,
-          cancel_url: `${origin}/start`,
-          metadata: {
-            websiteId: website.id.toString(),
-            userId: ctx.user?.id?.toString() || "0",
-            billingInterval: input.billingInterval,
-            addOns: JSON.stringify(input.addOns),
-            totalAmount: totalAmount.toString(),
-          },
-        });
-
-        if (!session.url)
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Stripe session URL not generated",
-          });
-        return {
-          url: session.url,
-          sessionId: session.id,
-          totalAmount,
-          addOnsList: activeAddOns.map(([k]) => ADDON_NAMES[k]),
-        };
-      }),
-  }),
+  // ── Checkout ─────────────────────────────────────────
+  // Einziger Checkout-Pfad: onboardingV2.startCheckout →
+  // server/onboardingV2/checkout.ts. Der alte `checkout.createSession`
+  // (Gesamtbetrag als eine Position, nur sechs Add-ons, ohne Laufzeit) ist
+  // seit dem Preismodell 2026-10-13 entfernt.
 
   // ── Onboarding ────────────────────────────────────────
   onboarding: router({
@@ -2658,6 +2623,13 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    /**
+     * Stripe-Kundenportal NUR für Zahlungsdaten, Adresse und Rechnungen —
+     * Kündigen und Tarifwechsel sind in dieser Portal-Konfiguration aus
+     * (server/subscriptionTerm.ts `ensurePortalConfiguration`), weil die
+     * Laufzeit des Jahrestarifs nur unser Endpunkt `cancelSubscription`
+     * korrekt berechnet.
+     */
     createBillingPortalSession: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input, ctx }) => {
@@ -2672,11 +2644,48 @@ export const appRouter = router({
               "Kein Stripe-Kundenkonto gefunden. Bitte kontaktiere den Support.",
           });
         const origin = ctx.req.headers.origin || "https://pageblitz.de";
+        const configuration = await ensurePortalConfiguration(
+          stripe as unknown as PortalConfigClient
+        );
         const session = await stripe.billingPortal.sessions.create({
           customer: stripeCustomerId,
+          configuration,
           return_url: `${origin}/my-account`,
         });
         return { url: session.url };
+      }),
+
+    /** Kündigung nach den Laufzeitregeln (shared/pricingTerm.ts). */
+    cancelSubscription: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const subscription = await ownedSubscription(ctx.user.id, input.websiteId);
+        const result = await runSubscriptionAction(() =>
+          requestCancellation(subscription, subscriptionActionDeps())
+        );
+        return { endsAt: result.endsAt, reason: result.reason };
+      }),
+
+    /** Kündigung zurücknehmen, solange das Abo noch läuft. */
+    withdrawCancellation: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const subscription = await ownedSubscription(ctx.user.id, input.websiteId);
+        await runSubscriptionAction(() =>
+          withdrawCancellation(subscription, subscriptionActionDeps())
+        );
+        return { success: true as const };
+      }),
+
+    /** Wechsel Monatstarif → Jahrestarif (ab der nächsten Abbuchung). */
+    switchToYearly: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const subscription = await ownedSubscription(ctx.user.id, input.websiteId);
+        await runSubscriptionAction(() =>
+          switchToYearly(subscription, subscriptionActionDeps())
+        );
+        return { success: true as const };
       }),
 
     setWebsiteActive: adminProcedure

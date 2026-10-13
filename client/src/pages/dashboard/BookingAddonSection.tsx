@@ -415,8 +415,8 @@ export function BookingAddonSection({
               werden ab sofort anteilig deinem Abo hinzugefügt.
             </p>
             <p className="text-lp-muted text-xs leading-relaxed mb-6">
-              Du kannst das Add-on jederzeit über das Kundenportal wieder
-              kündigen.
+              Du kannst das Add-on jederzeit im Studio unter „Extras“ wieder
+              abbestellen – auch im Jahrestarif.
             </p>
             <div className="flex gap-3">
               <button

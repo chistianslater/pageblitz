@@ -179,11 +179,9 @@ describe("Pageblitz API", () => {
     });
   });
 
-  describe("checkout.createSession", () => {
-    it("throws NOT_FOUND for non-existent website", async () => {
-      const ctx = createPublicContext();
-      const caller = appRouter.createCaller(ctx);
-      await expect(caller.checkout.createSession({ websiteId: 99999 })).rejects.toThrow();
+  describe("checkout (Legacy)", () => {
+    it("der alte checkout.createSession-Pfad existiert nicht mehr", () => {
+      expect((appRouter._def.procedures as Record<string, unknown>)["checkout.createSession"]).toBeUndefined();
     });
   });
 
