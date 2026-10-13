@@ -4,6 +4,7 @@ import { RELEASED_SYSTEMS } from "../../../../../../shared/designSystems/registr
 import { FREUNDLICH_CSS } from "./css";
 import {
   fellfreundeDoc,
+  freundlichDoc,
   freundlichFixture,
   gelatoDoc,
   pusteblumeDoc,
@@ -222,5 +223,21 @@ describe("CSS-Regeln", () => {
   });
   test("reduzierte Bewegung", () => {
     expect(css).toContain("@media (prefers-reduced-motion:reduce)");
+  });
+});
+
+describe("Freundlich: Name im Kopf nie abgeschnitten", () => {
+  test("passt er nicht neben Zeichen und Menü, bleibt nur das Zeichen; Link heißt wie der Betrieb", () => {
+    const css = FREUNDLICH_CSS;
+    expect(css).not.toContain("text-overflow:ellipsis");
+    // Eine Reihe hoher Link, Umbruch in eine zweite Reihe, die weggeschnitten wird.
+    expect(css).toMatch(
+      /\.pb-freundlich \.fr-brand\{[^}]*display:flex;flex-wrap:wrap;[^}]*gap:calc\(var\(--sys-space-l\) \* 1\.1\) [^;]*;[^}]*height:calc\(var\(--sys-space-l\) \* 1\.1\);[^}]*overflow:hidden/
+    );
+    expect(css).toMatch(/\.pb-freundlich \.fr-mark\{[^}]*flex:none;white-space:nowrap\}/);
+    const name = "Musikschule Tonleiter am Stadtpark Nord";
+    const html = render({ ...freundlichDoc(), businessName: name });
+    expect(html).toContain(`<a class="fr-brand" href="#start" aria-label="${name}">`);
+    expect(html).toContain(`<span class="fr-mark" aria-hidden="true">${name}</span>`);
   });
 });

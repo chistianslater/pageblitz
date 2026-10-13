@@ -1,5 +1,8 @@
 import React from "react";
-import type { SectionOf } from "../../../../../../shared/siteContract/types";
+import type {
+  SectionOf,
+  WebsiteDataV2,
+} from "../../../../../../shared/siteContract/types";
 import { rich } from "../../richText";
 import { telHref } from "../shared/heroFacts";
 import { hoursRows } from "../shared/hours";
@@ -15,7 +18,6 @@ import {
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
 import { tintOf } from "./content";
 import { contactHasContent, freundlichActions, type Action } from "./facts";
-import type { WebsiteDataV2 } from "../../../../../../shared/siteContract/types";
 import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { Icon, wayIcon } from "./icons";
 import { FreundlichChapter, type Place } from "./sections";
@@ -193,12 +195,6 @@ export function FreundlichContact({
 }
 
 /**
- * Abschluss-Band (Systemblatt 13/14): Titel mittig in zwei Tönen, darunter
- * der Hauptknopf — eigenes Ziel, wenn es trägt (systemHref), sonst der
- * Hauptweg — und die Telefonnummer als Zweitknopf. Ruft der Hauptknopf
- * schon an, steht nur er („Anrufen").
- */
-/**
  * Knöpfe des Abschluss-Bands: Hauptweg (eigenes Ziel per systemHref, sonst
  * der Hauptweg der Seite) und die Nummer, sofern sie nicht schon der
  * Hauptweg ist. Ohne beides entfällt das Band (F3-Review).
@@ -220,6 +216,12 @@ export function ctaButtons(
   return { primary, phone };
 }
 
+/**
+ * Abschluss-Band (Systemblatt 13/14): Titel mittig in zwei Tönen, darunter
+ * der Hauptknopf — eigenes Ziel, wenn es trägt (systemHref), sonst der
+ * Hauptweg — und die Telefonnummer als Zweitknopf. Ruft der Hauptknopf
+ * schon an, steht nur er („Anrufen"). Ohne beide Knöpfe kein Band.
+ */
 export function FreundlichCta({
   section,
   anchorPrefix,
@@ -240,23 +242,23 @@ export function FreundlichCta({
       layout="center"
     >
       <div className="fr-ctas fr-ctas--band" {...SYS_ACTIONS}>
-          {primary && (
-            <a
-              className="fr-btn fr-btn--p"
-              href={primary.href}
-              {...newTabIfMaps(primary.href)}
-            >
-              <Icon name={wayIcon(primary.href)} />
-              {primary.label}
-            </a>
-          )}
-          {phone && (
-            <a className="fr-btn fr-btn--s" href={phone.href}>
-              <Icon name="phone" />
-              {phone.label}
-            </a>
-          )}
-        </div>
+        {primary && (
+          <a
+            className="fr-btn fr-btn--p"
+            href={primary.href}
+            {...newTabIfMaps(primary.href)}
+          >
+            <Icon name={wayIcon(primary.href)} />
+            {primary.label}
+          </a>
+        )}
+        {phone && (
+          <a className="fr-btn fr-btn--s" href={phone.href}>
+            <Icon name="phone" />
+            {phone.label}
+          </a>
+        )}
+      </div>
     </FreundlichChapter>
   );
 }

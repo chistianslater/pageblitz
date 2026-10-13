@@ -74,10 +74,13 @@ ${FONT_FACES}
 .pb-freundlich .fr-top{position:relative}
 .pb-freundlich .fr-head{position:relative;z-index:20;background:var(--sys-paper);color:var(--sys-ink)}
 .pb-freundlich .fr-head-bar{max-width:var(--sys-space-max);margin-inline:auto;display:flex;align-items:center;gap:calc(var(--sys-space-s) * .875);min-height:${HEAD_H};padding:0 var(--sys-space-gutter)}
-.pb-freundlich .fr-brand{display:flex;align-items:center;gap:calc(var(--sys-space-s) * .625);margin-right:auto;min-width:0;min-height:${H_MIN};text-decoration:none}
+/* Name ganz oder gar nicht: passt er nicht neben Zeichen und Menü, bricht er in eine
+   zweite Reihe, die der eine Reihe hohe Link wegschneidet — nie „Musikschule Tonleit…" */
+.pb-freundlich .fr-brand{display:flex;flex-wrap:wrap;align-items:center;align-content:flex-start;gap:${H_MIN} calc(var(--sys-space-s) * .625);margin-right:auto;min-width:0;
+  height:${H_MIN};padding-block:calc((${H_MIN} - ${LOGO}) / 2);overflow:hidden;text-decoration:none}
 .pb-freundlich .fr-logo{flex:none;display:grid;place-items:center;width:${LOGO};height:${LOGO};border-radius:var(--sys-radius-s);background:var(--sys-deep);color:var(--sys-on-deep);
   ${step("mark")};font-size:calc(${LOGO} * .5)}
-.pb-freundlich .fr-mark{${step("mark")};min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-freundlich .fr-mark{${step("mark")};flex:none;white-space:nowrap}
 .pb-freundlich .fr-menu{flex:none}
 .pb-freundlich .fr-menu-toggle{${step("link")};display:inline-flex;align-items:center;gap:var(--sys-space-xs);min-height:${H_MIN};padding:0 var(--sys-space-s);border-radius:var(--sys-radius-pill);
   background:var(--sys-surface);color:var(--sys-ink);box-shadow:inset 0 0 0 ${LINE} var(--sys-ink);list-style:none;cursor:pointer}

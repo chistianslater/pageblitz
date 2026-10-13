@@ -1,6 +1,5 @@
 import React from "react";
-import type { NavItem } from "../../engine";
-import { SECTION_ANCHORS, orderedSections } from "../../engine";
+import { SECTION_ANCHORS, orderedSections, type NavItem } from "../../engine";
 import { telHref } from "../shared/heroFacts";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
 import { useSystem } from "../SystemContext";
@@ -70,7 +69,12 @@ function NavLinks({ items }: { items: NavItem[] }) {
   );
 }
 
-/** Zeichen (dekorativ) und Name; der Link heißt wie der ganze Betrieb. */
+/**
+ * Zeichen (dekorativ) und Name. Der Name wird nie abgeschnitten: Passt er
+ * nicht in eine Zeile neben Zeichen und Menü, bleibt nur das Zeichen (CSS:
+ * zweite Reihe wird weggeschnitten). Der Link heißt für Vorleser immer wie
+ * der ganze Betrieb (wie Nacht).
+ */
 function Brand({ href }: { href: string }) {
   const { data } = useSystem();
   const name = nameOf(data);

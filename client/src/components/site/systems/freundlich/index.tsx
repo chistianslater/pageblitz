@@ -12,7 +12,6 @@ import {
 import type { WebsiteDataV2 } from "../../../../../../shared/siteContract/types";
 import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { ctaButtons } from "./Visit";
-import { contactHasContent } from "./facts";
 import { FREUNDLICH_CSS } from "./css";
 import {
   FreundlichDock,
@@ -26,7 +25,7 @@ import {
   renderFreundlichSection,
   type FreundlichSection,
 } from "./sections";
-import { entryVariant } from "./facts";
+import { contactHasContent, entryVariant } from "./facts";
 import { freundlichPhotos, surfacePlan } from "./content";
 import { FreundlichMenuSlot, FreundlichTeamSlot } from "./Offer";
 

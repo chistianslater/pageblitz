@@ -5,16 +5,17 @@ import type {
 import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { stripMarks } from "../../richText";
 import {
+  addressLine,
   branchOf,
   contactOf,
   echoesKicker,
   heroPhoto,
+  mailHref,
   nameOf,
   visibleDoc,
 } from "../shared";
 import { formatHeroRating, streetLine, telHref } from "../shared/heroFacts";
 import { clock, hoursRows, todayHours } from "../shared/hours";
-import { addressLine, mailHref } from "../shared";
 import { systemActions, type Action } from "../shared/actions";
 import type { IconName } from "./icons";
 
