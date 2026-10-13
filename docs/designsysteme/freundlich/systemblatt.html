@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freundlich Systemblatt</title>
+<link rel="preload" href="fonts/bricolage-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Nur fürs Blatt: Symbole aus Phosphor (MIT), Regular-Schnitt passend zur runden Schrift; Sterne aus dem Fill-Schnitt. -->
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+/* ── Schriften (self-hosted, OFL; Bricolage als Instanz opsz 72, wdth 100) ── */
+@font-face{font-family:"Bricolage Grotesque";src:url(fonts/bricolage-latin-wght.woff2) format("woff2");font-weight:500 800;font-style:normal;font-display:swap}
+@font-face{font-family:"Bricolage Grotesque";src:url(fonts/bricolage-latin-ext-wght.woff2) format("woff2");font-weight:500 800;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Instrument Sans";src:url(fonts/instrument-sans-latin-wght.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url(fonts/instrument-sans-latin-ext-wght.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --fd:"Bricolage Grotesque","Avenir Next","Trebuchet MS",system-ui,sans-serif;
+  --ft:"Instrument Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+  --paper:#f4f0e5;--surface:#ffffff;--band:#eae4d3;--ink:#14261d;--muted:#3f5045;--rule:#ddd6c3;--accent:#33684e;--deep:#1b3428;--onDeep:#f4f0e5;--signal:#be5219;--onSignal:#ffffff;--edge:#84360d;
+  --pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e3dccb;color:var(--ink);font-family:var(--ft);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+::selection{background:#d6e59a;color:var(--ink)}
+.sheet{width:1520px;margin:0 auto;background:var(--paper);position:relative}
+[data-shot]{padding:0 var(--pad);background:var(--paper)}
+.blk{padding:60px 0 72px;border-top:1px solid var(--rule)}
+.blk.first{border-top:0}
+.lb{display:flex;gap:.7em;align-items:center;font:600 15px/1.3 var(--ft);color:var(--accent)}
+.lb b{display:inline-grid;place-items:center;min-width:40px;height:40px;padding:0 10px;border-radius:12px;background:#d6e59a;color:var(--ink);box-shadow:3px 3px 0 #93a452;font:700 19px/1 var(--fd)}
+.bh{font:650 60px/1.04 var(--fd);letter-spacing:-.035em;margin:20px 0 16px;max-width:24ch}
+.bh .acc{color:var(--accent)}
+.bp{max-width:52rem;font-size:19px;line-height:1.6}
+.bp+.bp{margin-top:10px}
+.note{font-size:15px;color:var(--muted);line-height:1.5}
+code{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:rgba(20,38,29,.07);padding:1px 5px;border-radius:5px}
+table.t{width:100%;border-collapse:collapse;font-size:15px;line-height:1.45;margin-top:26px;background:var(--surface);border-radius:20px;overflow:hidden}
+table.t th{font:600 14px var(--ft);color:var(--accent);text-align:left;padding:14px 18px 12px;border-bottom:1.5px solid var(--ink)}
+table.t td{padding:12px 18px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td:first-child{font-weight:600;white-space:nowrap}
+table.t td.bad{color:#a63a1a}
+table.t .ok{color:#2f6b4c;font-weight:700}
+table.t .no{color:#b23a17;font-weight:700}
+.cap{font-size:14.5px;color:var(--muted);margin-top:12px;line-height:1.5;max-width:70rem}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+
+/* Kopf */
+.top{padding:46px 0 64px;position:relative;overflow:hidden}
+.top .wm{position:relative;display:flex;align-items:flex-end;gap:28px;margin:18px 0 40px}
+.top .w{font:700 230px/.84 var(--fd);letter-spacing:-.045em;margin-left:-8px}
+.top .w span{color:var(--accent)}
+.top .pills{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.top .pills span{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;font:500 16px var(--ft)}
+.top .row{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:44px;align-items:start}
+.top .m{font:600 34px/1.15 var(--fd);letter-spacing:-.025em}
+.top .r p{font-size:16px;line-height:1.55;color:var(--muted)}
+.top .r p+p{margin-top:8px}
+.top .r p b{color:var(--ink);font-weight:600}
+.vs{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:44px}
+.vs>div{padding:16px 16px 14px;border-radius:16px;background:var(--surface)}
+.vs h3{font:650 21px/1.1 var(--fd);letter-spacing:-.02em;margin-bottom:6px}
+.vs p{font-size:14px;color:var(--muted);line-height:1.4}
+.vs .me{background:var(--deep);color:var(--onDeep)}
+.vs .me p{color:#c9d3cc}
+
+/* Schrift */
+.fonts2{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;margin-top:28px}
+.fonts2>div{background:var(--surface);border-radius:20px;padding:26px 30px 24px}
+.nm{font:600 14px var(--ft);color:var(--accent);display:flex;justify-content:space-between;gap:12px}
+.nm span:last-child{color:var(--muted);font-weight:400}
+.gl{font:700 170px/.9 var(--fd);letter-spacing:-.04em;margin:28px 0 10px}
+.gl.t{font:500 150px/.9 var(--ft);letter-spacing:-.02em}
+.abc{font-size:22px;line-height:1.35;margin:12px 0 16px}
+.abc.d{font-family:var(--fd);font-weight:600;letter-spacing:-.02em}
+.wts div{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);padding:9px 0;gap:16px}
+.wts div span:first-child{font-size:24px;line-height:1.15}
+.wts div span:last-child{font-size:13px;color:var(--muted);white-space:nowrap}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.cmp>div{border-radius:20px;padding:20px 22px;background:var(--band)}
+.cmp .x{font-size:15px;color:var(--muted);margin-bottom:12px}
+.cmp img{display:block;width:100%;border-radius:12px}
+
+.scale{margin-top:30px;border-top:1.5px solid var(--ink)}
+.srow{display:grid;grid-template-columns:160px 380px 1fr;gap:28px;padding:22px 0;border-bottom:1px solid var(--rule);align-items:start}
+.srow .k{font:600 16px var(--ft);color:var(--accent)}
+.srow .k small{display:block;font:400 13.5px/1.45 var(--ft);color:var(--muted);margin-top:4px}
+.srow .m375{width:375px;overflow:hidden}
+.srow .m1440{overflow:hidden}
+.srow .hd{font:600 12px var(--ft);color:var(--muted);margin-bottom:6px}
+
+/* Abstände, Raster, Form */
+.spc{display:flex;align-items:flex-end;gap:18px;margin-top:24px}
+.spc>div>div{background:var(--accent);border-radius:4px}
+.spc span{display:block;font:600 14px var(--ft);margin-top:8px}
+.spc span small{display:block;font-weight:400;color:var(--muted)}
+.grids{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:28px;align-items:start}
+.gv{background:var(--surface);border-radius:20px;padding:18px}
+.gv .cols{display:grid;gap:var(--g);height:170px;margin-top:12px}
+.gv .cols i{background:rgba(51,104,78,.12);box-shadow:inset 0 0 0 1px rgba(51,104,78,.35);border-radius:6px}
+.shapes{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:26px}
+.shapes>div{background:var(--surface);border-radius:20px;padding:20px 22px 22px;min-height:210px;display:flex;flex-direction:column;justify-content:space-between;gap:16px}
+.shapes p{font-size:14.5px;color:var(--muted);line-height:1.45}
+.shapes p b{color:var(--ink);display:block;font-size:16px;margin-bottom:2px}
+.cloudDemo{position:relative;height:150px;border-radius:14px;overflow:hidden;background:var(--paper)}
+
+/* Paletten */
+.pals{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:28px}
+.pal{border-radius:24px;overflow:hidden;background:var(--surface)}
+.pal .pv{padding:24px 24px 22px;position:relative}
+.pal .pv h3{font:700 34px/1.02 var(--fd);letter-spacing:-.035em;margin-top:14px}
+.pal .pv p{font-size:17px;margin-top:8px;line-height:1.5}
+.pal .pv .kk{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font:500 15px var(--ft)}
+.pal .pv .kk i{width:7px;height:7px;border-radius:50%}
+.pal .pv .bt{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.pal .pv .bt span{display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border-radius:999px;font:600 16px var(--ft)}
+.pal .tn{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 24px 18px}
+.pal .tn div{border-radius:14px;padding:10px 10px 9px;font:500 11.5px/1.3 var(--ft);min-height:74px}
+.pal .tn div b{display:block;font:650 15px/1.1 var(--fd);letter-spacing:-.01em;margin-bottom:6px}
+.pal .chips{display:grid;grid-template-columns:repeat(6,1fr)}
+.pal .chips div{height:64px;padding:8px;font:500 11px/1.25 var(--ft)}
+.pal table{width:100%;border-collapse:collapse;font-size:13.5px}
+.pal td{padding:6px 16px;border-top:1px solid var(--rule)}
+.pal td:last-child{text-align:right;font-weight:700}
+.pal .use{padding:10px 16px 16px;font-size:14px;color:var(--muted);border-top:1px solid var(--rule)}
+
+/* Bausteine */
+.bs{display:grid;grid-template-columns:repeat(12,1fr);gap:22px;margin-top:28px}
+.bs>.c{border-radius:22px;overflow:hidden;background:var(--surface)}
+.bs>.c>h4{font:600 14px var(--ft);color:var(--accent);padding:16px 22px 0}
+.bs>.c>.cn{padding:8px 22px 22px}
+.bs .s4{grid-column:span 4}.bs .s5{grid-column:span 5}.bs .s6{grid-column:span 6}.bs .s7{grid-column:span 7}.bs .s8{grid-column:span 8}.bs .s12{grid-column:span 12}
+.dec{width:100%;border-collapse:separate;border-spacing:0 10px;margin-top:20px}
+.dec th{font:600 14px var(--ft);color:var(--accent);text-align:left;padding:0 16px 4px}
+.dec td{background:var(--surface);padding:16px;vertical-align:top;font-size:15.5px;line-height:1.5}
+.dec td:first-child{border-radius:18px 0 0 18px;font:650 22px/1.15 var(--fd);letter-spacing:-.02em;width:200px}
+.dec td:last-child{border-radius:0 18px 18px 0}
+.dec td small{display:block;font:400 14px/1.4 var(--ft);color:var(--muted);margin-top:6px;letter-spacing:0}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:26px}
+.rules h4{font:650 28px/1.1 var(--fd);letter-spacing:-.025em;margin-bottom:14px}
+.rules ul{list-style:none;display:grid;gap:10px}
+.rules li{font-size:16.5px;line-height:1.5;padding-left:26px;position:relative}
+.rules li::before{content:"";position:absolute;left:2px;top:.42em;width:12px;height:12px;border-radius:4px;background:#d6e59a;box-shadow:2px 2px 0 #93a452}
+.rules li.no::before{background:#f9d8c0;box-shadow:2px 2px 0 #b98b69}
+
+/* Handys */
+.phone{position:relative;width:390px;overflow:hidden;contain:paint;box-shadow:0 0 0 1px #cfc6b0;border-radius:10px;flex:none;background:#fff}
+.phones{display:flex;gap:30px;margin-top:26px;align-items:flex-start;justify-content:space-between}
+.pcap{font:600 15px var(--ft);color:var(--accent);margin-bottom:10px;width:390px}
+.pcap small{display:block;font-weight:400;color:var(--muted);font-size:14.5px;margin-top:2px}
+.fold{position:absolute;left:0;right:0;border-top:2px dashed #c0462b;z-index:40}
+.fold span{position:absolute;right:6px;top:-24px;background:#c0462b;color:#fff;font:600 12px/1 var(--ft);padding:5px 7px;border-radius:6px}
+.desk{width:1440px;margin:26px 0 0 -16px;box-shadow:0 0 0 1px #cfc6b0;border-radius:10px;overflow:hidden}
+pre.ts{background:var(--deep);color:#eae4d3;border-radius:20px;padding:26px 30px;font:13px/1.5 ui-monospace,Menlo,monospace;white-space:pre;overflow:hidden;margin-top:24px}
+
+/* ════════ FREUNDLICH · System-CSS der Muster (gescoped auf .f) ════════ */
+.f{background:var(--paper);color:var(--ink);font-family:var(--ft);font-size:var(--body-size);line-height:var(--body-line);position:relative;overflow:hidden;isolation:isolate;
+   --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.3,1.22,.6,1);--r-s:12px;--r-m:20px;--r-l:28px;--press:4px;--tile:3px;--tilt:1.5deg;
+   hyphens:auto;-webkit-hyphens:auto;hyphenate-limit-chars:10 4 4}
+.f img{display:block;width:100%;height:100%;object-fit:cover;filter:var(--img-filter)}
+.f a{color:inherit;text-decoration:none}
+.f .ph,.f .ph-fill{line-height:1}
+.f ::selection{background:var(--t1);color:var(--ink)}
+.f .wrap{max-width:var(--s-max);margin:0 auto;padding:0 var(--s-gutter);position:relative}
+.f .acc{color:var(--accent)}
+.f .mut{color:var(--muted)}
+.f h1,.f h2,.f h3{text-wrap:balance;hyphens:manual}
+/* Pille (Kopfzeile über dem Satz, Fakten, Chips) */
+.f-pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 15px;border-radius:999px;background:var(--pbg,var(--t3));color:var(--ink);font:500 var(--kicker-size)/var(--kicker-line) var(--ft);white-space:nowrap}
+.f-pill i.dot{width:7px;height:7px;border-radius:50%;background:var(--signal);flex:none}
+.f-pill .ph{font-size:1.15em}
+/* Kachel: kleines Quadrat mit Druckkante */
+.f-tile{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:var(--r-s);background:var(--tbg,#fff);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--tedge),var(--tile) var(--tile) 0 var(--tedge);font:700 17px/1 var(--fd);letter-spacing:-.02em}
+.f-tile .ph{font-size:22px}
+/* Wolkenkante: zwei Kreisreihen in der Farbe der folgenden Fläche */
+.f-cloud{position:absolute;left:0;right:0;top:calc(var(--ch) * -1 + 1px);height:var(--ch);pointer-events:none;
+  --ch:56px;background:
+  radial-gradient(circle at 50% 100%,var(--cc) 0 calc(var(--ch) * .6),transparent calc(var(--ch) * .6 + .5px)) 0 100%/calc(var(--ch) * 1.75) 100% repeat-x,
+  radial-gradient(circle at 50% 100%,var(--cc) 0 calc(var(--ch) * .9),transparent calc(var(--ch) * .9 + .5px)) calc(var(--ch) * .8) 100%/calc(var(--ch) * 2.7) 100% repeat-x}
+.f-d .f-cloud{--ch:72px}
+/* Navigation */
+.f-nav{position:relative;z-index:5;display:flex;align-items:center;gap:14px;height:76px;padding:0 var(--s-gutter);max-width:var(--s-max);margin:0 auto}
+.f-brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.f-logo{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--deep);color:var(--onDeep);font:700 19px/1 var(--fd);letter-spacing:-.03em}
+.f-brand .t-mark{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-links{display:flex;gap:30px;margin-right:24px}
+.f-links a{font:500 var(--link-size)/1 var(--ft)}
+.f-links a:first-child{color:var(--accent);text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
+.f-menu{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--ink);font:600 var(--link-size)/1 var(--ft)}
+.f-nav.solid{border-bottom:1px solid var(--rule);max-width:none}
+/* Knöpfe: Pille mit Druckkante. Haupt = Signal, Zweit = Weiß mit Tintenrand. */
+.f-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 26px;border-radius:999px;font:600 var(--link-size)/1.2 var(--ft);white-space:nowrap;position:relative;
+  transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+.f-btn .ph{font-size:1.2em}
+.f .f-btn--p{background:var(--signal);color:var(--onSignal);box-shadow:inset 0 0 0 1.5px var(--edge),0 var(--press) 0 var(--edge)}
+.f .f-btn--s{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink),0 var(--press) 0 var(--ink)}
+.f .f-btn--d{background:var(--onDeep);color:var(--deep);box-shadow:0 var(--press) 0 rgb(0 0 0 / .35)}
+.f-btn:active{transform:translateY(3px)}
+.f .f-btn--p:active{box-shadow:inset 0 0 0 1.5px var(--edge),0 1px 0 var(--edge)}
+.f .f-btn--s:active{box-shadow:inset 0 0 0 1.5px var(--ink),0 1px 0 var(--ink)}
+.f-btn:focus-visible,.f a:focus-visible,.f summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+@media (hover:hover) and (pointer:fine){
+  .f-btn:hover{transform:translateY(-2px)}
+  .f .f-btn--p:hover{box-shadow:inset 0 0 0 1.5px var(--edge),0 6px 0 var(--edge)}
+  .f .f-btn--s:hover{box-shadow:inset 0 0 0 1.5px var(--ink),0 6px 0 var(--ink)}
+}
+.f-ctas{display:flex;flex-wrap:wrap;gap:14px 12px;justify-content:center;margin-top:var(--s-l)}
+.f-m .f-ctas .f-btn{width:100%}
+/* Einstieg A: gutes Foto */
+.f-hero{position:relative;text-align:center;padding:var(--s-m) var(--s-gutter) 0}
+.f-hero h1{margin:var(--s-m) auto 0;max-width:14ch}
+.f-hero .t-lede{margin:var(--s-m) auto 0;max-width:30rem;color:var(--muted)}
+.f-heroimg{position:relative;margin:var(--s-xl) auto 0;max-width:620px}
+.f-heroimg .ph-frame{aspect-ratio:4/3;border-radius:var(--r-l);overflow:hidden;transform:rotate(calc(var(--tilt) * -1));box-shadow:0 22px 40px -24px rgb(var(--ink-rgb)/.45)}
+.f-facts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.f-heroimg .f-facts{position:absolute;left:0;right:0;bottom:-18px;padding:0 12px}
+.f-heroimg .f-pill{box-shadow:0 8px 18px -10px rgb(var(--ink-rgb)/.5)}
+/* Einstieg B: schwaches Foto · C: kein Foto — Pastellfläche */
+.f-hero2{position:relative;background:var(--t1);padding:var(--s-m) var(--s-gutter) var(--s-xl);text-align:left}
+.f-hero2 .f-pill{--pbg:var(--surface)}
+.f-hero2 h1{margin-top:var(--s-m);max-width:13ch}
+.f-hero2 .t-lede{margin-top:var(--s-m);max-width:30rem;color:var(--ink)}
+.f-hero2 .f-facts{justify-content:flex-start;margin-top:var(--s-l)}
+.f-hero2 .f-facts .f-pill:nth-child(1){--pbg:var(--t2)}
+.f-hero2 .f-facts .f-pill:nth-child(2){--pbg:var(--t3)}
+.f-hero2 .f-facts .f-pill:nth-child(3){--pbg:var(--t4)}
+.f-hero2 .f-ctas{justify-content:flex-start}
+.f-hero2 .small-pic{width:58%;max-width:300px;aspect-ratio:1;border-radius:var(--r-m);overflow:hidden;transform:rotate(var(--tilt));margin:var(--s-l) 0 0 auto;box-shadow:0 0 0 6px var(--surface),0 18px 34px -20px rgb(var(--ink-rgb)/.5)}
+.f-hero2-wrap{position:relative}
+/* Abschnitte */
+.f-sec{position:relative;padding:var(--s-section) 0 0}
+.f-sec.band,.f-sec.tinted,.f-sec.f-contact{padding-bottom:var(--s-section)}
+.f-sec:has(>.f-cloud),.f-foot{margin-top:calc(var(--s-section) * .75 + 56px)}
+.f-d .f-sec:has(>.f-cloud),.f-d .f-foot{margin-top:calc(var(--s-section) * .75 + 72px)}
+.f .f-hero2-wrap+.f-sec,.f .f-hero+.f-sec{margin-top:0}
+.f-sec.band{background:var(--band)}
+.f-sec.tinted{background:var(--t2)}
+.f-sec.deep{background:var(--deep);color:var(--onDeep)}
+.f-head{display:grid;gap:var(--s-s);margin-bottom:var(--s-l)}
+.f-head h2{max-width:16ch}
+.f-head .intro{color:var(--muted);max-width:var(--s-measure)}
+.f-head.center{justify-items:center;text-align:center}
+/* Angebot: Farbkarten */
+.f-offers{display:grid;gap:var(--s-s)}
+.f-card{background:var(--cbg);border-radius:var(--r-m);padding:20px 20px 22px;display:flex;flex-direction:column;gap:14px;transition:transform .3s var(--ease)}
+.f-card h3{margin-top:4px}
+.f-card p{color:var(--cmut,var(--muted));font-size:var(--small-size);line-height:var(--small-line)}
+.f-card .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.f-price{display:inline-flex;align-items:baseline;gap:4px;padding:6px 12px;border-radius:999px;background:rgb(255 255 255 / .72);font:600 var(--data-size)/1 var(--ft);font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.f-price small{font:500 13.5px var(--ft);color:var(--muted)}
+.f-card .pic{aspect-ratio:3/2;border-radius:var(--r-s);overflow:hidden}
+@media (hover:hover) and (pointer:fine){.f-card:hover{transform:translateY(-4px) rotate(-.6deg)}}
+/* Wo stehst du gerade? */
+.f-where{display:grid;gap:12px}
+.f-where a{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:var(--surface);border-radius:var(--r-m);padding:18px 18px 18px 18px}
+.f-where h3{font-size:calc(var(--h3-size) * .9)}
+.f-where p{color:var(--muted);font-size:var(--small-size);margin-top:2px}
+.f-where .go{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--deep);color:var(--onDeep);font-size:18px}
+/* Ablauf */
+.f-steps{display:grid;gap:14px}
+.f-step{background:var(--surface);border-radius:var(--r-m);padding:22px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:start}
+.f-step .f-tile{grid-row:1/3}
+.f-step h3{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.f-step h3 small{font:500 var(--small-size)/1.3 var(--ft);color:var(--accent);letter-spacing:0}
+.f-step p{color:var(--muted)}
+.f-d .f-step:nth-child(odd){transform:rotate(calc(var(--tilt) * -.6))}
+.f-d .f-step:nth-child(even){transform:rotate(calc(var(--tilt) * .6))}
+/* Über uns */
+.f-about .statement,.f .statement{font-family:var(--fd);font-weight:600;font-size:calc(var(--h2-size) * .62);line-height:1.2;letter-spacing:-.03em;text-align:center;max-width:24ch;margin:0 auto;text-wrap:balance}
+.f-facts-deep{margin-top:var(--s-l);background:var(--deep);color:var(--onDeep);border-radius:var(--r-m);padding:8px 24px}
+.f-facts-deep div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid rgb(255 255 255 / .14)}
+.f-facts-deep div:last-of-type{border-bottom:0}
+.f-facts-deep b{font-family:var(--fd);font-size:var(--figure-size);line-height:var(--figure-line);letter-spacing:-.035em;font-weight:650}
+.f-facts-deep span{text-align:right;color:var(--onDeep);opacity:.86;font-size:var(--small-size);max-width:16ch}
+/* Team ohne Fotos */
+.f-team{display:grid;gap:var(--s-s)}
+.f-person{background:var(--cbg);border-radius:var(--r-m);padding:20px;display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center}
+.f-avatar{grid-row:1/3;display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:rgb(255 255 255 / .7);box-shadow:inset 0 0 0 1.5px var(--tedge);font:700 26px/1 var(--fd);letter-spacing:-.03em;color:var(--ink)}
+.f-person .role{font-size:var(--small-size);color:var(--muted)}
+.f-person p{grid-column:1/-1;margin-top:12px;font-size:var(--small-size);color:var(--muted)}
+/* Galerie */
+.f-gal{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-gal div{border-radius:var(--r-m);overflow:hidden;aspect-ratio:1}
+.f-gal div:first-child{grid-column:1/-1;aspect-ratio:4/3}
+/* Stimmen: Notizzettel */
+.f-notes{display:grid;gap:var(--s-s)}
+.f-note{background:var(--cbg);border-radius:var(--r-m);padding:24px 22px 20px;display:flex;flex-direction:column;gap:18px}
+.f-note blockquote{font:500 calc(var(--h3-size) * .86)/1.3 var(--fd);letter-spacing:-.015em}
+.f-note .who{display:flex;gap:12px;align-items:center;font-size:var(--small-size);color:var(--muted)}
+.f-note .who b{display:block;color:var(--ink);font-weight:600}
+.f-note .ini{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:rgb(255 255 255 / .7);font:700 15px/1 var(--fd)}
+.f-d .f-note:nth-child(1){transform:rotate(calc(var(--tilt) * -1))}
+.f-d .f-note:nth-child(3){transform:rotate(var(--tilt))}
+.f-rating{border-radius:22px!important;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 12px;margin:var(--s-l) auto 0;width:max-content;max-width:100%;padding:10px 20px;border-radius:999px;background:var(--t2);box-shadow:inset 0 0 0 1.5px var(--t2e),0 var(--tile) 0 var(--t2e);font:600 var(--small-size)/1.3 var(--ft)}
+.f-rating .stars{color:var(--ink);letter-spacing:1px;font-size:15px}
+.f-rating span:last-child{font-weight:400;color:var(--ink)}
+/* Gut zu wissen (FAQ) */
+.f-faq{display:grid;gap:10px}
+.f-faq details{background:var(--surface);border-radius:var(--r-m)}
+.f-faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 18px 18px 22px;cursor:pointer;font:600 calc(var(--h3-size) * .82)/1.25 var(--fd);letter-spacing:-.015em}
+.f-faq summary::-webkit-details-marker{display:none}
+.f-faq summary .f-tile{width:36px;height:36px;font-size:18px;--tbg:var(--t1);--tedge:var(--t1e)}
+.f-faq details[open] summary .f-tile{--tbg:var(--t2);--tedge:var(--t2e)}
+.f-faq details p{padding:0 22px 20px;color:var(--muted);max-width:var(--s-measure)}
+/* Besuch uns: Zeiten + Adresse */
+.f-visit{display:grid;gap:var(--s-s)}
+.f-hours{background:var(--deep);color:var(--onDeep);border-radius:var(--r-m);padding:22px 22px 18px}
+.f-hours h3{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.f-hours .open{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;background:var(--t2);color:var(--ink);font:600 14px/1.2 var(--ft);white-space:nowrap}
+.f-hours .open i{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.f-hours ol{list-style:none;margin-top:14px}
+.f-hours li{display:grid;grid-template-columns:3.2em 1fr;gap:12px;padding:11px 0;border-bottom:1px solid rgb(255 255 255 / .14);font-variant-numeric:tabular-nums}
+.f-hours li:last-child{border-bottom:0}
+.f-hours li .d{font-weight:600}
+.f-hours li.zu .v{opacity:.72}
+.f-hours li.now{background:rgb(255 255 255 / .08);margin:0 -12px;padding:11px 12px;border-radius:12px;border-bottom-color:transparent}
+.f-hours li.now .v::after{content:"heute";margin-left:10px;padding:2px 9px;border-radius:999px;background:var(--signal);color:var(--onSignal);font:600 13px/1.4 var(--ft)}
+.f-hours .nt{margin-top:12px;font-size:var(--small-size);opacity:.86}
+.f-place{background:var(--surface);border-radius:var(--r-m);overflow:hidden}
+.f-map{height:190px;position:relative;background:var(--band);overflow:hidden}
+.f-map i{position:absolute;background:var(--surface);border-radius:999px}
+.f-map .r1{left:-10%;right:-10%;top:58%;height:14px;transform:rotate(-6deg)}
+.f-map .r2{top:-10%;bottom:-10%;left:44%;width:12px;transform:rotate(8deg)}
+.f-map .r3{left:-10%;width:70%;top:22%;height:8px;transform:rotate(14deg)}
+.f-map .wat{position:absolute;right:-12%;bottom:-30%;width:52%;height:80%;border-radius:50%;background:var(--t1)}
+.f-map .park{position:absolute;left:8%;bottom:10%;width:26%;height:30%;border-radius:40% 60% 50% 50%;background:var(--t2)}
+.f-map .pin{position:absolute;left:46%;top:56%;transform:translate(-50%,-100%);display:grid;place-items:center;width:44px;height:44px;border-radius:50% 50% 50% 6px;rotate:-45deg;background:var(--signal);box-shadow:0 0 0 1.5px var(--edge),3px 3px 0 var(--edge)}
+.f-map .pin span{rotate:45deg;width:12px;height:12px;border-radius:50%;background:var(--onSignal)}
+.f-place .bd{padding:20px 22px 24px;display:grid;gap:14px}
+.f-place .adr{font:600 var(--h3-size)/1.2 var(--fd);letter-spacing:-.02em}
+.f-place .acc2{display:grid;gap:8px;color:var(--muted);font-size:var(--small-size)}
+.f-place .acc2 span{display:flex;gap:10px;align-items:flex-start}
+.f-place .acc2 .ph{color:var(--accent);font-size:20px}
+.f-place .f-btn{justify-self:start}
+/* Schlussaufruf + Kontakt */
+.f-contact{background:var(--t4);text-align:center}
+.f-contact h2{margin:var(--s-m) auto 0;max-width:14ch}
+.f-contact .t-lede{margin:var(--s-s) auto 0;max-width:30rem;color:var(--ink)}
+.f-form{margin:var(--s-xl) auto 0;max-width:34rem;background:var(--surface);border-radius:var(--r-m);padding:22px;text-align:left;display:grid;gap:14px}
+.f-form label{display:grid;gap:6px;font:600 var(--small-size)/1.3 var(--ft)}
+.f-form .in{min-height:52px;border-radius:var(--r-s);background:var(--paper);box-shadow:inset 0 0 0 1.5px rgb(var(--ink-rgb)/.28);padding:14px;font:400 var(--body-size)/1.3 var(--ft);color:var(--muted)}
+.f-form .in.focus{box-shadow:inset 0 0 0 2px var(--accent),0 0 0 4px rgb(var(--accent-rgb)/.18);color:var(--ink);background:var(--surface)}
+.f-form .in.ta{min-height:96px}
+.f-form .hint{font-size:14px;color:var(--muted)}
+/* Fuß */
+.f-foot{position:relative;background:var(--deep);color:var(--onDeep);padding:var(--s-xl) 0 calc(var(--s-l) + var(--dock-pad,0px))}
+.f-foot .f-logo{background:var(--onDeep);color:var(--deep);width:52px;height:52px;font-size:26px;border-radius:16px}
+.f-foot .nm2{font:700 var(--h2-size)/1.02 var(--fd);letter-spacing:-.035em;margin-top:var(--s-m);max-width:14ch}
+.f-foot .cols{display:grid;gap:var(--s-l);margin-top:var(--s-l)}
+.f-foot h4{font:600 var(--small-size)/1.3 var(--ft);opacity:.8;margin-bottom:var(--s-xs)}
+.f-foot .cols p,.f-foot .cols a{display:block;color:var(--onDeep)}
+.f-foot .cols a{text-decoration:underline;text-underline-offset:5px;text-decoration-color:rgb(255 255 255 / .35)}
+.f-foot .legal{display:flex;flex-wrap:wrap;gap:var(--s-xs) var(--s-m);margin-top:var(--s-xl);padding-top:var(--s-m);border-top:1px solid rgb(255 255 255 / .14);font-size:var(--small-size)}
+.f-foot .legal a{text-decoration:underline;text-underline-offset:5px;text-decoration-color:rgb(255 255 255 / .35)}
+.f-foot .legal span{margin-left:auto;opacity:.8}
+.f-foot a:focus-visible{outline-color:var(--onDeep)}
+/* Handy-Leiste */
+.f-dock{position:absolute;left:12px;right:12px;z-index:30;display:grid;grid-template-columns:1fr 1.3fr;gap:8px;padding:8px 8px 12px;background:var(--surface);border-radius:28px;box-shadow:0 18px 36px -14px rgb(var(--ink-rgb)/.45),0 2px 6px rgb(var(--ink-rgb)/.08)}
+.f-dock .f-btn{min-height:52px;padding:0 12px;gap:8px}
+/* Unterseite */
+.f-sub{padding:var(--s-l) 0 var(--s-xl)}
+.f-sub .back{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--accent);font:600 var(--link-size)/1 var(--ft)}
+.f-sub h1{margin-top:var(--s-s)}
+.f-sub h2{font:650 var(--h3-size)/1.2 var(--fd);letter-spacing:-.02em;margin-top:var(--s-l)}
+.f-sub p{margin-top:var(--s-xs);max-width:var(--s-measure)}
+.f-sub p a{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:5px;text-decoration-thickness:2px}
+/* Desktop-Varianten */
+.f-d .f-ctas .f-btn{width:auto}
+.f-d .f-head.split{grid-template-columns:1fr auto;align-items:end}
+.f-d .f-offers{grid-template-columns:repeat(4,1fr)}
+.f-d .f-where{grid-template-columns:1fr 1fr}
+.f-d .two{display:grid;grid-template-columns:5fr 7fr;gap:var(--s-2xl);align-items:start}
+.f-d .f-notes{grid-template-columns:repeat(3,1fr);align-items:start}
+.f-d .f-visit{grid-template-columns:5fr 7fr}
+.f-d .f-place{display:grid;grid-template-columns:1fr 1fr}
+.f-d .f-map{height:100%;min-height:320px}
+.f-d .f-team{grid-template-columns:repeat(3,1fr)}
+.f-d .f-gal{grid-template-columns:2fr 1fr 1fr}
+.f-d .f-gal div:first-child{grid-column:auto;grid-row:span 2;aspect-ratio:auto}
+.f-d .f-faq{max-width:46rem;margin:0 auto}
+.f-d .two .f-head.split{grid-template-columns:1fr}
+.f-place .bd{align-content:start}
+.f-place .f-btn{align-self:start}
+.f-d .f-foot .cols{grid-template-columns:repeat(3,1fr)}
+.f-d .f-hero{padding-top:var(--s-l)}
+.f-d .f-heroimg{max-width:760px}
+.f-d .f-heroimg .ph-frame{aspect-ratio:16/9}
+/* Einblenden: ein Moment (Einstiegsfoto setzt sich mit Feder), sonst leiser Aufstieg */
+@media (prefers-reduced-motion:no-preference){
+  .f [data-reveal]{animation:fRise .7s var(--ease) both;animation-timeline:view();animation-range:entry 0% entry 35%}
+  .f .f-heroimg .ph-frame,.f .small-pic{animation:fSettle .9s var(--spring) .2s both}
+}
+@keyframes fRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fSettle{from{opacity:0;transform:translateY(20px) rotate(0) scale(.96)}}
+body[data-still] .f *{animation:none!important}
+</style>
+</head>
+<body data-still>
+<div class="sheet">
+
+<!-- ═══ 1 · Kopf ═══ -->
+<div data-shot="1">
+<section class="top">
+  <p class="lb"><b>07</b><span>Designsystem 7 von 7 · Systemblatt · 13.10.2026</span></p>
+  <div class="wm"><div class="w">Freund<span>lich</span></div>
+    <div class="pills"><span style="background:#c9e0f2">Kita</span><span style="background:#d6e59a">Hundesalon</span><span style="background:#f6d7e8">Eisdiele</span></div></div>
+  <div class="row">
+    <p class="m">Weich, hell, man fühlt sich willkommen. Form und Farbe sind verspielt, die Schrift bleibt erwachsen.</p>
+    <div class="r">
+      <p><b>Anker:</b> Bright Path, Framer-Vorlage eines Lernzentrums (brightpath-wbs.framer.website). Nachgebaut, nicht gemischt.</p>
+      <p><b>Für:</b> Kita, Tagesmutter, Nachhilfe, Musikschule, Hundesalon, Hundeschule, Tierarzt, Eisdiele, Hebamme, Kinderfotografie, Familienpraxis.</p>
+    </div>
+    <div class="r">
+      <p><b>Behalten:</b> Bricolage und Instrument Sans, Creme, Waldgrün, ein warmes Signal, vier Pastelle mit fester Rolle, Wolkenkanten, Pillen mit Druckkante, Notizzettel.</p>
+      <p><b>Neu:</b> Einstieg ohne Collage, Karten ohne Foto, Team mit Initialen, „Besuch uns“, Zeiten mit „heute“, Handy-Leiste, Fließtext 18 bis 19 px, Signal und Grün AA.</p>
+    </div>
+  </div>
+  <div class="vs">
+    <div><h3>Journal</h3><p>Serifenmagazin, Papier.</p></div>
+    <div><h3>Raster</h3><p>Schwarz-Weiß, Linien.</p></div>
+    <div><h3>Werkstoff</h3><p>Slab auf Papier, Handwerk.</p></div>
+    <div><h3>Plakat</h3><p>Farbfelder, Versalien.</p></div>
+    <div><h3>Klar</h3><p>Lindgrün, ruhig, Praxis.</p></div>
+    <div><h3>Nacht</h3><p>Dunkel, Kupfer, Abend.</p></div>
+    <div class="me"><h3>Freundlich</h3><p>Creme, Pastelle, runde Kanten, Druckknöpfe.</p></div>
+  </div>
+</section>
+</div>
+
+<!-- ═══ 2 · Anker vermessen ═══ -->
+<div data-shot="2">
+<section class="blk">
+  <p class="lb"><b>1</b><span>Anker vermessen</span></p>
+  <h2 class="bh">Bright Path gemessen, <span class="acc">Freundlich daraus gemacht</span></h2>
+  <p class="bp">Gemessen live mit <code>getComputedStyle</code> bei 1440 und 390 px (13.10.2026, nach Durchscrollen, damit alle Einblendungen stehen). Form und Stimmung bleiben eins zu eins. Geändert wird, was beim Lesen, Tippen und mit wenig Material hakt.</p>
+  <table class="t"><thead><tr><th style="width:150px">Rolle</th><th>Bright Path gemessen</th><th>Freundlich</th></tr></thead><tbody id="zRows"></tbody></table>
+  <table class="t" style="margin-top:30px"><thead><tr><th>Prüfung</th><th>Bright Path</th><th style="width:80px">Wert</th><th>Freundlich</th><th style="width:80px">Wert</th></tr></thead><tbody id="fRows"></tbody></table>
+</section>
+</div>
+
+<!-- ═══ 3 · Schrift ═══ -->
+<div data-shot="3">
+<section class="blk">
+  <p class="lb"><b>2</b><span>Schrift</span></p>
+  <h2 class="bh">Die Schriften des Ankers sind frei. <span class="acc">Wir behalten beide.</span></h2>
+  <p class="bp">Bricolage Grotesque trägt die Freundlichkeit: runde Bäuche, kleine Tintenfallen, eng gesetzt wirkt sie warm statt kindlich. Instrument Sans liest ruhig und hat genug Kraft für Knöpfe. Beide OFL, self-hosted. Bricolage als feste Instanz (opsz 72, Breite 100, Stärke 500 bis 800): 38,9 kB statt 128 kB. Vorladen: zwei Dateien, 68,8 kB.</p>
+  <div class="fonts2">
+    <div><p class="nm"><span>Display · Bricolage Grotesque 500 bis 800</span><span>OFL · latin 38,9 kB + latin-ext 17,6 kB</span></p>
+      <div class="gl">Ag 23</div>
+      <p class="abc d">ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ<br>abcdefghijklmnopqrstuvwxyz äöüß 0123456789 € &amp;</p>
+      <div class="wts">
+        <div><span style="font-family:var(--fd);font-weight:700;letter-spacing:-.04em;font-size:34px">Eingewöhnung <span style="color:var(--accent)">ohne Eile.</span></span><span>Display 700, −0,04 em</span></div>
+        <div><span style="font-family:var(--fd);font-weight:600;letter-spacing:-.02em">Waschen und Föhnen</span><span>h3 600, Kartentitel</span></div>
+        <div><span style="font-family:var(--fd);font-weight:650;font-size:44px;letter-spacing:-.035em;color:var(--accent)">12 · 4,9 · 1,90 €</span><span>Ziffern, Kennzahlen</span></div>
+      </div></div>
+    <div><p class="nm"><span>Text · Instrument Sans 400 bis 700</span><span>OFL · latin 29,9 kB + latin-ext 11,1 kB</span></p>
+      <div class="gl t">Ag 18</div>
+      <p class="abc">Wir nehmen uns Zeit fürs Ankommen. Eingewöhnung nach dem Berliner Modell, Mittagessen aus der Biokiste nebenan.</p>
+      <div class="wts">
+        <div><span style="font-weight:600;font-size:17px">Platz anfragen</span><span>Knopf 600, 17 px</span></div>
+        <div><span style="font-weight:500;font-size:16px;background:#f6d7e8;padding:6px 14px;border-radius:999px">● U3 · Bremen-Findorff</span><span>Pille 500, 16 px</span></div>
+        <div><span style="font-variant-numeric:tabular-nums;font-weight:600;font-size:18px">Di bis Fr 9:00 bis 18:00 · ab 35 €</span><span>Daten, Tabellenziffern</span></div>
+      </div></div>
+  </div>
+  <div class="cmp">
+    <div><p class="x">Bright Path, Einstieg 1440 (Aufnahme vom 13.10.2026)</p><img src="anker/brightpath-desktop-erster-blick.jpg" alt="Bright Path erster Bildschirm" style="height:260px;object-fit:cover;object-position:top"></div>
+    <div><p class="x">Freundlich: gleiche Schrift, gleiche Rolle, Betonung nur über Farbe</p><div style="background:var(--paper);border-radius:12px;height:260px;display:grid;place-items:center;text-align:center;padding:20px"><div><span style="display:inline-flex;gap:8px;align-items:center;background:#f6d7e8;border-radius:999px;padding:6px 14px;font:500 15px var(--ft)"><i style="width:7px;height:7px;border-radius:50%;background:#be5219;display:inline-block"></i>12 Kinder · U3 · Findorff</span><div style="font:700 72px/1.02 var(--fd);letter-spacing:-.04em;margin-top:14px">Klein, warm, <span style="color:var(--accent)">mitten im Viertel.</span></div></div></div></div>
+  </div>
+  <p class="cap">Geprüft und verworfen: Fredoka und Nunito (zu rund, kippt ins Süßwaren-Kindliche), Baloo 2 (sehr weich, aber Ziffern und ß wackeln), Quicksand (dünn, im Fließtext unter 18 px grau), DynaPuff (nur Etikett), Figtree und Outfit (glatt, Software-Ton). Ausgeschlossen, weil schon vergeben: Newsreader, Source Sans 3, Geist, Zilla Slab, Karla, DM Mono, League Gothic, Hanken Grotesk, DM Sans, Atkinson, Gilda Display, Jost, Space Grotesk (Landing).</p>
+</section>
+</div>
+
+<div data-shot="4">
+<section class="blk first">
+  <p class="lb"><b>3</b><span>Stufen</span></p>
+  <h2 class="bh">Elf Stufen, <span class="acc">Fließtext nie unter 18 px</span></h2>
+  <p class="bp">Links 375 px, rechts 1440 px, gerechnet aus denselben clamp-Werten. Keine Versalien, Laufweite nie enger als −0,04 em (Anker: −0,06 bis −0,08 em). Lange deutsche Wörter: Fließtext trennt automatisch, Überschriften brechen ausgewogen an Wortgrenzen.</p>
+  <div class="scale" id="scale"></div>
+</section>
+</div>
+
+<!-- ═══ 5 · Raum, Form, Paletten ═══ -->
+<div data-shot="5">
+<section class="blk">
+  <p class="lb"><b>4</b><span>Raum, Raster, Form</span></p>
+  <h2 class="bh">Runde Formen, <span class="acc">Kanten mit Druck</span></h2>
+  <p class="bp">Abschnittsabstand 72 bis 128 px, Inhalte auf einer Spalte am Handy (Rand 20 px), auf zwölf Spalten am Desktop (max. 86,25 rem wie der Anker). Die Form trägt die Verspieltheit: vier Radien, eine Druckkante, eine Wolke.</p>
+  <div class="spc" id="spc"></div>
+  <div class="grids">
+    <div class="gv" style="--g:12px"><p class="nm"><span>Handy 390</span><span>1 Spalte, Rand 20</span></p><div class="cols" style="grid-template-columns:1fr"><i></i></div></div>
+    <div class="gv" style="--g:22px"><p class="nm"><span>Desktop 1440</span><span>12 Spalten, Rand 32, Karten 4 × 3, Paar 5 + 7</span></p><div class="cols" style="grid-template-columns:repeat(12,1fr)"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="shapes" id="shapes"></div>
+</section>
+<section class="blk">
+  <p class="lb"><b>5</b><span>Paletten</span></p>
+  <h2 class="bh">Drei Paletten, <span class="acc">je vier Pastelle</span></h2>
+  <p class="bp">Jede Palette: Creme als Grund, eine tiefe Farbe für Text, Flächen und Fuß, ein warmes Signal nur für den Hauptknopf, vier Pastelle mit fester Rolle (je Angebot eine Farbe, die bei Team, Stimmen und Preisen wiederkehrt). Text auf Pastell immer in Tinte. Werte live gerechnet (WCAG 2.2).</p>
+  <div class="pals" id="pals"></div>
+</section>
+</div>
+
+<!-- ═══ 6 · Einstieg-Entscheidung + Bausteine ═══ -->
+<div data-shot="6">
+<section class="blk">
+  <p class="lb"><b>6</b><span>Einstieg</span></p>
+  <h2 class="bh">Kein Foto ist kein Problem. <span class="acc">Ein schlechtes auch nicht.</span></h2>
+  <p class="bp">Der Anker lebt von fünf Fotos auf einem Schriftband. Das fällt mit einem Handyfoto zusammen. Freundlich entscheidet nach Fotolage, die Fotoprüfung liefert die Stufe.</p>
+  <table class="dec"><thead><tr><th>Fotolage</th><th>Erkennung</th><th>Einstieg</th><th>Was nie passiert</th></tr></thead><tbody>
+    <tr><td>Gutes Foto<small>Fellfreunde</small></td><td>Mindestens ein Foto mit Prüfung „gut“, ≥ 1200 px Breite, Motiv mit Mensch, Tier oder Raum.</td><td>Satz zentriert: Pille, Display, Leitsatz, zwei Knöpfe. Darunter <b>ein</b> Foto im weichen Rahmen (Ecke 28, −1,5° gekippt, 4:3 Handy, 16:9 Desktop), zwei bis drei Faktenpillen hängen über der Unterkante. Danach Wolkenkante in Bandfarbe.</td><td>Keine Collage, kein Laufband, kein Text auf dem Foto.</td></tr>
+    <tr><td>Schwaches Foto<small>Gelato Mio</small></td><td>Fotos vorhanden, aber Prüfung „mittel“ (klein, Handy, Kunstlicht, unruhig).</td><td>Pastellfläche (Farbe 1) mit Satz linksbündig und Faktenpillen in den anderen drei Pastellen. Foto klein als Quadrat (Ecke 20, +1,5°, weißer Rand 6 px), höchstens 58 % Breite, rechts versetzt. Wolkenkante zur nächsten Fläche.</td><td>Kein Vollbild, kein Hochskalieren, kein Filter, der es retten soll.</td></tr>
+    <tr><td>Kein Foto<small>Kita Pusteblume</small></td><td>Keine eigenen Fotos (oder nur Logo).</td><td>Wie „schwach“, ohne Foto: Pastellfläche, großer Satz, drei Faktenpillen als Hauptinhalt. Die Pillen tragen die Fakten aus den Daten (Alter, Plätze, Zeiten, Ort). Galerie entfällt, Team mit Initialen.</td><td>Kein Stockfoto mit Kindern, keine Clipart, kein Maskottchen, keine leere Fläche.</td></tr>
+  </tbody></table>
+  <p class="cap">Faktenpillen nur aus echten Daten: Öffnungszeiten, Ort, Altersgruppe, Plätze, „ohne Käfig“ nur, wenn der Betrieb es angibt. Fehlen Fakten, bleiben es zwei Pillen oder eine; die Fläche trägt trotzdem.</p>
+</section>
+</div>
+
+<div data-shot="7">
+<section class="blk first">
+  <p class="lb"><b>7</b><span>Bausteine</span></p>
+  <h2 class="bh">Was Bright Path nicht hatte, <span class="acc">im Ton von Bright Path</span></h2>
+  <p class="bp">Jeder Baustein erscheint nur, wenn die Daten ihn tragen. Preise, Zeiten, Bewertungen, Einstiege nach Situation: nichts wird erfunden. Platzhalter nur in der Studio-Vorschau, dort sichtbar markiert.</p>
+  <div class="bs" id="bs"></div>
+</section>
+</div>
+<div data-shot="8">
+<section class="blk first" style="padding-top:0">
+  <div class="bs" id="bs2" style="margin-top:0"></div>
+</section>
+</div>
+
+<div data-shot="9">
+<section class="blk first">
+  <p class="lb"><b>8</b><span>Bilder und Bewegung</span></p>
+  <h2 class="bh">Fotos bekommen runde Ecken. <span class="acc">Bewegung federt leise.</span></h2>
+  <div class="bs" id="imgs"></div>
+  <div class="rules">
+    <div><h4>Bildregeln</h4><ul>
+      <li>Jedes Foto in runder Maske: Ecke 28 im Einstieg, 20 in Galerie und Karten, 12 im Kartenfoto. Kein Kreis, kein Blob, keine Bogenfenster (das wäre Pawsy).</li>
+      <li>Filter für jedes Foto: <code id="fcode"></code>. Hebt Handyfotos minimal an, wärmt einen Hauch zur Creme. Keine Duotone, keine Pastell-Einfärbung.</li>
+      <li>Höchstens ein großes Foto (Einstieg). Galerie: ein großes, zwei kleine; ab Galerie-Extra bis neun in drei Spalten.</li>
+      <li>Kippen nur ganz: Einstiegsfoto −1,5°, schwaches Foto +1,5°, Notizzettel ±1,5°, Ablaufkarten ±0,9°. Am Handy bleiben Zettel und Karten gerade.</li>
+      <li>Angebots- und Teamkarten funktionieren ohne Foto: Kachel mit Kürzel oder Symbol, Avatar mit Initialen. Kartenfoto nur, wenn jedes Angebot eins hat.</li>
+      <li class="no">Kein Text auf Fotos, keine Pillen auf Gesichtern, keine Clipart, kein Kritzel-Unterstrich, keine Stock-Kinder.</li>
+    </ul></div>
+    <div><h4>Bewegung</h4><ul>
+      <li>Ein Moment: das Einstiegsfoto setzt sich mit Feder (<code>cubic-bezier(.3,1.22,.6,1)</code>, 0,9 s) von gerade auf −1,5°. Einmal, nie in Schleife.</li>
+      <li>Abschnitte: 16 px Aufstieg mit Einblenden, <code>animation-timeline: view()</code>, Kurve <code>cubic-bezier(.22,1,.36,1)</code>, 0,7 s.</li>
+      <li>Knopf: hebt sich 2 px bei Hover (Druckkante 4 → 6 px), sinkt 3 px beim Drücken (Kante 1 px), 140 ms. Gleiche Logik wie im Anker, nur schneller.</li>
+      <li>Farbkarte: −4 px und −0,6° bei Hover (nur Maus). FAQ öffnet ohne Höhenanimation, Kachel wechselt die Farbe.</li>
+      <li>Nur <code>transform</code>, <code>opacity</code>, <code>box-shadow</code>. Kein Laufband, kein Parallax, kein Wort-Tausch.</li>
+      <li class="no">Bei <code>prefers-reduced-motion: reduce</code> ist alles sofort da, Kippwinkel bleiben stehen.</li>
+    </ul></div>
+  </div>
+</section>
+</div>
+
+<!-- ═══ Handys ═══ -->
+<div data-shot="10">
+<section class="blk">
+  <p class="lb"><b>9</b><span>Handy · erster Blick</span></p>
+  <h2 class="bh">Die ersten fünf Sekunden</h2>
+  <p class="bp">Drei Betriebe, drei Paletten, drei Fotolagen. Gestrichelt: Ende des ersten Bildschirms (844 px). Die Leiste unten bleibt beim Scrollen stehen.</p>
+  <div class="phones" id="first"></div>
+</section>
+</div>
+
+<div data-shot="11"><section class="blk"><p class="lb"><b>10</b><span>Ganze Seite, Handy 390 (Teil 1)</span></p><div class="phones" data-part="0"></div></section></div>
+<div data-shot="12"><section class="blk"><p class="lb"><b>10</b><span>Ganze Seite, Handy 390 (Teil 2)</span></p><div class="phones" data-part="1"></div></section></div>
+<div data-shot="13"><section class="blk"><p class="lb"><b>10</b><span>Ganze Seite, Handy 390 (Teil 3)</span></p><div class="phones" data-part="2"></div></section></div>
+<div data-shot="14"><section class="blk"><p class="lb"><b>10</b><span>Ganze Seite, Handy 390 (Teil 4)</span></p><div class="phones" data-part="3"></div></section></div>
+<div data-shot="15"><section class="blk"><p class="lb"><b>10</b><span>Ganze Seite, Handy 390 (Teil 5)</span></p><div class="phones" data-part="4"></div></section></div>
+<div data-shot="16"><section class="blk"><p class="lb"><b>10</b><span>Ganze Seite, Handy 390 (Teil 6)</span></p><div class="phones" data-part="5"></div></section></div>
+
+<!-- ═══ Desktop ═══ -->
+<div data-shot="17" style="padding:0 40px">
+<section class="blk" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>11</b><span>Desktop 1440 · Hundesalon Fellfreunde · Einstieg und Angebot</span></p>
+  <div class="desk" id="deskA"></div>
+</section>
+</div>
+<div data-shot="18" style="padding:0 40px">
+<section class="blk first" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>11</b><span>Desktop 1440 · Ablauf, Stimmen, Besuch uns</span></p>
+  <div class="desk" id="deskB"></div>
+</section>
+</div>
+<div data-shot="19" style="padding:0 40px">
+<section class="blk first" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>11</b><span>Desktop 1440 · Kita Pusteblume ohne Foto · Einstieg, Wo stehst du gerade?, Team</span></p>
+  <div class="desk" id="deskC"></div>
+</section>
+</div>
+
+<!-- ═══ TS ═══ -->
+<div data-shot="20">
+<section class="blk">
+  <p class="lb"><b>12</b><span>Endwerte</span></p>
+  <h2 class="bh" style="max-width:none">Zum Kopieren: <code style="font-size:40px">shared/designSystems/freundlich.ts</code></h2>
+  <p class="bp">Drei Erweiterungen der Form, alle optional und rückwärtsverträglich: <b>1.</b> <code>shape</code> am System (Radien, Druckkante, Kippwinkel, Abschnittskante „cloud“). <b>2.</b> <code>band</code> und <code>edge</code> je Palette (Wechselfläche, Druckkante des Hauptknopfs). <b>3.</b> <code>tints</code> je Palette, genau vier Pastelle mit eigener Kante. Dazu <code>"freundlich"</code> in <code>DESIGN_SYSTEM_IDS</code>.</p>
+  <pre class="ts" id="ts"></pre>
+</section>
+</div>
+
+</div>
+
+<script>
+/* ═══ Tokens (Quelle der Wahrheit; identisch mit dem TS-Objekt unten) ═══ */
+const TYPE={
+ display:{font:"display",size:"clamp(2.875rem, 1.9rem + 4.2vw, 6rem)",line:1.02,track:"-0.04em",weight:700},
+ figure:{font:"display",size:"clamp(2.75rem, 2rem + 3.2vw, 4.5rem)",line:1,track:"-0.035em",weight:650},
+ h2:{font:"display",size:"clamp(2.25rem, 1.45rem + 3.4vw, 4.75rem)",line:1.06,track:"-0.035em",weight:650},
+ h3:{font:"display",size:"clamp(1.375rem, 1.2rem + 0.75vw, 1.875rem)",line:1.18,track:"-0.02em",weight:600},
+ lede:{font:"text",size:"clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem)",line:1.5,track:"0em",weight:400},
+ body:{font:"text",size:"clamp(1.125rem, 1.09rem + 0.15vw, 1.1875rem)",line:1.6,track:"0em",weight:400},
+ small:{font:"text",size:"1rem",line:1.5,track:"0em",weight:400},
+ kicker:{font:"text",size:"1rem",line:1.25,track:"0em",weight:500},
+ link:{font:"text",size:"1.0625rem",line:1.2,track:"0em",weight:600},
+ mark:{font:"display",size:"clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem)",line:1,track:"-0.03em",weight:700},
+ data:{font:"text",size:"1.0625rem",line:1.35,track:"0em",weight:600},
+};
+const SPACE={"2xs":".25rem",xs:".5rem",s:"1rem",m:"1.5rem",l:"2.5rem",xl:"4rem","2xl":"6rem",
+ section:"clamp(4.5rem, 3.3rem + 5vw, 8rem)",gutter:"clamp(1.25rem, 0.95rem + 1.3vw, 2rem)",measure:"36rem",max:"86.25rem"};
+const SHAPE={radius:{s:"12px",m:"20px",l:"28px",pill:"999px"},press:"4px",tile:"3px",tilt:"1.5deg",edge:"cloud"};
+const PALS=[
+ {id:"wald",name:"Wald",use:"Kita, Tagesmutter, Nachhilfe, Musikschule, Hebamme",paper:"#f4f0e5",surface:"#ffffff",band:"#eae4d3",ink:"#14261d",muted:"#3f5045",rule:"#ddd6c3",accent:"#33684e",deep:"#1b3428",onDeep:"#f4f0e5",signal:"#be5219",onSignal:"#ffffff",edge:"#84360d",
+  tints:[{id:"blau",name:"Blau",bg:"#c9e0f2",ink:"#14261d",muted:"#34485a",edge:"#5488b2"},{id:"limette",name:"Limette",bg:"#d6e59a",ink:"#14261d",muted:"#3b4a24",edge:"#93a452"},{id:"rosa",name:"Rosa",bg:"#f6d7e8",ink:"#14261d",muted:"#553a49",edge:"#b9849f"},{id:"pfirsich",name:"Pfirsich",bg:"#f9d8c0",ink:"#14261d",muted:"#57402f",edge:"#b98b69"}]},
+ {id:"himmel",name:"Himmel",use:"Hundesalon, Hundeschule, Tierarzt, Schwimmschule",paper:"#f5f1e8",surface:"#ffffff",band:"#e9e3d6",ink:"#16233b",muted:"#414c63",rule:"#dcd6c8",accent:"#28508f",deep:"#1d3157",onDeep:"#f5f1e8",signal:"#f2b632",onSignal:"#16233b",edge:"#16233b",
+  tints:[{id:"himmel",name:"Himmel",bg:"#cfe3f6",ink:"#16233b",muted:"#33496a",edge:"#5d8fc4"},{id:"sonne",name:"Sonne",bg:"#f7e6a6",ink:"#16233b",muted:"#4f4423",edge:"#b89a3a"},{id:"pfirsich",name:"Pfirsich",bg:"#fad9c2",ink:"#16233b",muted:"#5a412f",edge:"#c08a64"},{id:"flieder",name:"Flieder",bg:"#e2dcf5",ink:"#16233b",muted:"#463e66",edge:"#8b7cc0"}]},
+ {id:"beere",name:"Beere",use:"Eisdiele, Café, Kinderfotografie, Hebamme",paper:"#f7f0ea",surface:"#ffffff",band:"#eee3da",ink:"#2b1627",muted:"#57424f",rule:"#e3d6cd",accent:"#8a2f62",deep:"#45203d",onDeep:"#f7f0ea",signal:"#c94a3a",onSignal:"#ffffff",edge:"#7d2a1f",
+  tints:[{id:"rose",name:"Rose",bg:"#f7d4de",ink:"#2b1627",muted:"#5a3644",edge:"#c0879a"},{id:"aprikose",name:"Aprikose",bg:"#fbdcc0",ink:"#2b1627",muted:"#5b3f28",edge:"#c6915f"},{id:"flieder",name:"Flieder",bg:"#e6dcf3",ink:"#2b1627",muted:"#4a3b62",edge:"#9784bf"},{id:"butter",name:"Butter",bg:"#f4e7ad",ink:"#2b1627",muted:"#4f4420",edge:"#b8a24b"}]},
+];
+const FILTER="saturate(1.04) contrast(1.03) brightness(1.02) sepia(.04)";
+
+/* ═══ Helfer ═══ */
+const REM=16;
+function px(v,w){v=v.trim();
+ if(v.startsWith("clamp(")){const [a,b,c]=v.slice(6,-1).split(",").map(s=>s.trim());return Math.min(Math.max(px(a,w),px(b,w)),px(c,w));}
+ if(v.includes("+")){return v.split("+").reduce((s,t)=>s+px(t,w),0);}
+ if(v.endsWith("rem"))return parseFloat(v)*REM; if(v.endsWith("vw"))return parseFloat(v)*w/100; if(v.endsWith("px"))return parseFloat(v); return parseFloat(v)*REM;}
+const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const toHex=a=>"#"+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,"0")).join("");
+const mix=(a,b,t)=>toHex(hx(a).map((v,i)=>v*(1-t)+hx(b)[i]*t));
+function lum(h){const c=hx(h).map(v=>v/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+const f2=n=>n.toFixed(2).replace(".",",");
+const P=id=>PALS.find(p=>p.id===id);
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+const FAM={display:"var(--fd)",text:"var(--ft)"};
+const rgb=h=>hx(h).join(" ");
+function vars(w,palId){const p=P(palId);const v=[];
+ for(const [k,t] of Object.entries(TYPE)) v.push(`--${k}-size:${px(t.size,w).toFixed(2)}px`,`--${k}-line:${t.line}`,`--${k}-weight:${t.weight}`);
+ for(const [k,s] of Object.entries(SPACE)) v.push(`--s-${k}:${px(s,w).toFixed(1)}px`);
+ for(const k of ["paper","surface","band","ink","muted","rule","accent","deep","onDeep","signal","onSignal","edge"]) v.push(`--${k}:${p[k]}`);
+ p.tints.forEach((t,i)=>v.push(`--t${i+1}:${t.bg}`,`--t${i+1}e:${t.edge}`,`--t${i+1}m:${t.muted}`));
+ v.push(`--ink-rgb:${rgb(p.ink)}`,`--accent-rgb:${rgb(p.accent)}`,`--img-filter:${FILTER}`);
+ return v.join(";");}
+(function(){let css="";for(const [k,t] of Object.entries(TYPE)){css+=`.f .t-${k}{font-family:${FAM[t.font]};font-size:var(--${k}-size);line-height:var(--${k}-line);letter-spacing:${t.track};font-weight:${t.weight}}`;}
+ css+=`.f .t-data{font-variant-numeric:tabular-nums lining-nums}`;
+ const s=document.createElement("style");s.textContent=css;document.head.appendChild(s);})();
+const ic=n=>`<i class="ph ph-${n}"></i>`;
+const T=i=>`--cbg:var(--t${i});--tedge:var(--t${i}e);--cmut:var(--t${i}m)`;
+
+/* ═══ 1 · Anker-Tabellen ═══ */
+const Z=[
+ ["Einstieg-Titel","Bricolage 700, 103 / 50 px, Zeile 1,0, −0,06 em, Tinte #14261d; letztes Wort Grün #497e64 mit orangem Kritzelstrich und Funken","Bricolage 700, 46 → 91 px (max. 96), Zeile 1,02, −0,04 em; zweiter Satzteil in Waldgrün #33684e, kein Kritzel, keine Funken"],
+ ["Abschnittstitel","Bricolage 600, 82 / 40 px, Zeile 1,1, −0,08 em, Muster „Pick a <i>program</i>“","650, 36 → 72 px, Zeile 1,06, −0,035 em; Betonung nur über Farbe, nur wenn der Satz zwei Teile hat"],
+ ["Kartentitel","Bricolage 500, 30 / 22 px, −0,04 em","600, 22 → 30 px, −0,02 em (Instanz ab 500, 600 hält auf Pastell besser)"],
+ ["Fließtext","Instrument Sans 400, 16 px, Zeile 1,4, Grau #45564b","400, 18 → 19 px, Zeile 1,6; Haupttext Tinte, Nebentext #3f5045"],
+ ["Pille","16 px 400 auf Rosa #f6d7e8, oranger Punkt, 34 px hoch","16 px 500, 36 px hoch, Pastell nach Rolle, Punkt im Signal; auch als Faktenpille"],
+ ["Hauptknopf","Pille 54 px, Orange #e8722c, Weiß 16 px 500, Druckkante 0 4 px 0 #b26e45, Hover Kante 7 px","Pille 56 px (Handy volle Breite), Kürbis #be5219, Weiß 17 px 600, Rand 1,5 + Kante 4 px in #84360d, Hover −2 px, Drücken +3 px"],
+ ["Zweitknopf","Creme, 1 px Tinte, Kante 0 4 px 0 #1b3428","Weiß, 1,5 px Tinte, Kante 4 px Tinte"],
+ ["Karten","Ecke 16 / 20, Polster 20 / 30, Pastell ohne Schatten; Symbolkachel Ecke 10, Kante 3 px 3 px 0 in dunklem Pastell","Ecke 20, Polster 20 bis 22; Kachel 46 px, Ecke 12, Rand 1,5 + Kante 3 px in der Pastellkante"],
+ ["Farben","Creme #f4f0e5, Band #eae4d3, Tinte #14261d, Tief #1b3428, Grün #497e64, Orange #e8722c, Blau #c9e0f2, Limette #d6e59a, Rosa #f6d7e8, Pfirsich #f9d8c0","Alle Flächen gleich (Palette Wald). Grün dunkler (#33684e), Orange dunkler (#be5219), damit Text AA hält"],
+ ["Kanten","Wolkenkante als Bild zwischen Einstieg und Programmen, Wolken unten im Fuß","Wolke aus zwei Kreisreihen in CSS (56 / 72 px hoch), Farbe der folgenden Fläche; vor Band, Schlussaufruf und Fuß"],
+ ["Raster","max. 1380 px, Rand 30 px Desktop","max. 86,25 rem (1380 px), Rand 20 → 32 px"],
+ ["Stimmen","Drei gekippte Zettel in Pastell mit Stern-Clipart, Porträtfoto, „4.9 / 5“-Pille mit Druckkante","Zettel ±1,5° nur Desktop, Initialen statt Foto, Quelle und Monat; Bewertungspille nur mit echter Zahl"],
+ ["Bewegung","Framer-Einblenden, Laufband entlang einer Kurve, Farbwechsel 0,4 s cubic-bezier(.44,0,.56,1)","Ein Federmoment im Einstieg, Aufstieg je Abschnitt, Knöpfe heben und drücken; kein Laufband"],
+ ["Fehlt","Kein „Besuch uns“, Adresse nur im Fuß, keine Zeiten-Tabelle, Team und Karten nur mit Foto","Besuch uns mit Kartenkachel, Zeiten mit „heute“, Team mit Initialen, Karten mit Kürzel, Handy-Leiste"],
+];
+document.getElementById("zRows").innerHTML=Z.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+const W=P("wald");
+const FAILS=[
+ ["Knopfschrift (AA ≥ 4,5)","Weiß auf Orange #e8722c, 16 px 500",cr("#ffffff","#e8722c"),"Weiß auf Kürbis #be5219, 17 px 600",cr(W.onSignal,W.signal)],
+ ["Betontes Wort (Text ≥ 4,5)","Grün #497e64 auf Creme",cr("#497e64","#f4f0e5"),"Waldgrün #33684e auf Creme",cr(W.accent,W.paper)],
+ ["Knopfkante gegen Grund (≥ 3)","Orange auf Creme",cr("#e8722c","#f4f0e5"),"Kante #84360d auf Creme",cr(W.edge,W.paper)],
+ ["Nebentext (Ziel ≥ 7)","#45564b auf Creme, 16 px",cr("#45564b","#f4f0e5"),"#3f5045 auf Creme, 18 px",cr(W.muted,W.paper)],
+ ["Nebentext auf Pastell","#45564b auf Limette",cr("#45564b","#d6e59a"),"Pastell-eigenes Grau auf Limette",cr(W.tints[1].muted,W.tints[1].bg)],
+ ["Fließtext","16 px, Zeile 1,4",null,"18 → 19 px, Zeile 1,6",null],
+ ["Zielgröße Knopf","187 × 54 px; Handy-Menü fehlt als Knopf",null,"volle Breite × 56 px, Leiste 52 px, Menü 44 px",null],
+ ["Kippwinkel Handy","Zettel und Schritte gekippt auch auf 390 px",null,"am Handy gerade, Desktop ±1,5°",null],
+];
+document.getElementById("fRows").innerHTML=FAILS.map(r=>{const ok=v=>v==null?"":`<span class="${v>=4.5||(r[0].includes("≥ 3")&&v>=3)?"ok":"no"}">${f2(v)}</span>`;return `<tr><td>${r[0]}</td><td class="${(r[2]!=null&&r[2]<4.5)||r[2]==null?"bad":""}">${r[1]}</td><td>${ok(r[2])}</td><td>${r[3]}</td><td>${ok(r[4])}</td></tr>`}).join("");
+
+/* ═══ 3 · Stufen ═══ */
+const SAMPLE={
+ display:"Frisch gebürstet und ganz entspannt.",figure:"4,9",h2:"Was wir für euren Hund tun",h3:"Eingewöhnung nach dem Berliner Modell",
+ lede:"Kleine Kita mit zwölf Plätzen ab einem Jahr, mitten in Findorff. Wir nehmen uns Zeit fürs Ankommen.",
+ body:"Hausgemachtes Eis aus Milch vom Hof Lindemann, jeden Morgen frisch gerührt. Sorten der Woche wechseln freitags, vegane Sorten gibt es immer mindestens drei.",
+ small:"Preise in Euro inklusive Mehrwertsteuer. Termin bitte 24 Stunden vorher absagen.",
+ kicker:"Alle Rassen · Leipzig-Gohlis",link:"Termin anfragen",mark:"Gelato Mio",data:"Di bis Fr 9:00 bis 18:00 · ab 35 €"};
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+ const a=px(t.size,375),b=px(t.size,1440);
+ const st=w=>`font-family:${FAM[t.font]};font-size:${px(t.size,w)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight};${k==="data"?"font-variant-numeric:tabular-nums;":""}color:${["figure"].includes(k)?"var(--accent)":"var(--ink)"}`;
+ const inner=k==="kicker"?`<span style="display:inline-flex;align-items:center;gap:8px;background:#f6d7e8;border-radius:999px;padding:6px 15px"><i style="width:7px;height:7px;border-radius:50%;background:#be5219"></i>${SAMPLE[k]}</span>`:k==="link"?`<span style="display:inline-flex;align-items:center;min-height:56px;padding:0 26px;border-radius:999px;background:#be5219;color:#fff;box-shadow:inset 0 0 0 1.5px #84360d,0 4px 0 #84360d">${SAMPLE[k]}</span>`:SAMPLE[k];
+ return `<div class="srow"><div class="k">${k}<small>${t.font==="display"?"Bricolage":"Instrument Sans"} ${t.weight}<br>${Math.round(a)} → ${Math.round(b)} px · Zeile ${String(t.line).replace(".",",")}<br>${t.track}</small></div>
+ <div class="m375"><div class="hd">375</div><div style="${st(375)}">${inner}</div></div>
+ <div class="m1440"><div class="hd">1440</div><div style="${st(1440)};white-space:${["kicker","link","mark","data","figure"].includes(k)?"nowrap":"normal"};max-width:${k==="body"||k==="lede"?"36rem":"none"}">${inner}</div></div></div>`}).join("");
+
+/* ═══ 4 · Abstände, Form, Paletten ═══ */
+document.getElementById("spc").innerHTML=Object.entries(SPACE).filter(([k])=>!["measure","max"].includes(k)).map(([k,s])=>{const a=px(s,375),b=px(s,1440);return `<div><div style="width:${Math.max(a,4)}px;height:${Math.max(b,4)}px"></div><span>${k}<small>${Math.round(a)}${Math.round(a)!==Math.round(b)?" / "+Math.round(b):""} px</small></span></div>`}).join("")+`<div style="margin-left:auto;text-align:right"><span>measure 36 rem<small>≈ 66 Zeichen</small></span><span style="margin-top:14px">max 86,25 rem<small>1380 px wie der Anker</small></span></div>`;
+document.getElementById("shapes").innerHTML=`
+ <div><div style="display:flex;gap:10px;align-items:flex-end"><div style="width:46px;height:46px;border-radius:12px;background:#c9e0f2;box-shadow:inset 0 0 0 1.5px #5488b2,3px 3px 0 #5488b2"></div><div style="width:84px;height:84px;border-radius:20px;background:#d6e59a"></div><div style="width:100px;height:100px;border-radius:28px;background:#f9d8c0"></div></div><p><b>Radien 12 · 20 · 28 · Pille</b>12 Kachel, Feld, Kartenfoto. 20 Karte, Zettel, Galerie. 28 Einstiegsfoto. Pille für Knöpfe, Pillen, Leiste.</p></div>
+ <div><div style="display:flex;gap:12px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;min-height:52px;padding:0 20px;border-radius:999px;background:#be5219;color:#fff;font:600 16px var(--ft);box-shadow:inset 0 0 0 1.5px #84360d,0 4px 0 #84360d">Ruhe</span><span style="display:inline-flex;align-items:center;min-height:52px;padding:0 20px;border-radius:999px;background:#be5219;color:#fff;font:600 16px var(--ft);box-shadow:inset 0 0 0 1.5px #84360d,0 6px 0 #84360d;transform:translateY(-2px)">Hover</span><span style="display:inline-flex;align-items:center;min-height:52px;padding:0 20px;border-radius:999px;background:#be5219;color:#fff;font:600 16px var(--ft);box-shadow:inset 0 0 0 1.5px #84360d,0 1px 0 #84360d;transform:translateY(3px)">Drücken</span></div><p><b>Druckkante 4 px</b>Wie eine Taste: Rand 1,5 px und Kante unten in der dunklen Schwester der Fläche. Kein weicher Schatten, kein Glanz.</p></div>
+ <div><div style="display:flex;gap:10px;align-items:center"><span style="display:inline-flex;align-items:center;min-height:52px;padding:0 20px;border-radius:999px;background:#fff;color:#14261d;font:600 16px var(--ft);box-shadow:inset 0 0 0 3px #33684e,0 0 0 4px rgba(51,104,78,.18)">Fokus</span><span style="display:inline-flex;align-items:center;min-height:52px;padding:0 20px;border-radius:999px;background:#fff;color:#14261d;font:600 16px var(--ft);box-shadow:inset 0 0 0 1.5px #14261d,0 4px 0 #14261d;outline:3px solid #33684e;outline-offset:4px">Tastatur</span></div><p><b>Fokus 3 px Waldgrün, Abstand 4</b>Gilt für Knöpfe, Links, FAQ, Felder. Auf Tief in Creme. Auswahlfarbe Pastell 1.</p></div>
+ <div><div class="cloudDemo"><div style="position:absolute;left:0;right:0;bottom:0;height:80px;background:#eae4d3"><div class="f-cloud" style="--cc:#eae4d3;--ch:48px"></div></div></div><p><b>Wolkenkante</b>Zwei Kreisreihen (Radius 0,6 und 0,9 der Höhe, Abstand 1,75 und 2,7), versetzt, damit es nicht nach Stempel aussieht.</p></div>`;
+const CHECKS=p=>[["Tinte / Papier ≥ 7",cr(p.ink,p.paper),7],["Gedämpft / Papier (Ziel 7)",cr(p.muted,p.paper),7],["Gedämpft / Band ≥ 4,5",cr(p.muted,p.band),4.5],["Akzent / Papier ≥ 4,5",cr(p.accent,p.paper),4.5],["onSignal / Signal ≥ 4,5",cr(p.onSignal,p.signal),4.5],["Kante / Papier ≥ 3",cr(p.edge,p.paper),3],["onDeep / Deep ≥ 7",cr(p.onDeep,p.deep),7],["Tinte / schwächstes Pastell ≥ 7",Math.min(...p.tints.map(t=>cr(t.ink,t.bg))),7],["Pastell-Grau / Pastell ≥ 4,5",Math.min(...p.tints.map(t=>cr(t.muted,t.bg))),4.5],["Pastellkante / Pastell ≥ 2 (Deko)",Math.min(...p.tints.map(t=>cr(t.edge,t.bg))),2]];
+const PV={wald:["Klein, warm,","mitten im Viertel.","12 Plätze ab 1 Jahr, Eingewöhnung ohne Eile.","Platz anfragen"],himmel:["Frisch gebürstet,","ganz entspannt.","Alle Rassen, ohne Käfig, Termin meist in 3 Tagen.","Termin anfragen"],beere:["Hausgemachtes Eis","am Wasser.","Heute bis 22 Uhr, vegane Sorten immer dabei.","Route planen"]};
+document.getElementById("pals").innerHTML=PALS.map(p=>`<div class="pal">
+ <div class="pv" style="background:${p.paper};color:${p.ink}">
+  <span class="kk" style="background:${p.tints[2].bg}"><i style="background:${p.signal}"></i>${p.name}</span>
+  <h3>${PV[p.id][0]} <span style="color:${p.accent}">${PV[p.id][1]}</span></h3>
+  <p style="color:${p.muted}">${PV[p.id][2]}</p>
+  <div class="bt"><span style="background:${p.signal};color:${p.onSignal};box-shadow:inset 0 0 0 1.5px ${p.edge},0 4px 0 ${p.edge}">${PV[p.id][3]}</span><span style="background:#fff;color:${p.ink};box-shadow:inset 0 0 0 1.5px ${p.ink},0 4px 0 ${p.ink}">Anrufen</span></div></div>
+ <div class="tn" style="background:${p.paper}">${p.tints.map((t,i)=>`<div style="background:${t.bg};color:${t.muted};box-shadow:inset 0 -3px 0 ${t.edge}"><b style="color:${t.ink}">${i+1} · ${t.name}</b>${t.bg}<br>Kante ${t.edge}</div>`).join("")}</div>
+ <div class="chips">${["paper","band","ink","accent","deep","signal"].map(k=>`<div style="background:${p[k]};color:${cr(p[k],"#000000")>8?"#111":"#fff"}">${k}<br>${p[k]}</div>`).join("")}</div>
+ <table>${CHECKS(p).map(([l,v,min])=>`<tr><td>${l}</td><td style="color:${v>=min?"#2f6b4c":"#b23a17"}">${f2(v)}</td></tr>`).join("")}</table>
+ <div class="use">Für: ${p.use}.${p.id==="himmel"?" Signal Sonne trägt Tintenschrift; die Fläche hebt sich nur 1,6 : 1 vom Grund ab, deshalb Rand und Kante in Tinte (Pflicht, ≥ 3 : 1).":""}</div></div>`).join("");
+
+/* ═══ Beispieldaten (frei erfunden, 555-Nummern, .example) ═══ */
+const K={id:"k",pal:"wald",trade:"Kita",name:"Kita Pusteblume",short:"Pusteblume",logo:"P",photo:"none",
+ pill:["dot","Kita für 1 bis 3 Jahre · Bremen-Findorff"],h1:["Klein, warm,","mitten im Viertel."],
+ lede:"Zwölf Kinder, vier Erzieherinnen und ein Garten mit Apfelbaum. Wir nehmen uns Zeit fürs Ankommen.",
+ facts:[["users-three","12 Plätze ab 1 Jahr"],["clock","Mo bis Fr ab 7:30"],["carrot","Bio-Mittagessen"]],
+ cta:["Platz anfragen","envelope-simple"],phone:"0555 3102 44",dock:"Anfragen",
+ offers:{h:["Ein Tag bei","uns"],intro:"Feste Abläufe geben Sicherheit. Dazwischen ist viel Platz zum Spielen.",items:[["Ei","Eingewöhnung","Nach dem Berliner Modell, zwei bis drei Wochen, immer mit Mama oder Papa."],["Ta","Tagesablauf","Frühstück um 8:30, Morgenkreis, Spielen, Mittag um 11:30, Schlafen."],["Es","Essen","Bio-Mittagessen aus der Küche nebenan, vegetarisch an drei Tagen."],["Dr","Draußen","Jeden Tag in den Garten, bei jedem Wetter. Matschhosen haben wir."]]},
+ where:{h:["Wo steht ihr","gerade?"],intro:"Sagt uns, was passt. Wir melden uns innerhalb einer Woche.",items:[["baby","Noch schwanger","Gern schon jetzt auf die Liste, ab dem 6. Monat."],["calendar-check","Platz ab Sommer gesucht","Aufnahme meist im August, Gespräche ab Februar."],["arrows-left-right","Wechsel aus anderer Betreuung","Wir planen eine kürzere Eingewöhnung."]]},
+ steps:[["Kennenlernen","bei einem Besuch","Ihr schaut euch um, wir erzählen vom Alltag. Kinder dürfen mit."],["Anmeldung","innerhalb einer Woche","Ihr bekommt Bescheid, ob ein Platz frei wird, und den Vertrag."],["Eingewöhnung","zwei bis drei Wochen","Mit euch, in kleinen Schritten, bis euer Kind sich wohlfühlt."]],
+ team:[["AB","Anke Bremer","Leitung, Erzieherin","Seit 2011 dabei, singt bei jedem Wetter."],["TR","Tomás Reyes","Erzieher","Bringt Werkbank und Geduld mit."],["LW","Lea Wichmann","Kinderpflegerin","Zuständig für Garten und Matsch."]],
+ voices:[["Unsere Tochter wollte nach drei Wochen gar nicht mehr nach Hause.","Jana K.","Google, Mai 2026"],["Klein, herzlich und immer ehrlich zu uns Eltern.","Mehmet und Sara","Google, März 2026"],["Die Eingewöhnung war entspannter als gedacht.","Familie Ott","Google, Januar 2026"]],rate:["4,9","23 Bewertungen auf Google"],
+ faq:[["Wie läuft die Eingewöhnung?","Nach dem Berliner Modell: die ersten Tage eine Stunde mit euch, dann werden die Zeiten länger. Rechnet mit zwei bis drei Wochen."],["Was kostet ein Platz?","Der Elternbeitrag richtet sich nach der Bremer Beitragstabelle. Das Mittagessen kostet 3,80 € am Tag."],["Was muss mitgebracht werden?","Hausschuhe, Wechselkleidung, Windeln und Matschsachen. Den Rest haben wir."]],
+ hours:{rows:[["Mo","7:30 bis 16:00"],["Di","7:30 bis 16:00",1],["Mi","7:30 bis 16:00"],["Do","7:30 bis 16:00"],["Fr","7:30 bis 14:00"],["Sa","geschlossen"],["So","geschlossen"]],note:"Schließzeit drei Wochen im Sommer."},
+ adr:"Hemmstraße 112<br>28215 Bremen",acc:[["bus","Linie 25, Haltestelle Hemmstraße, 2 Minuten"],["bicycle","Abstellplatz für Fahrräder und Anhänger im Hof"]],
+ contact:{h:["Ein Platz","für euer Kind?"],lede:"Schreibt uns kurz, wann ihr einen Platz sucht. Wir rufen zurück."},mail:"hallo@kita-pusteblume.example",footHours:"Mo bis Do 7:30 bis 16:00<br>Fr 7:30 bis 14:00"};
+const F={id:"f",pal:"himmel",trade:"Hundesalon",name:"Fellfreunde",short:"Fellfreunde",logo:"F",photo:"good",
+ heroImg:"1516734212186-a967f81ad0d7",gal:["1587300003388-59208cc962cb","1544568100-847a948585b9","1581888227599-779811939961"],
+ pill:["dot","Hundesalon in Leipzig-Gohlis"],h1:["Frisch gebürstet,","ganz entspannt."],
+ lede:"Waschen, schneiden, Krallen kürzen. In Ruhe, ohne Käfig, mit Zeit zum Schnuppern.",
+ facts:[["dog","Alle Rassen"],["heart","Ohne Käfig"],["calendar-blank","Termin meist in 3 Tagen"]],
+ cta:["Termin anfragen","calendar-plus"],phone:"0555 7781 20",dock:"Termin",
+ offers:{h:["Was wir für","euren Hund tun"],intro:"Preise je nach Größe und Fell. Am Telefon sagen wir euch den genauen Preis.",items:[["drop","Waschen und Föhnen","Mildes Shampoo, warm geföhnt, Ohren sauber.","ab 35 €"],["scissors","Schneiden","Rassetypisch oder pflegeleicht, ganz wie ihr wollt.","ab 55 €"],["paw-print","Krallen und Pfoten","Kürzen, Fell zwischen den Ballen, Pfotenbalsam.","12 €"],["heart","Welpen-Kennenlernen","Zwanzig Minuten Salon schnuppern, ohne Schere.","20 €"]]},
+ steps:[["Ankommen und schnuppern","fünf Minuten","Euer Hund lernt uns kennen, bevor irgendwas passiert."],["Pflege in Ruhe","ein bis drei Stunden","Pausen, wenn er sie braucht. Keine Box, kein Zeitdruck."],["Abholen mit Foto","wir rufen an","Ihr bekommt ein Foto, sobald er fertig und trocken ist."]],
+ voices:[["Unser ängstlicher Balu geht inzwischen freiwillig rein. Das sagt alles.","Katrin L.","Google, September 2026"],["Pudelschnitt wie gewünscht, und sie haben sich Zeit genommen.","Thomas R.","Google, August 2026"],["Endlich ein Salon ohne Käfige.","Anja B.","Google, Juli 2026"]],rate:["4,9","87 Bewertungen auf Google"],
+ faq:[["Mein Hund ist ängstlich. Geht das?","Ja. Wir planen mehr Zeit ein, machen Pausen und brechen ab, wenn es nicht geht. Das Kennenlernen kostet nichts extra."],["Wie lange dauert es?","Kleine Hunde etwa eine Stunde, große mit viel Fell bis zu drei. Wir rufen an, wenn er fertig ist."],["Muss ich dableiben?","Nein. Bei Welpen und ängstlichen Hunden gern in den ersten zehn Minuten."]],
+ hours:{rows:[["Mo","geschlossen"],["Di","9:00 bis 18:00",1],["Mi","9:00 bis 18:00"],["Do","9:00 bis 18:00"],["Fr","9:00 bis 18:00"],["Sa","9:00 bis 14:00"],["So","geschlossen"]],note:"Nur mit Termin. Absagen bitte bis 24 Stunden vorher."},
+ adr:"Georg-Schumann-Straße 61<br>04155 Leipzig",acc:[["tram","Tram 10 und 11, Haltestelle Lindenthaler Straße"],["car","Zwei Parkplätze direkt vor dem Salon"]],
+ contact:{h:["Termin für","euren Hund?"],lede:"Ruft an oder schreibt uns. Wir melden uns am selben Tag."},mail:"termin@fellfreunde.example",footHours:"Di bis Fr 9:00 bis 18:00<br>Sa 9:00 bis 14:00, nur mit Termin"};
+const G={id:"g",pal:"beere",trade:"Eiscafé",name:"Eiscafé Gelato Mio",short:"Gelato Mio",logo:"G",photo:"weak",
+ heroImg:"1576506295286-5cda18df43e7",gal:["1501443762994-82bd5dace89a","1563805042-7684c019e1cb","1560008581-09826d1de69e"],
+ pill:["dot","Eiscafé am Maschsee, Hannover"],h1:["Hausgemachtes Eis","am Wasser."],
+ lede:"Jeden Morgen frisch gerührt, mit Milch vom Hof Lindemann. Zum Mitnehmen oder auf der Terrasse.",
+ facts:[["sun","Heute bis 22 Uhr"],["leaf","Vegane Sorten"],["bag","Becher zum Mitnehmen"]],
+ cta:["Route planen","navigation-arrow"],phone:"0555 9024 66",dock:"Route",
+ offers:{h:["Was es bei","uns gibt"],intro:"Sorten der Woche wechseln freitags. Preise aus der aktuellen Karte.",items:[["ice-cream","Eis in der Waffel","Zwanzig Sorten, mindestens drei vegan.","1,90 € je Kugel"],["bowl-food","Becher","Erdbeer, Spaghetti-Eis, Joghurt-Mango.","ab 6,50 €"],["cake","Eistorten","Auf Bestellung, drei Tage vorher.","ab 32 €"],["coffee","Kaffee","Siebträger, Affogato mit einer Kugel.","ab 2,40 €"]]},
+ steps:null,
+ voices:[["Das Pistazieneis schmeckt wie in Bologna. Kein Witz.","Lukas F.","Google, August 2026"],["Netter Service, auch wenn die Schlange lang ist.","Selin Y.","Google, Juli 2026"],["Die vegane Schoko ist besser als die normale.","Maren und Ole","Google, Juni 2026"]],rate:["4,7","312 Bewertungen auf Google"],
+ faq:[["Habt ihr bei Regen geöffnet?","Ja, drinnen sind zwanzig Plätze. Nur bei Sturm schließen wir die Terrasse."],["Gibt es laktosefreie Sorten?","Alle Fruchtsorten sind ohne Milch, dazu immer drei vegane Milchsorten."],["Kann ich Eistorten bestellen?","Ja, drei Tage vorher per Telefon oder vor Ort."]],
+ hours:{rows:[["Mo","12:00 bis 21:00"],["Di","12:00 bis 21:00",1],["Mi","12:00 bis 21:00"],["Do","12:00 bis 21:00"],["Fr","12:00 bis 22:00"],["Sa","11:00 bis 22:00"],["So","11:00 bis 21:00"]],note:"Saison 15. März bis 31. Oktober."},
+ adr:"Rudolf-von-Bennigsen-Ufer 22<br>30173 Hannover",acc:[["train","Stadtbahn 1, 2, 8 bis Altenbekener Damm"],["bicycle","Fahrradbügel direkt am Ufer"]],
+ contact:{h:["Bis gleich","am Ufer."],lede:"Eistorte bestellen oder Frage zu Sorten? Ruf einfach an."},mail:"ciao@gelato-mio.example",footHours:"Täglich ab 12:00, Sa und So ab 11:00<br>Saison März bis Oktober"};
+const ALL=[K,F,G];
+
+/* ═══ Bausteine (HTML) ═══ */
+const h2=(a,b)=>`${a} <span class="acc">${b}</span>`;
+const btnP=(t,i)=>`<a class="f-btn f-btn--p" href="#">${i?ic(i):""}${t}</a>`;
+const btnS=(t,i)=>`<a class="f-btn f-btn--s" href="#">${i?ic(i):""}${t}</a>`;
+const pill=(t,dot,bg)=>`<span class="f-pill"${bg?` style="--pbg:${bg}"`:""}>${dot==="dot"?'<i class="dot"></i>':ic(dot)}${t}</span>`;
+const nav=(b,solid)=>`<nav class="f-nav${solid?" solid":""}"><a class="f-brand" href="#"><span class="f-logo">${b.logo}</span><span class="t-mark">${b.short}</span></a><a class="f-menu" href="#">${ic("list")} Menü</a></nav>`;
+function hero(b){
+ if(b.photo==="good") return `${nav(b)}<header class="f-hero">${pill(b.pill[1],"dot")}<h1 class="t-display">${h2(b.h1[0],b.h1[1])}</h1><p class="t-lede">${b.lede}</p>
+  <div class="f-ctas">${btnP(b.cta[0],b.cta[1])}${btnS(b.phone,"phone")}</div>
+  <div class="f-heroimg"><div class="ph-frame"><img src="${U(b.heroImg,900)}" alt=""></div><div class="f-facts">${b.facts.slice(0,3).map((f,i)=>pill(f[1],f[0],`var(--t${i+2})`)).join("")}</div></div><div style="height:var(--s-xl)"></div></header>`;
+ return `<div class="f-hero2-wrap" style="background:var(--t1)">${nav(b)}<header class="f-hero2">${pill(b.pill[1],"dot")}<h1 class="t-display">${h2(b.h1[0],b.h1[1])}</h1><p class="t-lede">${b.lede}</p>
+  <div class="f-facts">${b.facts.map(f=>pill(f[1],f[0])).join("")}</div>
+  <div class="f-ctas">${btnP(b.cta[0],b.cta[1])}${btnS(b.phone,"phone")}</div>
+  ${b.photo==="weak"?`<div class="small-pic"><img src="${U(b.heroImg,600)}" alt=""></div>`:""}</header></div>`;}
+const cloud=c=>`<div class="f-cloud" style="--cc:${c}"></div>`;
+const head=(t,intro,center)=>`<div class="f-head${center?" center":" split"}"><h2 class="t-h2">${h2(t[0],t[1])}</h2>${intro?`<p class="intro t-body">${intro}</p>`:""}</div>`;
+const sec=(cls,inner,cc)=>`<section class="f-sec ${cls}" data-reveal>${cc?cloud(cc):""}<div class="wrap">${inner}</div></section>`;
+const offers=b=>`<div class="f-offers">${b.offers.items.map((o,i)=>`<div class="f-card" style="${T(i%4+1)}"><div class="row"><span class="f-tile">${o[0].length<=2?o[0]:ic(o[0])}</span>${o[3]?`<span class="f-price">${o[3]}</span>`:""}</div><h3 class="t-h3">${o[1]}</h3><p>${o[2]}</p></div>`).join("")}</div>`;
+const where=b=>`<div class="f-where">${b.where.items.map((w,i)=>`<a href="#" style="${T(i%4+1)}"><span class="f-tile" style="--tbg:var(--t${i%4+1})">${ic(w[0])}</span><span><h3 class="t-h3">${w[1]}</h3><p>${w[2]}</p></span><span class="go">${ic("arrow-right")}</span></a>`).join("")}</div>`;
+const steps=b=>`<div class="f-steps">${b.steps.map((s,i)=>`<div class="f-step"><span class="f-tile" style="--tbg:var(--t${i+1});--tedge:var(--t${i+1}e)">${i+1}</span><h3 class="t-h3">${s[0]} <small>${s[1]}</small></h3><p class="t-small">${s[2]}</p></div>`).join("")}</div>`;
+const team=b=>`<div class="f-team">${b.team.map((t,i)=>`<div class="f-person" style="${T([1,3,4][i%3])}"><span class="f-avatar">${t[0]}</span><h3 class="t-h3">${t[1]}</h3><span class="role">${t[2]}</span><p>${t[3]}</p></div>`).join("")}</div>`;
+const gal=b=>`<div class="f-gal">${b.gal.map(g=>`<div><img src="${U(g,700)}" alt=""></div>`).join("")}</div>`;
+const ini=n=>n.split(/[ .]+/).filter(w=>/^[A-ZÄÖÜ]/.test(w)).slice(0,2).map(x=>x[0]).join("");
+const voices=(b,n)=>`<div class="f-notes">${b.voices.slice(0,n||3).map((v,i)=>`<figure class="f-note" style="${T([3,1,4][i])}"><blockquote>„${v[0]}“</blockquote><figcaption class="who"><span class="ini">${ini(v[1])}</span><span><b>${v[1]}</b>${v[2]}</span></figcaption></figure>`).join("")}</div>
+ <p class="f-rating"><span class="stars">${'<i class="ph-fill ph-star"></i>'.repeat(5)}</span><span>${b.rate[0]} von 5</span><span>${b.rate[1]}</span></p>`;
+const faq=b=>`<div class="f-faq">${b.faq.map((q,i)=>`<details${i===0?" open":""}><summary>${q[0]}<span class="f-tile">${ic(i===0?"minus":"plus")}</span></summary><p class="t-body">${q[1]}</p></details>`).join("")}</div>`;
+const hours=b=>`<div class="f-hours"><h3 class="t-h3">Öffnungszeiten <span class="open"><i></i>Jetzt geöffnet</span></h3><ol>${b.hours.rows.map(r=>`<li class="${r[2]?"now":""} ${/geschlossen/.test(r[1])?"zu":""}"><span class="d">${r[0]}</span><span class="v">${r[1]}</span></li>`).join("")}</ol><p class="nt">${b.hours.note}</p></div>`;
+const place=b=>`<div class="f-place"><div class="f-map"><i class="r1"></i><i class="r2"></i><i class="r3"></i><div class="wat"></div><div class="park"></div><div class="pin"><span></span></div></div><div class="bd"><p class="adr">${b.adr}</p><div class="acc2">${b.acc.map(([i,t])=>`<span>${ic(i)}${t}</span>`).join("")}</div>${btnS("Route planen","navigation-arrow")}</div></div>`;
+const visit=b=>`<div class="f-visit">${hours(b)}${place(b)}</div>`;
+const contact=(b,form)=>`<section class="f-sec f-contact" data-reveal>${cloud("var(--t4)")}<div class="wrap">${pill("Antwort meist am selben Tag","dot","var(--surface)")}<h2 class="t-h2">${h2(b.contact.h[0],b.contact.h[1])}</h2><p class="t-lede">${b.contact.lede}</p>
+ <div class="f-ctas">${btnP(b.cta[0],b.cta[1])}${btnS(b.phone,"phone")}</div>${form?formHtml():""}</div></section>`;
+const formHtml=()=>`<div class="f-form"><label>Name<span class="in">Vor- und Nachname</span></label><label>Telefon oder E-Mail<span class="in focus">0555 1234 56</span></label><label>Nachricht<span class="in ta">Wann sucht ihr einen Platz?</span></label><a class="f-btn f-btn--p" href="#">${ic("paper-plane-tilt")}Nachricht senden</a><p class="hint">Wir nutzen deine Angaben nur für die Antwort.</p></div>`;
+const foot=b=>`<footer class="f-foot">${cloud("var(--deep)")}<div class="wrap"><span class="f-logo">${b.logo}</span><p class="nm2">${b.name}</p>
+ <div class="cols"><div><h4>Kontakt</h4><a href="#" class="t-body">${b.phone}</a><a href="#" class="t-body">${b.mail}</a></div><div><h4>Adresse</h4><p class="t-body">${b.adr}</p></div><div><h4>Zeiten</h4><p class="t-body">${b.footHours}</p></div></div>
+ <div class="legal"><a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">Barrierefreiheit</a><span>© 2026</span></div></div></footer>`;
+const dock=(b,top)=>`<div class="f-dock" style="${top!=null?`top:${top}px`:"bottom:12px"}">${btnS("Anrufen","phone")}<a class="f-btn f-btn--p" href="#">${ic(b.cta[1])}${b.dock}</a></div>`;
+const about=b=>`<p class="statement">Wir sind klein, damit <span class="acc">jedes Kind gesehen wird.</span></p><div class="f-facts-deep"><div><b>12</b><span>Plätze, nie mehr</span></div><div><b>1 : 3</b><span>Betreuung im Alltag</span></div><div><b>2011</b><span>eröffnet in Findorff</span></div></div>`;
+
+function page(b){
+ let h=hero(b);
+ h+=sec("band",head(b.offers.h,b.offers.intro)+offers(b),"var(--band)");
+ if(b.where) h+=sec("",head(b.where.h,b.where.intro)+where(b));
+ if(b.id==="k") h+=sec("",about(b));
+ if(b.steps) h+=sec("",head(["So läuft","es ab"],null)+steps(b));
+ if(b.team) h+=sec("tinted",head(["Wer bei","uns ist"],null)+team(b),"var(--t2)");
+ if(b.gal) h+=sec("",head(["Aus dem","Alltag"],null)+gal(b));
+ h+=sec(b.team?"":"band",head(["Was andere","sagen"],null,true)+voices(b),b.team?null:"var(--band)");
+ h+=sec("",head(["Gut zu","wissen"],null)+faq(b));
+ h+=sec("",head(["Besuch","uns"],null)+visit(b));
+ h+=contact(b,b.id==="k");
+ h+=foot(b);
+ return h;}
+
+/* ═══ 7 · Baustein-Karten ═══ */
+const box=(cls,title,inner,pal,w=390,bg)=>`<div class="c ${cls}" style="background:${bg||P(pal).paper}"><h4>${title}</h4><div class="cn"><div class="f f-m" style="${vars(w,pal)};background:transparent;overflow:visible">${inner}</div></div></div>`;
+const legal=b=>`<div class="f" style="${vars(390,b.pal)};width:390px;border-radius:10px;box-shadow:0 0 0 1px var(--rule)">${nav(b,true)}<div class="f-sub"><div class="wrap"><a class="back" href="#">${ic("arrow-left")} Zur Startseite</a><h1 class="t-h2">Impressum</h1>
+ <h2>Angaben nach § 5 DDG</h2><p class="t-body">Fellfreunde, Inhaberin Mara Seidel<br>Georg-Schumann-Straße 61, 04155 Leipzig</p>
+ <h2>Kontakt</h2><p class="t-body">Telefon 0555 7781 20<br><a href="#">termin@fellfreunde.example</a></p><h2>Umsatzsteuer</h2><p class="t-body">Kleinunternehmerin nach § 19 UStG.</p></div></div></div>`;
+document.getElementById("bs").innerHTML=
+ box("s7","Angebot · Farbkarten, je Angebot ein Pastell, Preis nur aus Daten",head(F.offers.h,null)+offers(F).replace('class="f-offers"','class="f-offers" style="grid-template-columns:1fr 1fr"'),"himmel",560)+
+ box("s5","Wo steht ihr gerade? · nur mit ≥ 3 echten Einstiegen",head(K.where.h,null)+where(K),"wald",420)+
+ box("s5","Ablauf · drei Schritte mit Dauer",steps(F),"himmel",420)+
+ box("s7","Über uns · Satz und Kennzahlen nur aus Daten",about(K),"wald",560)+
+ box("s5","Team ohne Fotos · Initialen im Pastell",team({team:K.team.slice(0,2)}),"wald",420)+
+ box("s7","Stimmen · Zettel, nur echte Bewertungen mit Quelle",voices(G,2).replace('class="f-notes"','class="f-notes" style="grid-template-columns:1fr 1fr"'),"beere",560);
+document.getElementById("bs2").innerHTML=
+ box("s5","Gut zu wissen · erste Frage offen",faq({faq:F.faq.slice(0,3)}),"himmel",420)+
+ box("s7","Besuch uns · Zeiten mit „heute“, Kartenkachel ohne Einbettung",`<div class="f-visit" style="grid-template-columns:1fr 1fr">${hours(G)}${place(G)}</div>`,"beere",600)+
+ box("s5","Galerie · eins groß, zwei klein",gal(G),"beere",420)+
+ `<div class="c s7" style="background:${P("himmel").paper}"><h4>Kontakt-Feld, Handy-Leiste, Unterseite</h4><div class="cn" style="display:flex;gap:24px;align-items:flex-start">${legal(F)}
+  <div style="flex:1;display:grid;gap:16px;font-size:15.5px;line-height:1.5;color:var(--muted)">
+   <div class="f" style="${vars(390,"wald")};background:transparent">${formHtml()}</div>
+   <div class="f" style="${vars(390,"himmel")};height:96px;border-radius:14px;background:var(--band);position:relative">${dock(F,14)}</div>
+   <p><b style="color:var(--ink)">Leiste:</b> Weiß, Pille, weicher Schatten, 12 px vom Rand. Links „Anrufen“, rechts der Hauptweg (Termin, Anfragen, Route). Unter 768 px, Fuß bekommt 88 px Polster.</p>
+   <p><b style="color:var(--ink)">Unterseiten:</b> Kopfzeile mit Linie, „Zur Startseite“ zuerst, Titel als h2, Text 18 px, Links unterstrichen in Akzent. Keine Wolke, keine Pastelle.</p></div></div></div>`;
+
+/* ═══ 8 · Bilder ═══ */
+document.getElementById("fcode").textContent=FILTER;
+const pv=(id,pal,label,cls,mode)=>`<div class="c ${cls}" style="background:${P(pal).paper}"><h4>${label}</h4><div class="cn"><div class="f" style="${vars(390,pal)};background:transparent;overflow:visible">
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:center">
+  <div><p class="t-small mut" style="margin-bottom:6px">Original</p><div style="aspect-ratio:1;overflow:hidden"><img src="${U(id,500)}" style="filter:none" alt=""></div></div>
+  <div><p class="t-small mut" style="margin-bottom:6px">Freundlich</p>${mode==="hero"?`<div style="aspect-ratio:1;border-radius:28px;overflow:hidden;transform:rotate(-1.5deg)"><img src="${U(id,500)}" alt=""></div>`:mode==="weak"?`<div style="background:var(--t1);border-radius:20px;padding:18px"><div style="aspect-ratio:1;border-radius:20px;overflow:hidden;transform:rotate(1.5deg);box-shadow:0 0 0 6px #fff;width:80%;margin-left:auto"><img src="${U(id,500)}" alt=""></div></div>`:`<div style="background:var(--t2);border-radius:20px;padding:14px"><div style="aspect-ratio:3/2;border-radius:12px;overflow:hidden"><img src="${U(id,500)}" alt=""></div><p class="t-h3" style="margin-top:10px;font-size:18px">Schneiden</p></div>`}</div>
+ </div></div></div></div>`;
+document.getElementById("imgs").innerHTML=
+ pv("1516734212186-a967f81ad0d7","himmel","Gutes Foto: Einstieg, Ecke 28, −1,5°","s4","hero")+
+ pv("1576506295286-5cda18df43e7","beere","Schwaches Foto: klein, weißer Rand, auf Pastell","s4","weak")+
+ pv("1583337130417-3346a1be7dee","himmel","Kartenfoto: Ecke 12, nur wenn alle Angebote eins haben","s4","card");
+
+/* ═══ 9 · Handys ═══ */
+const PH=844, PART=2120;
+function phone(b,mode,part){
+ const inner=`<div class="f f-m" style="${vars(390,b.pal)};--dock-pad:88px">${page(b)}${mode==="first"?dock(b,PH-80):""}</div>`;
+ const lab={none:"ohne Foto",weak:"schwaches Foto",good:"gutes Foto"}[b.photo];
+ if(mode==="first") return `<div><p class="pcap">${b.name}<small>${P(b.pal).name} · ${lab}</small></p><div class="phone" style="height:${PH+40}px">${inner}<div class="fold" style="top:${PH}px"><span>844</span></div></div></div>`;
+ return `<div><p class="pcap">${b.name}<small>ab ${part*PART} px</small></p><div class="phone" data-b="${b.id}" style="height:${PART}px"><div class="mv" style="margin-top:${-part*PART}px">${inner}</div></div></div>`;}
+document.getElementById("first").innerHTML=ALL.map(b=>phone(b,"first")).join("");
+document.querySelectorAll(".phones[data-part]").forEach(el=>{const k=+el.dataset.part;el.innerHTML=ALL.map(b=>phone(b,"part",k)).join("");});
+
+/* ═══ 11 · Desktop ═══ */
+const deskNav=(b,links)=>`<nav class="f-nav"><a class="f-brand" href="#"><span class="f-logo">${b.logo}</span><span class="t-mark">${b.short}</span></a><div class="f-links">${links.map(l=>`<a href="#">${l}</a>`).join("")}</div>${btnS(b.phone,"phone").replace('class="f-btn','style="min-height:48px;margin-right:10px" class="f-btn')}${btnP(b.cta[0],b.cta[1]).replace('class="f-btn','style="min-height:48px" class="f-btn')}</nav>`;
+document.getElementById("deskA").innerHTML=`<div class="f f-d" style="${vars(1440,"himmel")}">
+ ${deskNav(F,["Start","Angebot","Ablauf","Besuch uns"])}<header class="f-hero">${pill(F.pill[1],"dot")}<h1 class="t-display">${h2(F.h1[0],F.h1[1])}</h1><p class="t-lede">${F.lede}</p>
+ <div class="f-ctas">${btnP(F.cta[0],F.cta[1])}${btnS("Angebot ansehen","arrow-down")}</div>
+ <div class="f-heroimg"><div class="ph-frame"><img src="${U(F.heroImg,1600)}" alt=""></div><div class="f-facts">${F.facts.map((f,i)=>pill(f[1],f[0],`var(--t${i+2})`)).join("")}</div></div><div style="height:var(--s-xl)"></div></header>
+ ${sec("band",head(F.offers.h,F.offers.intro)+offers(F),"var(--band)")}</div>`;
+document.getElementById("deskB").innerHTML=`<div class="f f-d" style="${vars(1440,"himmel")}">
+ ${sec("",`<div class="two"><div>${head(["So läuft","es ab"],"Drei Schritte, damit euer Hund sich wohlfühlt. Beim ersten Mal planen wir mehr Zeit ein.")}<div style="border-radius:20px;overflow:hidden;aspect-ratio:4/3"><img src="${U(F.gal[0],900)}" alt=""></div></div>${steps(F)}</div>`)}
+ ${sec("band",head(["Was andere","sagen"],null,true)+voices(F),"var(--band)")}
+ ${sec("",head(["Besuch","uns"],null)+visit(F))}</div>`;
+document.getElementById("deskC").innerHTML=`<div class="f f-d" style="${vars(1440,"wald")}">
+ <div class="f-hero2-wrap" style="background:var(--t1)">${deskNav(K,["Start","Alltag","Team","Anmeldung"])}<header class="f-hero2" style="max-width:var(--s-max);margin:0 auto;padding-top:var(--s-xl);padding-bottom:var(--s-2xl)">${pill(K.pill[1],"dot")}<h1 class="t-display" style="max-width:12ch">${h2(K.h1[0],K.h1[1])}</h1><p class="t-lede">${K.lede}</p>
+ <div class="f-facts">${K.facts.map(f=>pill(f[1],f[0])).join("")}</div><div class="f-ctas">${btnP(K.cta[0],K.cta[1])}${btnS(K.phone,"phone")}</div></header></div>
+ ${sec("",head(K.where.h,K.where.intro)+where(K),"var(--paper)")}
+ ${sec("tinted",head(["Wer bei","uns ist"],null)+team(K),"var(--t2)")}</div>`;
+
+/* ═══ 12 · TS ═══ */
+const q=s=>`"${s}"`;
+const tsType=Object.entries(TYPE).map(([k,t])=>`    ${k}: { font: ${q(t.font)}, size: ${q(t.size)}, line: ${t.line}, track: ${q(t.track)}, weight: ${t.weight} },`).join("\n");
+const tsPal=PALS.map(p=>`    { id: ${q(p.id)}, name: ${q(p.name)}, paper: ${q(p.paper)}, surface: ${q(p.surface)}, band: ${q(p.band)}, ink: ${q(p.ink)}, muted: ${q(p.muted)}, rule: ${q(p.rule)},
+      accent: ${q(p.accent)}, deep: ${q(p.deep)}, onDeep: ${q(p.onDeep)}, signal: ${q(p.signal)}, onSignal: ${q(p.onSignal)}, edge: ${q(p.edge)},
+      tints: [
+${p.tints.map(t=>`        { id: ${q(t.id)}, bg: ${q(t.bg)}, ink: ${q(t.ink)}, muted: ${q(t.muted)}, edge: ${q(t.edge)} },`).join("\n")}
+      ] },`).join("\n");
+document.getElementById("ts").textContent=`import type { DesignSystemDef } from "./types";
+
+/** Googles latin-ext-Bereich (Fonts-API, Stand 2026-10). */
+const LATIN_EXT =
+  "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF";
+
+export const FREUNDLICH: DesignSystemDef = {
+  id: "freundlich",
+  name: "Freundlich",
+  essence: "Weich, hell, man fühlt sich willkommen",
+  // Jedes Foto einmal je Seite (claimPhotos), wie Klar und Nacht.
+  freeGalleryBeyondShown: true,
+  fonts: {
+    display: {
+      family: "Bricolage Grotesque",
+      fallback: "'Avenir Next', 'Trebuchet MS', system-ui, sans-serif",
+      files: [
+        // Instanz opsz 72, wdth 100, wght 500–800.
+        { file: "bricolage-latin-wght.woff2", weight: "500 800", style: "normal" },
+        { file: "bricolage-latin-ext-wght.woff2", weight: "500 800", style: "normal", unicodeRange: LATIN_EXT },
+      ],
+    },
+    text: {
+      family: "Instrument Sans",
+      fallback: "'Helvetica Neue', Arial, system-ui, sans-serif",
+      files: [
+        // Instanz wdth 100, wght 400–700.
+        { file: "instrument-sans-latin-wght.woff2", weight: "400 700", style: "normal" },
+        { file: "instrument-sans-latin-ext-wght.woff2", weight: "400 700", style: "normal", unicodeRange: LATIN_EXT },
+      ],
+    },
+  },
+  preload: ["bricolage-latin-wght.woff2", "instrument-sans-latin-wght.woff2"],
+  type: {
+${tsType}
+  },
+  space: {
+    "2xs": ".25rem", xs: ".5rem", s: "1rem", m: "1.5rem", l: "2.5rem", xl: "4rem", "2xl": "6rem",
+    section: ${q(SPACE.section)},
+    gutter: ${q(SPACE.gutter)},
+    measure: "36rem", max: "86.25rem",
+  },
+  // Abweichung 1: \`shape\` (Radien, Druckkante, Kippwinkel, Wolkenkante).
+  shape: {
+    radius: { s: "12px", m: "20px", l: "28px", pill: "999px" },
+    press: "4px", tile: "3px", tilt: "1.5deg", edge: "cloud",
+  },
+  // Abweichung 2: \`band\` + \`edge\` je Palette. Abweichung 3: \`tints\` (genau vier Pastelle).
+  palettes: [
+${tsPal}
+  ],
+  // Hebt Handyfotos minimal an, wärmt einen Hauch zur Creme.
+  imageFilter: ${q(FILTER)},
+};`;
+
+/* Bereit, sobald Schriften und Bilder da sind */
+Promise.all([document.fonts.ready,...[...document.images].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))]).then(()=>{
+ document.querySelectorAll(".phones[data-part]").forEach(el=>{const k=+el.dataset.part;const hs=[...el.querySelectorAll(".f")].map(n=>n.scrollHeight);
+  if(Math.max(...hs)<=k*PART){el.closest("[data-shot]").remove();return;}
+  el.querySelectorAll(".phone").forEach((ph,i)=>{const rest=hs[i]-k*PART;if(rest<PART)ph.style.height=Math.max(rest,0)+"px";if(rest<=0)ph.style.visibility="hidden";});});
+ document.body.dataset.ready="1";});
+</script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Freundlich</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --creme: #f5f1e6;
+    --weiss: #fffdf8;
+    --ink: #14261d;
+    --ink-soft: #4d5a52;
+    --rule: rgba(20, 38, 29, 0.14);
+    --gruen: #2f6b4c;
+    --gruen-tief: #1b3428;
+    --orange: #e2672a;
+    --blau: #cadff2;
+    --limette: #d8e6a0;
+    --rosa: #f6d6e3;
+    --pfirsich: #f8dcc6;
+    --gut: #2f6b4c;
+    --mittel: #a59f8c;
+    --schwach: #c0462b;
+    --kopf: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+    --r: 22px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--creme); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 0 56px 80px; }
+  .lbl, .kicker, .tag, figcaption, thead th, .note span, .gekuerzt, h4, dt { font-weight: 600; font-size: 12px; letter-spacing: 0.01em; }
+
+  header.kopf { margin: 0 -56px; padding: 44px 56px 40px; display: grid; grid-template-columns: 300px 1fr 520px; gap: 40px; align-items: end; border-bottom: 1px solid var(--rule); position: relative; }
+  .knr { font-family: var(--kopf); font-weight: 700; font-size: 220px; line-height: .8; letter-spacing: -0.05em; color: var(--orange); }
+  h1 { font-family: var(--kopf); font-weight: 700; font-size: 128px; line-height: 0.95; letter-spacing: -0.04em; margin-top: 14px; }
+  h1 .sig { color: var(--gruen); }
+  .kicker { color: var(--ink-soft); }
+  .fakten { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--rule); }
+  .fakten div { padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+  .fakten div:nth-child(odd) { color: var(--ink-soft); }
+  .fakten div:nth-child(even) { text-align: right; font-weight: 600; }
+
+  .vorspann { display: grid; grid-template-columns: 300px repeat(3, 1fr); gap: 24px 48px; padding: 32px 0 52px; font-size: 15px; color: var(--ink-soft); }
+  .vorspann .lbl { color: var(--ink); }
+  .vorspann b { color: var(--ink); font-weight: 600; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; align-items: start; }
+  .kandidat { border-top: 1px solid var(--ink); padding-top: 14px; }
+  .kandidat.wahl { border-top: 6px solid var(--orange); padding-top: 9px; }
+  .k-kopf { display: flex; justify-content: space-between; align-items: center; }
+  .nr { font-family: var(--kopf); font-weight: 700; font-size: 96px; line-height: .85; letter-spacing: -0.05em; color: var(--mittel); }
+  .wahl .nr { color: var(--orange); }
+  .tag { color: var(--ink-soft); }
+  .badge { display: inline-block; background: var(--orange); color: #fff; padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: 0 3px 0 #a9461a; }
+  h2 { font-family: var(--kopf); font-weight: 700; font-size: 42px; line-height: 1; letter-spacing: -0.03em; margin: 12px 0 6px; }
+  .url { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .schrift { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .schrift span { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--weiss); border: 1px solid var(--rule); }
+  .urteil { margin-top: 14px; padding: 12px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 14.5px; min-height: 420px; }
+  .urteil li { list-style: none; padding-left: 22px; position: relative; margin: 6px 0; }
+  .urteil li::before { position: absolute; left: 0; font-weight: 700; }
+  .urteil li.plus::before { content: "+"; color: var(--gruen); }
+  .urteil li.minus::before { content: "–"; color: var(--schwach); }
+  .urteil li b { font-weight: 600; }
+  .noten { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 14px; }
+  .note { background: var(--weiss); border-radius: 12px; padding: 8px 8px 6px; border: 1px solid var(--rule); }
+  .note span { display: block; font-size: 10px; color: var(--ink-soft); min-height: 28px; line-height: 1.2; font-weight: 600; }
+  .note b { font-family: var(--kopf); font-weight: 700; font-size: 34px; line-height: 1; letter-spacing: -0.04em; }
+  .note.summe { background: var(--ink); color: var(--weiss); border-color: var(--ink); }
+  .note.summe span { color: #b9c7bf; }
+  .wahl .note.summe { background: var(--orange); border-color: var(--orange); }
+  .wahl .note.summe span { color: #fde3d3; }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 16px; margin-top: 18px; align-items: start; }
+  .erster figure { border-radius: 18px; overflow: hidden; background: #eee; border: 1px solid var(--rule); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 13.5px; color: var(--ink-soft); }
+  .erster p b { color: var(--ink); display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; }
+  .desk-erster { margin-top: 12px; border-radius: 14px; overflow: hidden; border: 1px solid var(--rule); }
+  .desk-erster img { display: block; width: 100%; }
+
+  .gekuerzt { color: var(--orange); margin-top: 10px; }
+  .ganz { display: grid; grid-template-columns: 210px auto; max-height: 1420px; overflow: hidden; gap: 12px; margin-top: 16px; align-items: start; }
+  .ganz img { display: block; width: 210px; }
+  .handy { display: grid; grid-template-columns: 90px 90px; gap: 6px; }
+  .halb { overflow: hidden; border: 1px solid var(--rule); background: #eee; }
+  .halb img { display: block; max-width: none; }
+  figcaption { color: var(--ink-soft); padding: 0 0 6px; font-size: 10.5px; }
+
+  section.abschnitt { margin-top: 72px; border-top: 1px solid var(--ink); padding-top: 18px; display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+  .snr { font-family: var(--kopf); font-weight: 700; font-size: 120px; line-height: .8; letter-spacing: -0.05em; color: var(--orange); }
+  h3 { font-family: var(--kopf); font-weight: 700; font-size: 72px; line-height: 1; letter-spacing: -0.035em; }
+  h3 .sig { color: var(--gruen); }
+  table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+  thead th { color: var(--ink-soft); border-bottom: 1px solid var(--ink); }
+  thead th.wahl { color: var(--orange); }
+  tbody th { font-family: var(--kopf); font-weight: 600; font-size: 22px; line-height: 1.1; letter-spacing: -0.02em; width: 230px; }
+  td.wahl { background: var(--weiss); }
+  .z { font-size: 15px; margin-right: 7px; }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 13px; color: var(--ink-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 56px; margin-top: 26px; font-size: 15px; }
+  h4 { color: var(--ink-soft); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: 13px; }
+  .empfehlung li { margin: 7px 0 7px 18px; }
+  .gross { font-family: var(--kopf); font-weight: 500; font-size: 30px; line-height: 1.25; letter-spacing: -0.02em; }
+  .gross .sig { color: var(--gruen); }
+
+  /* Muster: Musikschule im Freundlich-System */
+  .muster { margin-top: 30px; border-radius: 28px; overflow: hidden; max-width: 860px; background: var(--creme); border: 1px solid var(--rule); }
+  .m-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 26px; font-size: 15px; }
+  .m-nav b { font-family: var(--kopf); font-weight: 700; font-size: 20px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  .m-nav b i { width: 26px; height: 26px; border-radius: 9px; background: var(--orange); display: inline-block; }
+  .m-nav .tel { font-weight: 600; background: var(--gruen-tief); color: var(--weiss); padding: 9px 16px; border-radius: 999px; box-shadow: 0 3px 0 #0b1a12; }
+  .m-held { text-align: center; padding: 26px 40px 0; }
+  .m-pill { display: inline-block; background: var(--rosa); padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 500; }
+  .m-held h5 { font-family: var(--kopf); font-weight: 700; font-size: 66px; line-height: .98; letter-spacing: -0.04em; margin: 14px 0 12px; }
+  .m-held h5 span { color: var(--gruen); }
+  .m-held p { font-size: 18px; color: var(--ink-soft); max-width: 520px; margin: 0 auto; }
+  .m-knoepfe { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+  .k1, .k2 { display: inline-block; padding: 14px 24px; border-radius: 999px; font-weight: 600; font-size: 16px; }
+  .k1 { background: var(--orange); color: #fff; box-shadow: 0 3px 0 #a9461a; }
+  .k2 { background: var(--weiss); border: 1.5px solid var(--ink); box-shadow: 0 3px 0 var(--ink); }
+  .m-welle { display: block; width: 100%; height: 46px; margin-top: 26px; }
+  .m-karten { background: var(--weiss); padding: 4px 26px 26px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .m-k { border-radius: 20px; padding: 16px 16px 18px; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; }
+  .m-k .ic { width: 34px; height: 34px; border-radius: 11px; background: rgba(255,255,255,.7); display: grid; place-items: center; font-family: var(--kopf); font-weight: 700; font-size: 15px; }
+  .m-k b { font-family: var(--kopf); font-weight: 600; font-size: 21px; letter-spacing: -0.02em; display: block; margin-top: 18px; }
+  .m-k span { font-size: 13.5px; color: var(--ink-soft); }
+  .m-k.b { background: var(--blau); } .m-k.l { background: var(--limette); } .m-k.r { background: var(--rosa); } .m-k.p { background: var(--pfirsich); }
+  .m-unten { background: var(--weiss); padding: 0 26px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .m-stimme { background: var(--limette); border-radius: 20px; padding: 18px 20px; transform: rotate(-1.2deg); font-size: 16px; }
+  .m-stimme small { display: block; margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+  .m-zeit { background: var(--gruen-tief); color: var(--weiss); border-radius: 20px; padding: 18px 20px; }
+  .m-zeit .t { font-weight: 600; font-size: 13px; color: #b9c7bf; margin-bottom: 6px; }
+  .m-zeit dl { display: grid; grid-template-columns: 1fr auto; font-size: 15px; }
+  .m-zeit dt, .m-zeit dd { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.14); font-size: 15px; font-weight: 400; }
+  .m-zeit dd { text-align: right; }
+  .muster-cap { font-size: 13px; color: var(--ink-soft); margin-top: 10px; max-width: 860px; }
+
+  .betriebe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 26px; }
+  .betrieb { border-radius: var(--r); padding: 22px 24px 18px; background: var(--blau); }
+  .betrieb.b2 { background: var(--pfirsich); }
+  .betrieb.b3 { background: var(--rosa); }
+  .betrieb .bnr { font-family: var(--kopf); font-weight: 700; font-size: 72px; line-height: .85; letter-spacing: -0.05em; color: var(--gruen-tief); }
+  .betrieb .bname { font-family: var(--kopf); font-weight: 700; font-size: 36px; line-height: 1.05; letter-spacing: -0.03em; margin: 8px 0 14px; }
+  .betrieb dl { display: grid; grid-template-columns: 130px 1fr; font-size: 14.5px; }
+  .betrieb dt, .betrieb dd { padding: 8px 0; border-top: 1px solid var(--rule); }
+  .betrieb dt { padding-top: 10px; }
+  .fuss { margin-top: 44px; font-size: 13px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div class="knr">07</div>
+  <div>
+    <div class="kicker">Designsystem Freundlich · Ankersuche · 13.10.2026</div>
+    <h1>Weich. Hell.<br>Man fühlt sich <span class="sig">willkommen.</span></h1>
+  </div>
+  <div>
+    <div class="kicker" style="margin-bottom:10px">Worum es geht</div>
+    <div class="fakten">
+      <div>Hauptfamilie</div><div>Kinder, Familie &amp; Tier</div>
+      <div>Betriebe</div><div>Kita, Tagesmutter, Nachhilfe, Musikschule, Hundesalon, Hundeschule, Tierarzt, Tierbedarf, Eisdiele, Hebamme, Kinderfotografie, Familienpraxis</div>
+      <div>Abgrenzen von</div><div>Journal, Raster, Werkstoff, Plakat, Klar, Nacht</div>
+      <div>Kandidaten</div><div>4, Desktop und Handy</div>
+    </div>
+  </div>
+</header>
+
+<div class="vorspann">
+  <div class="lbl">Vorab</div>
+  <p><b>Worum es geht.</b> Wie bei Journal (Aman Venice), Raster (Colophon), Werkstoff (Hollis Butcher), Plakat (Arcadia), Klar (Brightleaf) und Nacht nehmen wir eine komplette Website als Vorlage und bauen ihr System nach, aber besser. Freundlich heißt: weich, warm, hell, nahbar. Runde Formen, helle warme Farben, eine freundliche Schrift. Verspielt über Form und Farbe, ohne Cliparts und Maskottchen.</p>
+  <p><b>Wie gesucht.</b> Refero-Styles und -Screens zu Kita, Tierarzt, Hundesalon, Eisdiele, Musikschule, Nachhilfe (u. a. Headspace, Finn, OLIPOP, Lpalo, Aboard, Podia, Duolingo, Quizlet, Care.com). Refero liefert Marken und Software, aber keine kleinen Betriebe. Deshalb 108 Seiten live im Browser geprüft: echte Marken (Small Door Vet, Bond Vet, Molly Moon's, Van Leeuwen, Lovevery, Finn, Little Otter u. a.) und rund 90 Framer-Vorlagen für Kita, Nachhilfe, Musikschule, Hundesalon, Tierarzt, Eisdiele, Doula. Die meisten setzen auf Maskottchen und Klecks-Cliparts, Serife oder Hochglanz-Stockfotos. Diese vier haben ein durchgehendes System.</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt vom ersten Bildschirm bis zum Fuß, Abdeckung unserer Abschnitte, Handy, ob es mit wenigen oder mittelmäßigen Fotos und erzeugtem Text trägt, ob Kita, Hundesalon und Eisdiele gleichzeitig hineinpassen, und Abstand zu den sechs Systemen. Je 1 bis 10. Aufnahmen vom 13.10.2026 (Desktop 1440, Handy 390), Cookie-Banner abgelehnt, Framer-Hinweise ausgeblendet, wo möglich.</p>
+</div>
+
+<div class="spalten">
+<article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Bright Path</h2>
+    <div class="tag">Nachhilfe- und Lernzentrum · Framer-Vorlage</div>
+    <div class="url"><a href="https://brightpath-wbs.framer.website/">brightpath-wbs.framer.website</a></div>
+    <div class="schrift"><span>Bricolage Grotesque</span><span>Instrument Sans</span><span>Creme #f5f1e6</span><span>Waldgrün</span><span>Orange</span><span>4 Pastelle</span></div>
+    <ul class="urteil"><li class="plus"><b>Ein ganzes System, kein Baukasten.</b> Creme als Grund, tiefes Waldgrün für Text und Knöpfe, Orange nur für den Hauptknopf, dazu vier Pastelle (Himmelblau, Limette, Rosa, Pfirsich), die immer eine Bedeutung haben: je Angebot eine Farbe, von der Karte bis zur Lehrerkarte.</li><li class="plus"><b>Form statt Clipart.</b> Wolkenkanten zwischen den Abschnitten, Hügelwelle über dem Fuß, Knöpfe mit kleinem Druckschatten, Stimmen als leicht schräge Notizzettel. Das ist die Verspieltheit, die wir wollen.</li><li class="plus"><b>Alle unsere Abschnitte da:</b> Einstieg mit Pille und zwei Knöpfen, vier Angebote als Farbkarten, Kennzahlen, Ablauf in drei Schritten, Vertrauensleiste, Team, „Wo stehst du?“ (Einstiege nach Situation), Ort und Zeiten als Chips, Stimmen mit Schnitt, Preise, FAQ, Schlussaufruf.</li><li class="plus">Handy sauber: Karten stapeln, Schrift bleibt groß, Wellenkanten skalieren mit.</li><li class="minus">Einstieg lebt von einer Foto-Collage auf einem Schriftband. Mit einem einzigen Handyfoto fällt das zusammen. Hervorgehobenes Wort mit Kritzel-Unterstrich ist ein Vorlagen-Reflex.</li><li class="minus">Lehrer und Angebotskarten brauchen je ein Foto; Fließtext 15 px grau auf Creme ist knapp.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>9</b></div><div class="note"><span>Abdeckung</span><b>10</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Wenig Fotos</span><b>7</b></div><div class="note"><span>Branchen-Mix</span><b>9</b></div><div class="note"><span>Abstand</span><b>9</b></div><div class="note summe"><span>Summe /60</span><b>53</b></div></div>
+    <div class="desk-erster"><img src="anker/brightpath-desktop-erster-blick.jpg" alt="Bright Path, erster Bildschirm Desktop"></div>
+    <div class="erster"><figure><img src="anker/brightpath-mobil-erster-blick.jpg" alt="Bright Path, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Rosa Pille „Alle Altersstufen“, riesiger runder Satz, orangener Knopf mit Druckschatten, darunter Fotos auf einem grünen Band. Freundlich, aber erwachsen. Bei uns: „Musikschule in Findorff. Erste Stunde kostenlos.“</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/brightpath-desktop.jpg" style="height:1640px" alt="Bright Path Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1758px"><img src="anker/brightpath-mobil.jpg" style="width:90px;height:3516px" alt=""></div><div class="halb" style="height:1758px"><img src="anker/brightpath-mobil.jpg" style="width:90px;height:3516px;margin-top:-1758px" alt=""></div></div></figure>
+    </div>
+  </article>
+<article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span></div>
+    <h2>Totopia</h2>
+    <div class="tag">Kita und Kinderbetreuung · Framer-Vorlage</div>
+    <div class="url"><a href="https://totopia.framer.website/">totopia.framer.website</a></div>
+    <div class="schrift"><span>Baloo Chettan 2</span><span>Poppins</span><span>Creme</span><span>Orange</span><span>Pastellkarten</span></div>
+    <ul class="urteil"><li class="plus"><b>Die rundeste Schrift im Feld.</b> Baloo in 800 macht jede Überschrift weich und kinderfreundlich, ohne albern zu sein. Orange als einziger Knopf.</li><li class="plus">Starke Bausteine: Programme als große Pastellkarten mit Foto, Vertrauens-Bento (Probetag, 10 Jahre, sichere Räume), Kennzahlen in drei Farben, dunkler Schlussaufruf, Fuß als schwebende Karte.</li><li class="minus"><b>Maskottchen und Kritzel überall:</b> Schlange im Titel, Monster in Lila und Grün, Funken-Striche. Genau das Clipart, das wir nicht wollen; ohne sie wird es leer.</li><li class="minus">Lebt von vielen Kinderfotos (Fächer im Einstieg, runde Fotos im Satz, Video). Bei einer Tagesmutter mit drei Handyfotos bricht das. Laufband „Daily Nurture“ und Blog brauchen wir nicht.</li><li class="minus">Für Hundesalon oder Eisdiele zu sehr Kita.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>9</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Wenig Fotos</span><b>5</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note"><span>Abstand</span><b>7</b></div><div class="note summe"><span>Summe /60</span><b>43</b></div></div>
+    <div class="desk-erster"><img src="anker/totopia-desktop-erster-blick.jpg" alt="Totopia, erster Bildschirm Desktop"></div>
+    <div class="erster"><figure><img src="anker/totopia-mobil-erster-blick.jpg" alt="Totopia, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Dicker runder Titel mit Schlangen-Maskottchen, orangener Knopf, Fotofächer. Sofort „Kita“, aber auch sofort „Vorlage“.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/totopia-desktop.jpg" style="height:1608px" alt="Totopia Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1392px"><img src="anker/totopia-mobil.jpg" style="width:90px;height:2783px" alt=""></div><div class="halb" style="height:1391px"><img src="anker/totopia-mobil.jpg" style="width:90px;height:2783px;margin-top:-1392px" alt=""></div></div></figure>
+    </div>
+  </article>
+<article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span></div>
+    <h2>Scoop Shop</h2>
+    <div class="tag">Eisdiele und Geschenke, Scarsdale · Framer-Vorlage „Scoops“</div>
+    <div class="url"><a href="https://scoops.framer.website/">scoops.framer.website</a></div>
+    <div class="schrift"><span>Fredoka</span><span>Nunito</span><span>Rosa-Mint-Verlauf</span><span>Schokobraun</span></div>
+    <ul class="urteil"><li class="plus"><b>Kommt mit einem einzigen Foto aus.</b> Farbe und Schrift tragen: weicher Rosa-Mint-Verlauf im Einstieg, Fredoka fett in Schokobraun, Pastellkacheln für Preise, ein Ladenfoto als Karte. Genau unser Fall mit wenig Material.</li><li class="plus">Durch und durch lokal: Google-Schnitt (4,0 aus 93) im Einstieg, „Abholen oder liefern“ und „Route“ als Knöpfe, Bewertungen von Google, Grubhub, Facebook, „Besuch uns“ mit Adresse, Telefon, Öffnungszeiten.</li><li class="minus"><b>Keine Handy-Ansicht:</b> auf 390 px wird die Desktopseite verkleinert. Müssten wir komplett neu denken.</li><li class="minus">Kurz und dünn: kein Ablauf, kein Team, keine FAQ, keine Galerie. Fredoka plus Verlauf kippt schnell ins Süßwaren-Kindliche, für Hebamme oder Tierarzt zu verspielt.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>8</b></div><div class="note"><span>Abdeckung</span><b>6</b></div><div class="note"><span>Handy</span><b>3</b></div><div class="note"><span>Wenig Fotos</span><b>10</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note"><span>Abstand</span><b>8</b></div><div class="note summe"><span>Summe /60</span><b>42</b></div></div>
+    <div class="desk-erster"><img src="anker/scoops-desktop-erster-blick.jpg" alt="Scoop Shop, erster Bildschirm Desktop"></div>
+    <div class="erster"><figure><img src="anker/scoops-mobil-erster-blick.jpg" alt="Scoop Shop, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Google-Schnitt, fetter runder Satz „Frozen yogurt, ice cream &amp; custom gifts in Scarsdale“, zwei Knöpfe, Ladenfoto. Am Handy nur die geschrumpfte Desktopseite.</p></div>
+    <div class="gekuerzt">Ganze Seite (kurz)</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/scoops-desktop.jpg" style="height:442px" alt="Scoop Shop Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, ganze Seite</figcaption><div class="handy" style="grid-template-columns:90px"><div class="halb" style="height:227px"><img src="anker/scoops-mobil.jpg" style="width:90px;height:227px" alt=""></div></div></figure>
+    </div>
+  </article>
+<article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span></div>
+    <h2>Pawsy</h2>
+    <div class="tag">Tierpflege und Tierarzt · Framer-Vorlage</div>
+    <div class="url"><a href="https://pawsy.framer.website/">pawsy.framer.website</a></div>
+    <div class="schrift"><span>Plus Jakarta Sans</span><span>Inter Tight</span><span>DynaPuff</span><span>Lavendel</span><span>Sonnengelb</span></div>
+    <ul class="urteil"><li class="plus"><b>Die schönste Formensprache:</b> Wolken als Kante im Einstieg, Bogenfenster für Fotos, Leistungskarten mit gewellter Oberkante, gelbes Band hinter dem Team. Lavendel und Sonnengelb sind hell und warm zugleich.</li><li class="plus">Gute Abdeckung: Kennzahlen, „Warum wir“, sechs Leistungen mit „ab 79 $“, Ablauf in drei Schritten, Stimme, Galerie, FAQ, Kontaktformular mit Tierart.</li><li class="minus">Schrift ohne Charakter: Plus Jakarta (unser Klar-Anker) und Inter Tight in 500, dazu DynaPuff nur für Etiketten. Wirkt nach Software, nicht nach Hundesalon.</li><li class="minus">Pfoten-Muster im Hintergrund und Freisteller-Hunde: nur für Tierbetriebe brauchbar, für Kita oder Hebamme nicht. Ende der Seite verliert Spannung, kein richtiger Fuß.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>9</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Wenig Fotos</span><b>6</b></div><div class="note"><span>Branchen-Mix</span><b>6</b></div><div class="note"><span>Abstand</span><b>6</b></div><div class="note summe"><span>Summe /60</span><b>42</b></div></div>
+    <div class="desk-erster"><img src="anker/pawsy-desktop-erster-blick.jpg" alt="Pawsy, erster Bildschirm Desktop"></div>
+    <div class="erster"><figure><img src="anker/pawsy-mobil-erster-blick.jpg" alt="Pawsy, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Lavendel, Wolken, großer freigestellter Hund, gelber Knopf. Sehr süß, aber der Hund ist das System; ohne gutes Freisteller-Foto bleibt eine leere Fläche.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/pawsy-desktop.jpg" style="height:1563px" alt="Pawsy Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1899px"><img src="anker/pawsy-mobil.jpg" style="width:90px;height:3798px" alt=""></div><div class="halb" style="height:1899px"><img src="anker/pawsy-mobil.jpg" style="width:90px;height:3798px;margin-top:-1899px" alt=""></div></div></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <div class="snr">A</div>
+  <div>
+    <h3>Unsere Abschnitte, Zeile für Zeile</h3>
+    <table>
+      <thead><tr><th>Abschnitt</th><th class="wahl">01 Bright Path</th><th>02 Totopia</th><th>03 Scoop Shop</th><th>04 Pawsy</th></tr></thead>
+      <tbody>
+        <tr><th>Einstieg</th><td class="wahl"><span class="z g">●</span>Pille, riesiger runder Satz, Orange plus Kontur-Knopf, Foto-Collage auf Band</td><td><span class="z g">●</span>Runder Titel, ein Knopf, Fotofächer</td><td><span class="z g">●</span>Google-Schnitt, Satz, Abholen und Route, Ladenfoto als Karte</td><td><span class="z g">●</span>Satz links, Freisteller-Hund, Wolkenkante</td></tr>
+        <tr><th>Angebot</th><td class="wahl"><span class="z g">●</span>Vier Farbkarten, je Angebot eine Pastellfarbe, Symbol, kurzer Satz, Foto</td><td><span class="z g">●</span>Große Pastellkarten mit Foto, untereinander</td><td><span class="z g">●</span>Vier kleine Karten mit Symbol, Preiskacheln</td><td><span class="z g">●</span>Sechs Karten mit Wellenkante und „ab“-Preis</td></tr>
+        <tr><th>Einstiege nach Situation</th><td class="wahl"><span class="z g">●</span>„Start where you are“: Neu dabei, Aufholen, Dranbleiben, Vorauslaufen</td><td><span class="z s">○</span>fehlt</td><td><span class="z s">○</span>fehlt</td><td><span class="z s">○</span>fehlt</td></tr>
+        <tr><th>Ablauf</th><td class="wahl"><span class="z g">●</span>Drei Schritte mit Dauer („innerhalb 48 Std.“), Foto daneben</td><td><span class="z m">◐</span>nur über Probetag</td><td><span class="z s">○</span>fehlt</td><td><span class="z g">●</span>Drei Schritte mit Foto</td></tr>
+        <tr><th>Team</th><td class="wahl"><span class="z g">●</span>Vier Karten in den Angebotsfarben, Fach und ein Satz</td><td><span class="z m">◐</span>nur runde Fotos im Satz</td><td><span class="z s">○</span>fehlt</td><td><span class="z g">●</span>Drei Porträts auf gelbem Band</td></tr>
+        <tr><th>Kennzahlen / Vertrauen</th><td class="wahl"><span class="z g">●</span>Dunkelgrünes Feld 900+, 92 %, 4,9; rosa Leiste mit vier Zusagen</td><td><span class="z g">●</span>Drei farbige Zahlen, Bento</td><td><span class="z m">◐</span>nur Google-Schnitt</td><td><span class="z g">●</span>Vier Zahlen auf Lavendel</td></tr>
+        <tr><th>Stimmen</th><td class="wahl"><span class="z g">●</span>Drei schräge Notizzettel in Pastell, darunter „4,9 aus 200“</td><td><span class="z g">●</span>Vier Karten in Pastell</td><td><span class="z g">●</span>Google-Zitat, dunkle Karte, „auch bewertet auf“</td><td><span class="z m">◐</span>Ein Zitat im Karussell</td></tr>
+        <tr><th>Galerie</th><td class="wahl"><span class="z m">◐</span>Fotos in Karten verteilt, keine eigene Galerie</td><td><span class="z m">◐</span>Video, Blog-Bilder</td><td><span class="z s">○</span>ein Foto</td><td><span class="z g">●</span>Fünf Fotos in Reihe</td></tr>
+        <tr><th>Preise</th><td class="wahl"><span class="z g">●</span>Drei Pakete, mittleres dunkelgrün</td><td><span class="z s">○</span>fehlt</td><td><span class="z g">●</span>Preiskacheln in Pastell</td><td><span class="z g">●</span>„ab“-Preis je Leistung</td></tr>
+        <tr><th>Gut zu wissen</th><td class="wahl"><span class="z g">●</span>FAQ „No stress, no surprises“</td><td><span class="z s">○</span>fehlt</td><td><span class="z s">○</span>fehlt</td><td><span class="z g">●</span>FAQ nummeriert</td></tr>
+        <tr><th>Besuch / Kontakt</th><td class="wahl"><span class="z m">◐</span>Ort und Zeiten als Chips, Schlussaufruf; Adresse nur im Fuß</td><td><span class="z m">◐</span>dunkler Aufruf, Adresse im Fuß</td><td><span class="z g">●</span>„Besuch uns“: Adresse, Telefon, Zeiten, Karte</td><td><span class="z g">●</span>Formular mit Tierart</td></tr>
+        <tr><th>Fuß</th><td class="wahl"><span class="z g">●</span>Dunkelgrün mit Hügelwelle, Zeiten, Kontakt</td><td><span class="z g">●</span>Schwebende Karte über Foto</td><td><span class="z m">◐</span>Schmale braune Leiste</td><td><span class="z s">○</span>kaum vorhanden</td></tr>
+      </tbody>
+    </table>
+    <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">B</div>
+  <div>
+    <h3>Empfehlung: <span class="sig">Bright Path</span></h3>
+    <div class="empfehlung">
+      <div>
+        <p class="gross">Bright Path ist die einzige Seite, die von oben bis unten freundlich bleibt, ohne kindisch zu werden. <span class="sig">Die Freundlichkeit sitzt in Form und Farbe, nicht in Bildchen:</span> Wolkenkanten, runde Schrift, Druckknöpfe, eine Pastellfarbe je Angebot. Das passt zur Musikschule genauso wie zum Hundesalon und zur Hebamme. Was fehlt, ist Robustheit für wenige Fotos. Die bauen wir ein.</p>
+        <div class="muster">
+          <div class="m-nav"><b><i></i>Musikschule Klangwerk</b><span>Angebot · Ablauf · Team · Zeiten</span><span class="tel">0421 123 456</span></div>
+          <div class="m-held">
+            <span class="m-pill">Für Kinder ab 4 und Erwachsene · Findorff</span>
+            <h5>Musik machen,<br><span>einfach anfangen.</span></h5>
+            <p>Klavier, Gitarre, Gesang und Früherziehung. Die erste Stunde ist kostenlos.</p>
+            <div class="m-knoepfe"><span class="k1">Probestunde buchen</span><span class="k2">Angebot ansehen</span></div>
+          </div>
+          <svg class="m-welle" viewBox="0 0 860 46" preserveAspectRatio="none" aria-hidden="true"><path d="M0 46 V26 Q 36 0 72 22 T 144 22 T 216 22 T 288 22 T 360 22 T 432 22 T 504 22 T 576 22 T 648 22 T 720 22 T 792 22 T 860 20 V46 Z" fill="#fffdf8"/></svg>
+          <div class="m-karten">
+            <div class="m-k b"><span class="ic">Kl</span><div><b>Klavier</b><span>Einzelunterricht, 30 oder 45 Minuten</span></div></div>
+            <div class="m-k l"><span class="ic">Gi</span><div><b>Gitarre</b><span>Akustisch und E-Gitarre, auch in Paaren</span></div></div>
+            <div class="m-k r"><span class="ic">Ge</span><div><b>Gesang</b><span>Stimmbildung für Jugendliche und Erwachsene</span></div></div>
+            <div class="m-k p"><span class="ic">Fr</span><div><b>Früherziehung</b><span>Kleine Gruppen ab 4 Jahren</span></div></div>
+          </div>
+          <div class="m-unten">
+            <div class="m-stimme">„Unsere Tochter freut sich die ganze Woche auf Dienstag.“<small>Google, 4,9 aus 61 Bewertungen</small></div>
+            <div class="m-zeit"><div class="t">Unterrichtszeiten</div>
+              <dl><dt>Mo bis Do</dt><dd>14–20 Uhr</dd><dt>Fr</dt><dd>14–18 Uhr</dd><dt>Sa</dt><dd>10–14 Uhr</dd></dl></div>
+          </div>
+        </div>
+        <p class="muster-cap">Muster mit Platzhalterwerten. Angebotskarten funktionieren ohne Foto (Kürzel oder Symbol statt Bild). Bewertung, Preise und Zeiten erscheinen nur, wenn die Daten es hergeben.</p>
+      </div>
+      <div>
+        <h4>Was wir 1:1 übernehmen</h4>
+        <ul>
+          <li>Schriftpaar: Bricolage Grotesque für Überschriften (600–700, eng gesetzt), Instrument Sans für Text. Keine Serife, keine Mono</li>
+          <li>Creme als Grund, tiefes Waldgrün für Text, dunkle Flächen und Zweitknopf, Orange nur für den Hauptknopf</li>
+          <li>Vier Pastelle (Himmelblau, Limette, Rosa, Pfirsich) mit fester Rolle: je Angebot eine Farbe, die sich bei Team, Stimmen und Preisen wiederholt</li>
+          <li>Wolken- bzw. Wellenkanten zwischen Abschnitten, Hügelwelle über dem Fuß</li>
+          <li>Pillen-Knöpfe mit kleinem Druckschatten (3 px), Pille als Kopfzeile über dem Satz</li>
+          <li>Abschnitte: Angebot als Farbkarten, „Wo stehst du?“-Einstiege, Ablauf in drei Schritten, Kennzahlen auf Dunkelgrün, Stimmen als Notizzettel, Preise mit dunkler Mitte, FAQ, Schlussaufruf</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Was wir optimieren</h4>
+        <ul>
+          <li>Einstieg ohne Collage: ein Foto im weichen Bogen oder gar keins; ohne Foto trägt eine Pastellfläche mit Wellenkante und Faktenpillen (Alter, Ort, „erste Stunde frei“)</li>
+          <li>Kein Kritzel-Unterstrich und kein Wort-Tausch per Vorlage; Betonung nur über Waldgrün im zweiten Satzteil</li>
+          <li>Angebots- und Teamkarten funktionieren ohne Foto (Kürzel oder einfaches Symbol); Fotos nur wenn gut</li>
+          <li>Lesbarkeit: Fließtext mindestens 17 px, Grau nicht heller als #4d5a52, Text auf Pastell immer Waldgrün</li>
+          <li>Lange deutsche Wörter: Überschriften mit clamp(), Silbentrennung, Bricolage im schmalen opsz</li>
+          <li>Notizzettel höchstens 1–2° schräg, auf dem Handy gerade</li>
+          <li>Eigener Block „Besuch uns“ mit Adresse, Zeiten, Anfahrt (fehlt im Anker, gibt es bei Scoop Shop)</li>
+          <li>Abgrenzung: kein Papier und keine Slab (Werkstoff), keine Kondensierte und keine Sticker (Plakat), kein Schwarz-Weiß-Raster (Raster), kein Lindgrün und kein Mint (Klar), keine Serife (Journal), kein Dunkel (Nacht)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">C</div>
+  <div>
+    <h3>Drei Betriebe, ein System</h3>
+    <div class="betriebe">
+      <div class="betrieb b1"><div class="bnr">01</div><div class="bname">Kita / Tagesmutter</div>
+        <dl><dt>Einstieg</dt><dd>„Klein, warm, mitten im Viertel.“ Pillen: 5 Kinder, U3, Mo–Fr 7:30–16 Uhr</dd>
+        <dt>Farbkarten</dt><dd>Eingewöhnung, Tagesablauf, Essen, Draußen</dd>
+        <dt>Wo stehst du?</dt><dd>„Noch schwanger“, „Platz ab Sommer gesucht“, „Wechsel von anderer Betreuung“</dd>
+        <dt>Gut zu wissen</dt><dd>„Wie läuft die Eingewöhnung?“, „Was kostet ein Platz?“</dd></dl></div>
+      <div class="betrieb b2"><div class="bnr">02</div><div class="bname">Hundesalon</div>
+        <dl><dt>Einstieg</dt><dd>„Frisch gebürstet und entspannt.“ Pillen: alle Rassen, ohne Käfig, Termin in 3 Tagen</dd>
+        <dt>Farbkarten</dt><dd>Waschen, Schneiden, Krallen, Welpen-Kennenlernen, jeweils „ab“-Preis wenn bekannt</dd>
+        <dt>Ablauf</dt><dd>Ankommen und Schnuppern, Pflege, Abholen mit Foto</dd>
+        <dt>Gut zu wissen</dt><dd>„Mein Hund ist ängstlich“, „Wie lange dauert es?“</dd></dl></div>
+      <div class="betrieb b3"><div class="bnr">03</div><div class="bname">Eisdiele</div>
+        <dl><dt>Einstieg</dt><dd>„Hausgemachtes Eis am Wasser.“ Pillen: heute bis 22 Uhr, vegane Sorten, Becher zum Mitnehmen</dd>
+        <dt>Farbkarten</dt><dd>Sorten der Woche, Becher, Torten auf Bestellung, Kaffee</dd>
+        <dt>Stimmen</dt><dd>Notizzettel mit Google-Schnitt</dd>
+        <dt>Besuch uns</dt><dd>Adresse, Saisonzeiten, „Bei Regen geschlossen?“ als FAQ</dd></dl></div>
+    </div>
+    <p class="fuss">Quellen: Refero-Styles zu Headspace, Finn, OLIPOP, Lpalo, Aboard, Podia, SuperHi, Duolingo, Quizlet, Busuu, Palette Supply, Hartzler Dairy, Mr. Pops; Refero-Screens zu Care.com, LEGO, Brilliant, Hers, Fresha (nur Marken und Software, keine Betriebe). Live geprüft und verworfen: Small Door Vet und Bond Vet (zu nüchtern), Molly Moon's, Van Leeuwen, Jones Ice Cream, Messina (laut, Plakat-nah), Finn, Wild One, Lovevery, Tonies, Yoto, OLIPOP, Little Moons (Shops, kein Betrieb), Little Otter, Pomelo (Serife); Framer-Vorlagen Kiddoz, Bloomy, Kinter, Nurturing, Sunny, Glooma, Anth Preschool, KidsFly, Beam (Space Grotesk und Mono, zu nah an Landing und Werkstoff), Eterlody, Tuneo, Englora, Petgro, Paw &amp; Pine, Groomery, Groomerly, Pawfect Studio, Vetnest, Petocare, Peticare, Pawmi, Catty, La Gelateria, Nestling u. a. Bright Path, Totopia, Scoop Shop und Pawsy sind Vorlagen mit erfundenen oder beispielhaften Betrieben; wir bauen das System nach, nicht Texte oder Bilder.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
