@@ -24,6 +24,7 @@
  * shared/landingFeatures.ts), die FAQs (shared/faq.ts) und alle Preise
  * (shared/pricing.ts) — dieselben Quellen, aus denen die React-Seite liest.
  */
+import { CONTACT_EMAIL } from "../../shared/const";
 import { HOME_FAQ_VISIBLE } from "../../shared/faq";
 import { LANDING_FEATURES } from "../../shared/landingFeatures";
 import {
@@ -301,7 +302,7 @@ export function generateHomePrerender(): string {
     </section>
 
     <footer style="padding:2rem 0;border-top:1px solid ${C.line};font-size:.875rem;color:${C.faint}">
-      <p style="margin:0">Dein Geschäft. Deine Website. · © ${new Date().getFullYear()} Pageblitz · <a href="/impressum" style="color:${C.faint}">Impressum</a> · <a href="/datenschutz" style="color:${C.faint}">Datenschutz</a> · <a href="/agb" style="color:${C.faint}">AGB</a> · <a href="mailto:hallo@pageblitz.de" style="color:${C.faint}">Kontakt</a></p>
+      <p style="margin:0">Dein Geschäft. Deine Website. · © ${new Date().getFullYear()} Pageblitz · <a href="/impressum" style="color:${C.faint}">Impressum</a> · <a href="/datenschutz" style="color:${C.faint}">Datenschutz</a> · <a href="/agb" style="color:${C.faint}">AGB</a> · <a href="mailto:${CONTACT_EMAIL}" style="color:${C.faint}">Kontakt</a></p>
     </footer>
 
   </div>

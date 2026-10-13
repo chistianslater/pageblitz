@@ -1,4 +1,5 @@
 import type { FormEvent } from "react";
+import { CONTACT_EMAIL } from "@shared/const";
 import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
 import { HeroForm } from "./LandingHero";
 import { Wordmark, textLink } from "./primitives";
@@ -96,7 +97,7 @@ export function LandingFooter() {
           <Wordmark markClassName="text-lp-volt" />
           <p className="mt-5 text-[1.15rem] tracking-[-0.015em] text-lp-ink">
             Fragen?{" "}
-            <a href="mailto:hallo@pageblitz.de" className={textLink}>
+            <a href={`mailto:${CONTACT_EMAIL}`} className={textLink}>
               Schreib uns →
             </a>
           </p>

@@ -63,7 +63,7 @@ Nur falls der Betreiber danach fragt — nicht von allein anfangen:
 
 1. Production-Deploy nach `main` (VPS-Reset auf `origin/main`).
 2. Echte Kundenstimmen → `Testimonials.tsx`.
-3. Chat-Mailto `hello@pageblitz.de` vs. JSON-LD `hallo@pageblitz.de` angleichen.
+3. ~~Kontaktadresse angleichen~~ — erledigt 2026-10-13: überall `hello@pageblitz.de`.
 4. Landing weiter feilen: Echo-Stärke, Manifesto-Länge, Showroom — nur
    nach sichtbarem Feedback, kein dritter Token-Reset.
 
@@ -82,5 +82,5 @@ Inseln-Bundle wird im Dev **nicht** automatisch gebaut:
 ## Kontakt / Marke
 
 - Wordmark: Blitz + „Pageblitz“ (`primitives.tsx`)
-- Mail: `hallo@pageblitz.de`
+- Mail: `hello@pageblitz.de`
 - Instagram: `https://www.instagram.com/pageblitz.de`

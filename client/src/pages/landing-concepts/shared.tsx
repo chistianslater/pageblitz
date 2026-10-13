@@ -10,6 +10,7 @@ import {
   PRICE_YEARLY,
   TARIFF_LABEL,
 } from "@shared/pricingText";
+import { CONTACT_EMAIL } from "@shared/const";
 import { HOME_FAQ_VISIBLE } from "@shared/faq";
 import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
 
@@ -166,7 +167,7 @@ export function Footer() {
       <a href="/impressum">Impressum</a>
       <a href="/datenschutz">Datenschutz</a>
       <a href="/agb">AGB</a>
-      <a href="mailto:hallo@pageblitz.de">Kontakt</a>
+      <a href={`mailto:${CONTACT_EMAIL}`}>Kontakt</a>
     </footer>
   );
 }

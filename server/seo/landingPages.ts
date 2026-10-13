@@ -593,7 +593,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
       {
         q: "Brauche ich eine eigene Domain für meine Fotografen-Website?",
-        a: "Eine eigene Domain ist als Add-on nutzbar. Du kannst auch mit der pageblitz.de-Subdomain starten.",
+        a: "Nein. Du startest mit einer kostenlosen Subdomain (deinname.pageblitz.de). Hast du eine eigene Domain, verbindest du sie ohne Aufpreis selbst per DNS-Eintrag (CNAME) bei deinem Domain-Anbieter.",
       },
     ],
   },

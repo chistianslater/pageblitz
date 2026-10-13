@@ -86,6 +86,6 @@ Hintergrund: `docs/superpowers/specs/2026-10-10-designsysteme-design.md`.
 - Produktwahrheit halten. Straffen ja, erfinden nein.
 - Branchen-SEO-Routen `/website-erstellen/<slug>` sind SSR — mit `<a href>`,
   nicht mit wouter-`<Link>` (sonst SPA-404).
-- Kontakt: `hallo@pageblitz.de` (JSON-LD). Chat-Widget erwähnt teilweise
-  `hello@pageblitz.de` — bei Änderungen angleichen, nicht eine dritte Adresse
-  einführen.
+- Kontakt: `hello@pageblitz.de` überall (Impressum, AGB, Fußzeilen, JSON-LD,
+  Support-Chat) — Quelle `CONTACT_EMAIL` in `shared/const.ts`, Wächter
+  `server/contactEmail.test.ts`. Keine zweite Adresse einführen.

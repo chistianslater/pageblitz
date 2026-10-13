@@ -4,6 +4,7 @@ import { sendEmail } from "./email";
 import { upsertChatTranscript } from "../db";
 import { addonPrice, formatEuro } from "../../shared/pricing";
 import { PRICE_PROMPT_FACTS } from "../../shared/pricingText";
+import { CONTACT_EMAIL } from "../../shared/const";
 
 const ipUsage = new Map<string, { count: number; reset: number }>();
 setInterval(() => {
@@ -102,7 +103,7 @@ export function registerSupportChatRoutes(app: Express) {
 
       let content =
         (llmResult.choices?.[0]?.message?.content as string) ||
-        "Entschuldigung, ich bin gerade nicht erreichbar. Bitte schreibe uns direkt eine E-Mail an support@pageblitz.de!";
+        `Entschuldigung, ich bin gerade nicht erreichbar. Bitte schreibe uns direkt eine E-Mail an ${CONTACT_EMAIL}!`;
 
       let showSupportForm = false;
       if (content.includes("[SUPPORT]")) {
