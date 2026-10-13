@@ -5,6 +5,7 @@ import {
   GripVertical,
   ChevronUp,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import type { SectionType, WebsiteDataV2 } from "@shared/siteContract/types";
@@ -12,7 +13,10 @@ import {
   HIDEABLE_SECTION_TYPES,
   SECTION_LABELS,
 } from "@shared/onboardingV2/aiEdit";
+import { removalRule } from "@shared/onboardingV2/sectionRemoval";
+import type { AddOnFlags } from "@shared/pricing";
 import { SECTION_ANCHORS } from "@/components/site/engine";
+import { SectionUndoToast, useSectionRemoval } from "../SectionUndoToast";
 import { PanelFrame } from "./PanelFrame";
 
 /**
@@ -26,6 +30,10 @@ import { PanelFrame } from "./PanelFrame";
  * Regeln: hero bleibt fix oben (nicht verschieb-/ausblendbar), contact
  * bleibt sichtbar (nicht in HIDEABLE_SECTION_TYPES), notice ist ein
  * Banner über der Navigation und taucht hier nicht auf.
+ *
+ * Seit 2026-10-13 lässt sich jeder Abschnitt außer Einstieg und Kontakt
+ * auch ganz entfernen (Papierkorb, danach 8 s „Rückgängig", sonst Verlauf)
+ * — siehe shared/onboardingV2/sectionRemoval.ts.
  */
 /**
  * Zeilen ohne Verschiebe-Griff: hero steht immer oben, der Hinweis-Banner
@@ -76,12 +84,15 @@ const hideable = new Set<string>(HIDEABLE_SECTION_TYPES);
 export function StructurePanel({
   token,
   doc,
+  addOns,
   onApplied,
   onClose,
   onPreviewFocus,
 }: {
   token: string;
   doc: WebsiteDataV2;
+  /** Gebuchte Extras — nur für den Hinweis „bleibt gebucht" beim Entfernen. */
+  addOns?: Partial<AddOnFlags>;
   onApplied: () => void;
   onClose: () => void;
   onPreviewFocus?: (anchor: string) => void;
@@ -95,6 +106,10 @@ export function StructurePanel({
   }, [doc]);
 
   const update = trpc.onboardingV2.updateStructure.useMutation();
+  const removal = useSectionRemoval({ token, onApplied });
+  // Gesperrtes Entfernen: Begründung sichtbar machen — ein title-Tooltip
+  // allein erreicht Touch-Geräte nicht.
+  const [blockedReason, setBlockedReason] = useState<string | null>(null);
 
   const save = (next: Row[]) => {
     setRows(next);
@@ -134,7 +149,7 @@ export function StructurePanel({
   const pinnedNote = (row: Row) =>
     row.type === "notice" ? "Banner über der Navigation" : "bleibt oben";
   const firstMovable = rows.findIndex(r => !r.pinned);
-  const busy = update.isPending;
+  const busy = update.isPending || removal.busy;
 
   return (
     <PanelFrame
@@ -142,7 +157,7 @@ export function StructurePanel({
       title="Struktur"
       panelId="structure"
       onClose={onClose}
-      intro="Ziehe Sektionen am Anfasser in eine neue Reihenfolge oder blende sie mit dem Auge aus — jede Änderung wird sofort übernommen."
+      intro="Ziehe Sektionen am Anfasser in eine neue Reihenfolge, blende sie mit dem Auge aus oder entferne sie mit dem Papierkorb — jede Änderung wird sofort übernommen."
       footer={
         <button
           type="button"
@@ -232,15 +247,85 @@ export function StructurePanel({
               ) : (
                 <span className="pb-structure-spacer" aria-hidden="true" />
               )}
+              <RemoveButton
+                type={row.type}
+                addOns={addOns}
+                disabled={busy}
+                onRemove={type => {
+                  setBlockedReason(null);
+                  removal.removeSection(type);
+                }}
+                onBlocked={setBlockedReason}
+              />
             </span>
           </li>
         ))}
       </ul>
+      {blockedReason && (
+        <p className="pb-studio-inline-hint pb-structure-blocked" role="note">
+          {blockedReason}
+        </p>
+      )}
+      <SectionUndoToast
+        toast={removal.toast}
+        busy={removal.busy}
+        onUndo={removal.undo}
+        onRemove={removal.removeSection}
+        onDismiss={removal.dismiss}
+      />
+      {removal.error && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {removal.error}
+        </p>
+      )}
       {update.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {update.error.message}
         </p>
       )}
     </PanelFrame>
+  );
+}
+
+function RemoveButton({
+  type,
+  addOns,
+  disabled,
+  onRemove,
+  onBlocked,
+}: {
+  type: SectionType;
+  addOns?: Partial<AddOnFlags>;
+  disabled: boolean;
+  onRemove: (type: SectionType) => void;
+  onBlocked: (reason: string) => void;
+}) {
+  const rule = removalRule(type, addOns);
+  const label = SECTION_LABELS[type];
+  if (!rule.allowed) {
+    return (
+      <button
+        type="button"
+        className="pb-structure-remove"
+        aria-label={`${label} kann nicht entfernt werden`}
+        aria-disabled="true"
+        title={rule.reason}
+        onClick={() => onBlocked(rule.reason)}
+      >
+        <Trash2 />
+      </button>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className="pb-structure-remove"
+      aria-label={`${label} entfernen`}
+      title={rule.addonNote ?? "Abschnitt entfernen"}
+      disabled={disabled}
+      onClick={() => onRemove(type)}
+    >
+      <Trash2 />
+    </button>
   );
 }

@@ -22,6 +22,8 @@ vi.mock("../db", async importOriginal => {
     replaceWebsiteVersion: vi.fn().mockResolvedValue(undefined),
     countWebsiteVersions: vi.fn().mockResolvedValue(0),
     deleteOldestWebsiteVersions: vi.fn().mockResolvedValue(undefined),
+    listWebsiteVersions: vi.fn().mockResolvedValue([]),
+    getWebsiteVersion: vi.fn().mockResolvedValue(null),
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -174,5 +176,109 @@ describe("insertSection (Plus-Zonen, 2026-09-03)", () => {
       afterType: "hero",
     });
     expect(result).toEqual({ kind: "reject", reason: "Nö." });
+  });
+});
+
+describe("removeSection / restoreSection (2026-10-13)", () => {
+  const usp = {
+    type: "usp",
+    headline: "Darum wir",
+    items: [{ title: "Schnell" }, { title: "Sauber" }],
+  };
+  const withUsp = {
+    ...v2,
+    sections: [v2.sections[0], usp, v2.sections[1]],
+    sectionOrder: ["hero", "usp", "contact"],
+  };
+
+  test("entfernt den Abschnitt und legt einen Verlaufsstand an", async () => {
+    loadDoc(withUsp);
+    const result = await caller().onboardingV2.removeSection({
+      token: "tok",
+      type: "usp",
+    });
+    expect(result.state.doc?.sections.map(s => s.type)).toEqual([
+      "hero",
+      "contact",
+    ]);
+    expect(result.state.doc?.sectionOrder).toEqual(["hero", "contact"]);
+    expect(result.addonNote).toBeUndefined();
+    const inserted = mockedDb.insertWebsiteVersion.mock.calls.map(c => c[0]);
+    expect(inserted.at(-1)).toMatchObject({
+      trigger: "panel",
+      label: "Abschnitt „Vorteile“ entfernt",
+    });
+  });
+
+  test("Einstieg und Kontakt bleiben — BAD_REQUEST ohne Write", async () => {
+    for (const type of ["hero", "contact"] as const) {
+      await expect(
+        caller().onboardingV2.removeSection({ token: "tok", type })
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    }
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("gebuchte Galerie: Abschnitt weg, Extra bleibt gebucht", async () => {
+    loadDoc({
+      ...v2,
+      addOns: { gallery: true },
+      sections: [
+        v2.sections[0],
+        { type: "gallery", images: [{ url: "https://x/1.jpg", alt: "Werkstatt" }] },
+        v2.sections[1],
+      ],
+    });
+    const result = await caller().onboardingV2.removeSection({
+      token: "tok",
+      type: "gallery",
+    });
+    expect(result.state.doc?.sections.map(s => s.type)).not.toContain(
+      "gallery"
+    );
+    expect(result.state.doc?.addOns?.gallery).toBe(true);
+    expect(result.addonNote).toMatch(/bleibt gebucht/);
+  });
+
+  test("Rückgängig holt den Abschnitt aus dem Verlauf an seine Stelle zurück", async () => {
+    // Aktuell ohne usp; der jüngste Stand ist das Entfernen, davor der Stand mit usp.
+    loadDoc({ ...v2, sectionOrder: ["hero", "contact"] });
+    mockedDb.listWebsiteVersions.mockResolvedValue([
+      { id: 9, trigger: "panel", label: "Abschnitt „Vorteile“ entfernt", createdAt: new Date() },
+      { id: 8, trigger: "chat", label: "Sektion „Vorteile“ eingefügt", createdAt: new Date() },
+    ] as any);
+    mockedDb.getWebsiteVersion.mockImplementation(async (_w, id) =>
+      id === 8
+        ? ({ id: 8, doc: withUsp } as any)
+        : ({ id: 9, doc: { ...v2, sectionOrder: ["hero", "contact"] } } as any)
+    );
+    const result = await caller().onboardingV2.restoreSection({
+      token: "tok",
+      type: "usp",
+    });
+    expect(result.doc?.sections.find(s => s.type === "usp")).toMatchObject(
+      usp
+    );
+    expect(result.doc?.sectionOrder).toEqual(["hero", "usp", "contact"]);
+    const inserted = mockedDb.insertWebsiteVersion.mock.calls.map(c => c[0]);
+    expect(inserted.at(-1)).toMatchObject({
+      trigger: "panel",
+      label: "Abschnitt „Vorteile“ wiederhergestellt",
+    });
+  });
+
+  test("nichts im Verlauf → NOT_FOUND, kein Write", async () => {
+    mockedDb.listWebsiteVersions.mockResolvedValue([]);
+    await expect(
+      caller().onboardingV2.restoreSection({ token: "tok", type: "usp" })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("Abschnitt schon da → BAD_REQUEST", async () => {
+    loadDoc(withUsp);
+    await expect(
+      caller().onboardingV2.restoreSection({ token: "tok", type: "usp" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 });

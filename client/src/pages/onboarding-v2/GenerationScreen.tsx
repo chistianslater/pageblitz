@@ -204,7 +204,7 @@ export function GenerationScreen({
   // Browser-Caches — das iframe mountet genau einmal, sobald der
   // Zwischenstand da ist (der Finalstand lädt nach Jobende im normalen
   // Studio-PreviewFrame, ebenfalls mit Einblendung).
-  const frameSrc = `/preview-ssr/${token}?reveal=1&v=interim`;
+  const frameSrc = `/preview-ssr/${token}?reveal=1&studio=1&v=interim`;
 
   return (
     <section className="pb-studio-gen pb-studio-gen--dark" aria-live="polite">

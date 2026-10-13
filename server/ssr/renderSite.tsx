@@ -71,6 +71,14 @@ export interface RenderSiteOptions {
    */
   islandsMode?: "live" | "preview";
   /**
+   * Vorschau-Platzhalter für fehlende Extras („Deine Preise", „Euer Team",
+   * gestrichelte Kästen „Nur in deiner Vorschau"). Ohne Angabe wie bisher:
+   * an bei Vorschau-Leiste oder islandsMode "preview". Die Preview-Route
+   * setzt es ausdrücklich — an nur im Studio-iframe (`?studio=1`), aus im
+   * neuen Tab (Betreiber 2026-10-13: „da sollten sie raus").
+   */
+  previewPlaceholders?: boolean;
+  /**
    * Zeitmaschinen-Warte-UX (Plan B7 Task 4): true → die Sektionen der Seite
    * faden per CSS nacheinander ein (kompositor-freundlich: nur opacity/
    * transform; `prefers-reduced-motion` → statisch). NUR die Studio-
@@ -93,6 +101,13 @@ export interface RenderSiteOptions {
 export interface RenderSiteResult {
   html: string;
   status: number;
+}
+
+function showPreviewPlaceholders(opts: RenderSiteOptions): boolean {
+  return (
+    opts.previewPlaceholders ??
+    (Boolean(opts.previewCta) || opts.islandsMode === "preview")
+  );
 }
 
 /** Schützt interpolierte Strings vor HTML-Injection (&, <, >, "). */
@@ -311,7 +326,7 @@ function renderPageHtml(
       slug={opts.slug}
       site={opts.site}
       islandsMode={opts.islandsMode}
-      preview={Boolean(opts.previewCta) || opts.islandsMode === "preview"}
+      preview={showPreviewPlaceholders(opts)}
       pathname={pathname}
     />
   );
@@ -549,7 +564,7 @@ export function renderSiteHtml(
       slug={opts.slug}
       site={opts.site}
       islandsMode={opts.islandsMode}
-      preview={Boolean(opts.previewCta) || opts.islandsMode === "preview"}
+      preview={showPreviewPlaceholders(opts)}
     />
   );
 

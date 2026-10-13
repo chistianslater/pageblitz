@@ -299,6 +299,10 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       // sichtbar einfaden. Nur diese Preview-Route kennt den Parameter —
       // Kundenseiten-SSR bleibt ohne Einblendungs-CSS.
       sectionReveal: req.query.reveal === "1",
+      // Gestrichelte Platzhalter („Nur in deiner Vorschau") nur im
+      // Studio-iframe (buildPreviewSrc hängt ?studio=1 an). „In neuem Tab
+      // öffnen", geteilte Links und Postkarten zeigen die Seite wie live.
+      previewPlaceholders: req.query.studio === "1",
     });
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
     res.setHeader("Cache-Control", "no-store");

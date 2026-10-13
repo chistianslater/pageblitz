@@ -34,7 +34,7 @@ describe("DesignSplash — nur Designsysteme (Packs entfernen, Task 3)", () => {
     );
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('aria-label="Farbstimmung Journal"');
-    expect(html).toContain("?system=journal&amp;palette=salbei&amp;v=4");
+    expect(html).toContain("?system=journal&amp;palette=salbei&amp;studio=1&amp;v=4");
     expect(html).not.toContain("pack=");
     expect(html).not.toContain("Schrift");
     expect(html).not.toContain("Eigene Farbe");

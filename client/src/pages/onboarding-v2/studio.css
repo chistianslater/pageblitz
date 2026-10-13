@@ -3378,6 +3378,94 @@
   width: 30px;
   height: 30px;
 }
+.pb-structure-actions button[aria-disabled="true"] {
+  opacity: 0.3;
+  cursor: help;
+}
+.pb-structure-actions .pb-structure-remove:hover:not(:disabled):not([aria-disabled="true"]) {
+  color: var(--st-warn, #ff5d45);
+}
+.pb-structure-blocked {
+  margin-top: 10px;
+}
+
+/* Abschnitt entfernt / eingefügt — mit Rückweg (2026-10-13). Steht im
+   Fluss (Panel bzw. über der Vorschau), damit er auf dem Handy nichts
+   verdeckt; die Uhr (8 s) läuft im SectionUndoToast. */
+.pb-section-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 12px;
+  background: var(--st-ink, #242424);
+  color: var(--st-canvas, #ffffff);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  animation: pb-section-toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pb-section-toast p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.pb-section-toast-note {
+  display: block;
+  opacity: 0.75;
+  font-size: 0.78rem;
+}
+.pb-section-toast button {
+  flex: none;
+  font: inherit;
+  font-weight: 700;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--st-accent, #d5f330);
+  color: var(--st-accent-ink, #0b0b0d);
+  cursor: pointer;
+}
+.pb-section-toast button:focus-visible {
+  outline: 2px solid var(--st-accent, #d5f330);
+  outline-offset: 2px;
+}
+.pb-section-toast .pb-section-toast-close {
+  min-height: 36px;
+  width: 36px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+.pb-section-toast button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Im Struktur-Panel unten am sichtbaren Rand halten — sonst liegt der
+   Hinweis nach dem Entfernen weit unten in der Liste bzw. auf dem Handy
+   hinter der festen Fußleiste des Panels. */
+.pb-structure-list ~ .pb-section-toast {
+  position: sticky;
+  /* über dem ebenfalls klebenden Panel-Fuß (.pb-studio-panel-foot) */
+  bottom: 4.75rem;
+  z-index: 2;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+@media (max-width: 420px) {
+  .pb-section-toast { flex-wrap: wrap; }
+  .pb-section-toast p { flex-basis: calc(100% - 46px); }
+  .pb-section-toast > button:not(.pb-section-toast-close) { order: 3; }
+}
+@keyframes pb-section-toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb-section-toast { animation: none; }
+}
 
 /* ── Verlauf (2026-09-03) ──────────────────────────────────────────────── */
 .pb-studio-toolbar-actions {

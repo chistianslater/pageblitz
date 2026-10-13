@@ -25,6 +25,7 @@ import { VersionsPanel } from "./panels/VersionsPanel";
 import { UndoButton } from "./UndoButton";
 import { GoalStep } from "./GoalStep";
 import { SectionInsertDialog } from "./SectionInsertDialog";
+import { SectionUndoToast, useSectionRemoval } from "./SectionUndoToast";
 import {
   withAddOnEnabled,
   type GatedSectionAddOn,
@@ -208,6 +209,16 @@ export default function StudioPage({ token }: { token: string }) {
   } | null>(null);
   const [insertNotice, setInsertNotice] = useState<string | null>(null);
   const insertSection = trpc.onboardingV2.insertSection.useMutation();
+  // Nach dem Einfügen „Wieder entfernen" anbieten (2026-10-13) — wer sich
+  // unsicher ist, soll nicht erst das Struktur-Panel suchen müssen.
+  const insertUndo = useSectionRemoval({
+    token,
+    onApplied: () => {
+      studio.refetch();
+      studio.bumpPreview();
+      flashPreviewRef.current();
+    },
+  });
   // Kostenpflichtige Sektions-Extras direkt aus dem Einfügen-Dialog
   // einschalten (2026-09-04): Der Kunde will dort etwas hinzufügen — der
   // Umweg über das Extras-Panel bräche genau diesen Moment.
@@ -227,6 +238,7 @@ export default function StudioPage({ token }: { token: string }) {
   // Kurzer Lime-Puls um die Vorschau, wenn der Assistent eine Änderung
   // angewandt hat — lenkt den Blick dorthin, wo sich etwas geändert hat.
   const [previewFlash, setPreviewFlash] = useState(false);
+  const flashPreviewRef = useRef<() => void>(() => {});
   const flashPreview = useCallback(() => {
     setPreviewFlash(false);
     // Doppel-rAF statt setTimeout(0): garantiert einen Frame ohne data-flash,
@@ -237,6 +249,7 @@ export default function StudioPage({ token }: { token: string }) {
     );
     window.setTimeout(() => setPreviewFlash(false), 1300);
   }, []);
+  flashPreviewRef.current = flashPreview;
   // Vorschau-Leiste „Startseite | <Unterseiten…>“ (Plan B6 Task 5): null =
   // Startseite. Der gewählte Slug wird bei jedem Render gegen die aktuell
   // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
@@ -673,6 +686,7 @@ export default function StudioPage({ token }: { token: string }) {
             <StructurePanel
               token={token}
               doc={state.doc}
+              addOns={state.addOns}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();
@@ -903,6 +917,18 @@ export default function StudioPage({ token }: { token: string }) {
               Sekunden. Die Sektion erscheint an ihrer Stelle in der Vorschau.
             </p>
           )}
+          <SectionUndoToast
+            toast={insertUndo.toast}
+            busy={insertUndo.busy}
+            onUndo={insertUndo.undo}
+            onRemove={insertUndo.removeSection}
+            onDismiss={insertUndo.dismiss}
+          />
+          {insertUndo.error && (
+            <p role="alert" className="pb-studio-inline-error">
+              {insertUndo.error}
+            </p>
+          )}
           {/* Tipp-Zeile entfernt (Betreiber-Feedback 2026-09-18): Die
               beschrifteten Knöpfe in der Vorschau und die Studio-Tour
               erklären das — die Vorschau bekommt die Höhe. */}
@@ -1025,6 +1051,7 @@ export default function StudioPage({ token }: { token: string }) {
                     onSuccess: result => {
                       if (result.kind === "inserted") {
                         trackStudioEvent("sektion_eingefuegt");
+                        insertUndo.showInserted(type);
                         setPreviewFocusAnchor(SECTION_ANCHORS[type]);
                         studio.refetch();
                         studio.bumpPreview();
