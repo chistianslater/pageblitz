@@ -19,6 +19,7 @@ import {
   GALLERY_LAYOUTS,
   HERO_LAYOUTS,
   IMAGE_TREATMENTS,
+  PHOTO_TREATMENTS,
   SERVICES_LAYOUTS,
 } from "./designProfile";
 import { DESIGN_STAND_MUSTER } from "./designStand";
@@ -606,6 +607,9 @@ export const DesignProfileSchema = z
     // Hero-Collage: bis zu zwei Bilder aus dem eigenen Material. Der Server
     // prüft zusätzlich, dass jede Adresse im Dokument vorkommt.
     heroCollageImages: z.array(SafeUrlSchema).max(2).optional(),
+    // Plakat: Fotos eingefärbt (Duoton) oder in Originalfarben. Ohne Wert
+    // gilt die Branchenregel (shared/designSystems/photoTreatment.ts).
+    photoTreatment: z.enum(PHOTO_TREATMENTS).optional(),
     seed: z.number().int().min(0).max(0xffffffff),
   })
   .strict();

@@ -64,6 +64,15 @@ export type DecorationGroup = (typeof DECORATION_GROUPS)[number];
  */
 export const HIDEABLE_ELEMENTS = ["hero-media", "about-media"] as const;
 export type HideableElement = (typeof HIDEABLE_ELEMENTS)[number];
+/**
+ * Fotobehandlung in Plakat (2026-10-13, Betreiber: „Ein Döner sieht dann
+ * schimmelig aus"): `tinted` = Duoton (grau + Feldfarbe), `original` =
+ * natürliche Farben in denselben Formen. Fehlt das Feld, entscheidet
+ * `defaultPhotoTreatment` (shared/designSystems/photoTreatment.ts). Andere
+ * Systeme lesen es nicht.
+ */
+export const PHOTO_TREATMENTS = ["tinted", "original"] as const;
+export type PhotoTreatment = (typeof PHOTO_TREATMENTS)[number];
 
 export type HeroLayout = (typeof HERO_LAYOUTS)[number];
 export type ServicesLayout = (typeof SERVICES_LAYOUTS)[number];
@@ -118,6 +127,8 @@ export interface DesignProfile {
    * Gesetzt von der Design-Auswahl, damit jede Alternative anders aussieht.
    */
   entryVariant?: 0 | 1 | 2;
+  /** Plakat: Fotos eingefärbt oder in Originalfarben; fehlt es, gilt die Branchenregel. */
+  photoTreatment?: PhotoTreatment;
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }
