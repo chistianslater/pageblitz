@@ -58,9 +58,7 @@ export const PRICE_FROM_SHORT = `ab ${PRICE_YEARLY}/Monat*`;
 /** Zielgruppe (B2B) — steht in jeder Preis-Fußnote. */
 export const B2B_NOTE = "Angebot nur für Gewerbetreibende und Selbstständige.";
 
-/** Pflicht-Häkchen vor dem Checkout (gespeichert als `b2b_bestaetigt_at`). */
-export const B2B_CONFIRM_LABEL =
-  "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB). Das Angebot richtet sich nicht an Verbraucher.";
+// Pflicht-Häkchen vor dem Checkout (B2B + AGB): shared/agb.ts CHECKOUT_CONSENT.
 
 export const PRICE_FULL =
   `${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit, danach ` +

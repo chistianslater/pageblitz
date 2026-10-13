@@ -302,12 +302,15 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
     expect(mit).toContain("direkt nach dem Freischalten aktiv");
   });
 
-  test("B2B-Pflicht-Häkchen (§ 14 BGB) steht vor dem Freischalten", () => {
+  test("Pflicht-Häkchen B2B (§ 14 BGB) + AGB steht vor dem Freischalten, AGB-Link im neuen Tab", () => {
     const html = renderWithTrpc(
       <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
     );
     expect(html).toContain(
-      "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB). Das Angebot richtet sich nicht an Verbraucher."
+      "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB) und akzeptiere die "
+    );
+    expect(html).toMatch(
+      /<a href="\/agb" target="_blank" rel="noopener noreferrer">AGB<\/a>\./
     );
     expect(html).toMatch(/id="pb-checkout-b2b"[^>]*required|required[^>]*id="pb-checkout-b2b"/);
   });

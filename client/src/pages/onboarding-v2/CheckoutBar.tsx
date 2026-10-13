@@ -10,7 +10,6 @@ import {
   type BillingInterval,
 } from "@shared/pricing";
 import {
-  B2B_CONFIRM_LABEL,
   CHECKOUT_FOOTER,
   PRICE_MONTHLY,
   PRICE_YEARLY,
@@ -19,6 +18,7 @@ import {
   checkoutTermLine,
   checkoutTotalLine,
 } from "@shared/pricingText";
+import { AGB_PATH, AGB_VERSION, CHECKOUT_CONSENT } from "@shared/agb";
 import type { StudioState } from "../../../../server/onboardingV2/state";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import { markStudioCheckoutStarted } from "./exitIntent";
@@ -163,7 +163,7 @@ export function CheckoutBar({
   const [emailTouched, setEmailTouched] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showEmailHint, setShowEmailHint] = useState(false);
-  // B2B-Bestätigung (§ 14 BGB) — Pflicht vor der Weiterleitung zu Stripe.
+  // B2B-Bestätigung (§ 14 BGB) + AGB — Pflicht vor der Weiterleitung zu Stripe.
   const [b2bConfirmed, setB2bConfirmed] = useState(false);
   const [showB2bHint, setShowB2bHint] = useState(false);
 
@@ -213,7 +213,7 @@ export function CheckoutBar({
     // Exit-Intent nicht mehr dazwischenfunken lassen (Sprung zu Stripe).
     markStudioCheckoutStarted(true);
     checkout.mutate(
-      { token, billingInterval, b2bConfirmed: true },
+      { token, billingInterval, b2bConfirmed: true, agbVersion: AGB_VERSION },
       {
         onError: () => markStudioCheckoutStarted(false),
         onSuccess: ({ url }) => {
@@ -352,12 +352,18 @@ export function CheckoutBar({
             if (e.target.checked) setShowB2bHint(false);
           }}
         />
-        {B2B_CONFIRM_LABEL}
+        <span>
+          {CHECKOUT_CONSENT.before}
+          <a href={AGB_PATH} target="_blank" rel="noopener noreferrer">
+            {CHECKOUT_CONSENT.linkText}
+          </a>
+          {CHECKOUT_CONSENT.after}
+        </span>
       </label>
       {showB2bHint && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           Bitte bestätige, dass du als Unternehmer oder Selbstständiger
-          bestellst.
+          bestellst und die AGB akzeptierst.
         </p>
       )}
       <div className="pb-studio-checkout-cta-area">

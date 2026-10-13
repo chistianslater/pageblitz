@@ -34,6 +34,7 @@ const baseArgs = {
   billingInterval: "yearly" as const,
   addOns: { contactForm: false, gallery: true, menu: false, pricelist: false },
   b2bConfirmedAt: 1_790_000_000,
+  agbVersion: "2026-10-13",
 };
 
 describe("createStudioCheckoutSession", () => {
@@ -151,6 +152,8 @@ describe("createStudioCheckoutSession", () => {
         termMonths: "12",
         websiteId: "42",
         b2b_bestaetigt_at: "1790000000",
+        agb_version: "2026-10-13",
+        agb_akzeptiert_at: "1790000000",
       },
     });
     expect(call.line_items[0].price_data.tax_behavior).toBe("inclusive");
@@ -271,22 +274,23 @@ describe("createStudioCheckoutSession", () => {
     );
   });
 
-  test("AGB-Zustimmung nur mit STRIPE_TERMS_URL", async () => {
-    const without = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, without.stripe, {});
-    expect(without.create.mock.calls[0][0].consent_collection).toBeUndefined();
-    expect(
-      without.create.mock.calls[0][0].custom_text.terms_of_service_acceptance
-    ).toBeUndefined();
+  test("AGB-Fassung und Zeitpunkt landen in Session- und Subscription-Metadaten", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(baseArgs, stripe, {});
+    const call = create.mock.calls[0][0];
+    for (const meta of [call.metadata, call.subscription_data.metadata]) {
+      expect(meta.agb_version).toBe("2026-10-13");
+      expect(meta.agb_akzeptiert_at).toBe("1790000000");
+    }
+  });
 
-    const withTerms = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, withTerms.stripe, {
+  test("keine Stripe-consent_collection — auch nicht mit alter STRIPE_TERMS_URL (Account mit anderen Produkten geteilt)", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(baseArgs, stripe, {
       STRIPE_TERMS_URL: "https://pageblitz.de/agb",
     });
-    const call = withTerms.create.mock.calls[0][0];
-    expect(call.consent_collection).toEqual({ terms_of_service: "required" });
-    expect(call.custom_text.terms_of_service_acceptance.message).toBe(
-      "Ich stimme den [AGB](https://pageblitz.de/agb) zu."
-    );
+    const call = create.mock.calls[0][0];
+    expect(call.consent_collection).toBeUndefined();
+    expect(call.custom_text.terms_of_service_acceptance).toBeUndefined();
   });
 });

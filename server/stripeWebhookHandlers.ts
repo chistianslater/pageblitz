@@ -11,7 +11,7 @@ import { assertV2SafeWrite } from "./v2WriteGuard";
 import { asSystemDoc } from "../shared/designSystems/apply";
 import { invalidateSsrCache } from "./ssr/routes";
 import { addOnsFromSubscriptionItems } from "./stripeAddons";
-import { B2B_META_KEY } from "./subscriptionTerm";
+import { AGB_VERSION_META_KEY, B2B_META_KEY } from "./subscriptionTerm";
 import { ADDON_KEYS, type AddOnFlags, type AddOnKey } from "../shared/pricing";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 import type * as Db from "./db";
@@ -51,6 +51,12 @@ function normalizeAddOns(rawAddOns: any): Record<AddOnKey, boolean> {
 function parseB2bConfirmedAt(raw: string | undefined): number | null {
   const value = Number(raw);
   return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+/** Akzeptierte AGB-Fassung aus den Session-Metadaten (max. 32 Zeichen). */
+function parseAgbVersion(raw: string | undefined): string | null {
+  const value = raw?.trim();
+  return value ? value.slice(0, 32) : null;
 }
 
 /**
@@ -168,6 +174,7 @@ export async function handleCheckoutCompleted(
     currentPeriodEnd,
     billingAnchorAt,
     b2bConfirmedAt: parseB2bConfirmedAt(session.metadata?.[B2B_META_KEY]),
+    agbVersion: parseAgbVersion(session.metadata?.[AGB_VERSION_META_KEY]),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });

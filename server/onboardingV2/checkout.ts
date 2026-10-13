@@ -12,7 +12,12 @@ import {
 } from "@shared/pricing";
 import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 import { resolveAddOnPriceIds } from "../stripeAddons";
-import { B2B_META_KEY, subscriptionMetadataFor } from "../subscriptionTerm";
+import {
+  AGB_ACCEPTED_META_KEY,
+  AGB_VERSION_META_KEY,
+  B2B_META_KEY,
+  subscriptionMetadataFor,
+} from "../subscriptionTerm";
 import { taxRateIds, withTaxRateFallback } from "../stripeTax";
 
 /**
@@ -38,8 +43,22 @@ export interface CheckoutArgs {
   token: string;
   billingInterval: BillingInterval;
   addOns: AddOnFlags;
-  /** Zeitpunkt der B2B-Bestätigung (§ 14 BGB) im Studio, Unix-Sekunden. */
+  /**
+   * Zeitpunkt des Pflicht-Häkchens im Studio (B2B nach § 14 BGB + AGB),
+   * Unix-Sekunden.
+   */
   b2bConfirmedAt: number;
+  /** Akzeptierte AGB-Fassung (shared/agb.ts AGB_VERSION). */
+  agbVersion: string;
+}
+
+/** B2B- und AGB-Nachweis — identisch an Session und Subscription. */
+function consentMetadata(args: CheckoutArgs): Record<string, string> {
+  return {
+    [B2B_META_KEY]: String(args.b2bConfirmedAt),
+    [AGB_VERSION_META_KEY]: args.agbVersion,
+    [AGB_ACCEPTED_META_KEY]: String(args.b2bConfirmedAt),
+  };
 }
 
 /**
@@ -87,7 +106,6 @@ export async function createStudioCheckoutSession(
     return acc;
   }, {});
   const priceIds = resolveAddOnPriceIds(env);
-  const termsUrl = env.STRIPE_TERMS_URL?.trim() || null;
   // USt. 19 % inklusive (server/stripeTax.ts) — fehlt die Env, wird
   // trotzdem verkauft (einmalige Warnung im Log).
   const taxRates = taxRateIds(env);
@@ -132,25 +150,19 @@ export async function createStudioCheckoutSession(
         metadata: {
           ...subscriptionMetadataFor(args.billingInterval),
           websiteId: args.websiteId.toString(),
-          [B2B_META_KEY]: String(args.b2bConfirmedAt),
+          ...consentMetadata(args),
         },
       },
       // Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Knopf.
+      // KEIN `consent_collection.terms_of_service`: Stripe nimmt dafür die
+      // Terms-URL aus den Account-Einstellungen (Public details), und der
+      // Account ist mit anderen Produkten geteilt — die Pageblitz-AGB würden
+      // dort fremde Checkouts treffen (oder umgekehrt). Die AGB-Zustimmung
+      // holt das Studio-Häkchen vor der Weiterleitung ein (server-geprüft,
+      // Fassung + Zeitpunkt in den Metadaten, siehe consentMetadata).
       custom_text: {
         submit: { message: checkoutTermLine(args.billingInterval) },
-        ...(termsUrl
-          ? {
-              terms_of_service_acceptance: {
-                message: `Ich stimme den [AGB](${termsUrl}) zu.`,
-              },
-            }
-          : {}),
       },
-      // AGB-Zustimmung erst, wenn es AGB gibt: STRIPE_TERMS_URL setzen UND
-      // dieselbe URL in Stripe (Settings → Public details) hinterlegen.
-      ...(termsUrl
-        ? { consent_collection: { terms_of_service: "required" as const } }
-        : {}),
       success_url: `${args.origin}/my-website?checkout=success`,
       cancel_url: `${args.origin}/onboarding/${args.token}`,
       metadata: {
@@ -159,7 +171,7 @@ export async function createStudioCheckoutSession(
         billingInterval: args.billingInterval,
         addOns: JSON.stringify(addOns),
         totalAmount: totalCents.toString(),
-        [B2B_META_KEY]: String(args.b2bConfirmedAt),
+        ...consentMetadata(args),
       },
     })
   );

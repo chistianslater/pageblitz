@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
   ADDON_TERM_NOTE,
-  B2B_CONFIRM_LABEL,
   cancellationHint,
   CHECKOUT_FOOTER,
   HOME_META_DESCRIPTION,
@@ -59,9 +58,6 @@ describe("Grundtexte", () => {
     expect(PRICE_FROM_SHORT).toBe("ab 19,90 €/Monat*");
     expect(PRICE_FULL).toBe(
       "19,90 €/Monat bei 12 Monaten Laufzeit, danach Verlängerung um 12 Monate; monatlich kündbar: 24,90 €/Monat. Alle Preise inkl. 19 % MwSt. Angebot nur für Gewerbetreibende und Selbstständige."
-    );
-    expect(B2B_CONFIRM_LABEL).toBe(
-      "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB). Das Angebot richtet sich nicht an Verbraucher."
     );
     expect(PRICE_FOOTNOTE).toBe(`* ${PRICE_FULL}`);
     expect(PRICE_FROM_INLINE).toBe("ab 19,90 €/Monat bei 12 Monaten Laufzeit");

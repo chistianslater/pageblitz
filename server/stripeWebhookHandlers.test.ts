@@ -104,12 +104,24 @@ describe("handleCheckoutCompleted", () => {
           billingInterval: "yearly",
           addOns: "{}",
           b2b_bestaetigt_at: "1790000000",
+          agb_version: "2026-10-13",
         },
       }),
       deps
     );
     expect(deps.createSubscription).toHaveBeenCalledWith(
-      expect.objectContaining({ b2bConfirmedAt: 1_790_000_000 })
+      expect.objectContaining({
+        b2bConfirmedAt: 1_790_000_000,
+        agbVersion: "2026-10-13",
+      })
+    );
+  });
+
+  test("ohne AGB-Metadatum (Alt-Session) bleibt agbVersion leer", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(fakeSession(), deps);
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ agbVersion: null })
     );
   });
 

@@ -2182,6 +2182,15 @@
   color: var(--st-muted);
   font-weight: 400;
 }
+.pb-studio-checkbox a {
+  color: var(--st-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pb-studio-checkbox a:hover,
+.pb-studio-checkbox a:focus-visible {
+  color: var(--st-accent-text);
+}
 .pb-studio-checkout {
   display: flex;
   flex-direction: column;

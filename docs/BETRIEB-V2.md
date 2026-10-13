@@ -479,7 +479,6 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `APP_BASE_URL` / `APP_URL` / `BASE_URL` | Basis-URL für Links (E-Mails, Redirects) |
 | `STRIPE_SECRET_KEY` | Stripe-API |
 | `STRIPE_WEBHOOK_SECRET` | Signaturprüfung `handleCheckoutCompleted` |
-| `STRIPE_TERMS_URL` | optional: AGB-URL — erst wenn gesetzt, verlangt der Checkout die AGB-Zustimmung (`consent_collection.terms_of_service`); dieselbe URL in Stripe → Public details eintragen |
 | `STRIPE_TAX_RATE_ID` | Stripe-Tax-Rate „Pageblitz – USt. 19 % (inklusive)“ (`txr_1UQ7JeBdezH7rtSBjZQgFf8l`) — an Checkout (`default_tax_rates`), neuen Add-on-Items und Tarifwechsel; fehlt sie, wird trotzdem verkauft, aber ohne ausgewiesene USt. (einmalige Warnung `[steuer]` im Log) |
 | `STRIPE_PORTAL_CONFIGURATION_ID` | optional: feste Kundenportal-Konfiguration ohne Kündigen (sonst legt der Server sie selbst an, siehe „Preise & Laufzeit“) |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Transaktions-/Lifecycle-Mails |
@@ -698,13 +697,16 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   `tariff=monthly`, `termMonths=0`; in der DB `billingInterval=monthly`,
   `termStartedAt`/`currentTermEnd` auf NULL).
 - Alle Preise brutto **inkl. 19 % MwSt.** (Regelbesteuerung).
-- **Nur B2B:** Die Preis-Fußnote sagt „Angebot nur für Gewerbetreibende und
+- **Nur B2B + AGB:** Die Preis-Fußnote sagt „Angebot nur für Gewerbetreibende und
   Selbstständige." Vor der Weiterleitung zu Stripe muss im Studio das
   Pflicht-Häkchen „Ich bestelle als Unternehmer oder Selbstständiger (§ 14
-  BGB) …" gesetzt sein (Server prüft `b2bConfirmed`); der Zeitpunkt steht als
-  Metadatum `b2b_bestaetigt_at` an Session und Subscription und in
-  `subscriptions.b2bConfirmedAt`. (Betreiber-Entscheidung B2B-only noch
-  offen — Schalter ist eingebaut.)
+  BGB) und akzeptiere die AGB." (Link auf `/agb`, neuer Tab) gesetzt sein.
+  Der Server prüft `b2bConfirmed` UND `agbVersion === AGB_VERSION`
+  (`shared/agb.ts`; ein alter Tab nach AGB-Änderung wird abgewiesen). Der
+  Zeitpunkt steht als `b2b_bestaetigt_at` und `agb_akzeptiert_at`, die
+  Fassung als `agb_version` an Session und Subscription; in der DB
+  `subscriptions.b2bConfirmedAt` + `subscriptions.agbVersion`
+  (Migration 0041).
 
 **Wo was steht:** Zahlen nur in `shared/pricing.ts`; alle Texte (Landing,
 SEO, Studio, Checkout, Konto, Postkarte, Chat-Prompts, llms.txt, JSON-LD)
@@ -781,14 +783,18 @@ hängen) die Zeit vorstellen: nach Testende → `invoice.paid` → im Konto
 Laufzeitende; Uhr über die Frist hinaus vorstellen und erneut kündigen →
 Ende = nächstes Laufzeitende; Portal öffnen → kein Kündigen-Knopf.
 
-**AGB:** Die Laufzeit-, Verlängerungs- und Kündigungsregeln oben MÜSSEN in den
-AGB stehen (Betreiber lässt sie extern erstellen) — und im Checkout auf die
-AGB verwiesen werden (Stripe: Settings → Public details → Terms of service
-URL, dann `consent_collection.terms_of_service` im Checkout aktivieren). Die
-App enthält bewusst keinen Rechtstext. Hinweis: Für Verbraucher gelten seit
-2022 Grenzen bei automatischer Verlängerung (§ 309 Nr. 9 BGB); Pageblitz
-richtet sich an Betriebe — ob B2C-Kunden ausgeschlossen werden, gehört in
-die AGB-Prüfung.
+**AGB (seit 2026-10-13, Entwurf in Prüfung):** Text und Fassung in
+`shared/agb.ts` (`AGB_VERSION`, `AGB_SECTIONS`), Seite `/agb`
+(`client/src/pages/PageblitzAGB.tsx`, Server-Metas in
+`server/_core/index.ts`), Prüfexemplar mit Fragenliste in
+`docs/agb-entwurf.md` (ein Test hält es synchron). Preise im Text kommen aus
+`shared/pricing*.ts`. Neue Fassung: Text ändern, `AGB_VERSION`/`AGB_STAND`
+hochsetzen, `docs/agb-entwurf.md` neu erzeugen. **Bewusst KEINE
+Stripe-`consent_collection`**: Stripe nimmt die Terms-URL aus den
+Account-Einstellungen, und der Account ist mit anderen Produkten geteilt;
+die Zustimmung holt das Studio-Häkchen ein (siehe „Nur B2B + AGB“). Der
+frühere Schalter `STRIPE_TERMS_URL` ist entfernt — falls in `.env` gesetzt,
+wirkungslos. Stellen mit `[PRÜFEN]` vor dem Livegang auflösen.
 
 ### GMB-Wahrheit & Erstgenerierung (seit Plan B7)
 

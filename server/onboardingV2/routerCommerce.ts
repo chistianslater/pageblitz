@@ -30,6 +30,7 @@ import {
   upsertOnboarding,
 } from "./state";
 import type { AddOnFlags } from "../../shared/pricing";
+import { AGB_VERSION } from "../../shared/agb";
 import { createStudioCheckoutSession } from "./checkout";
 
 /** Nicht buchbare Extras (Finding I1) — dieselbe Menge wie BOOKABLE_ADDON_KEYS, nur invertiert. */
@@ -335,8 +336,13 @@ export const commerceProcedures = {
     .input(
       tokenInput.extend({
         billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
-        /** Pflicht-Häkchen „bestelle als Unternehmer (§ 14 BGB)". */
+        /**
+         * Pflicht-Häkchen „bestelle als Unternehmer (§ 14 BGB) und akzeptiere
+         * die AGB" (shared/agb.ts CHECKOUT_CONSENT).
+         */
         b2bConfirmed: z.boolean().default(false),
+        /** AGB-Fassung, die das Studio beim Häkchen angezeigt hat. */
+        agbVersion: z.string().max(32).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -344,7 +350,16 @@ export const commerceProcedures = {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
-            "Bitte bestätige, dass du als Unternehmer oder Selbstständiger bestellst — das Angebot richtet sich nicht an Verbraucher.",
+            "Bitte bestätige, dass du als Unternehmer oder Selbstständiger bestellst und die AGB akzeptierst — das Angebot richtet sich nicht an Verbraucher.",
+        });
+      }
+      // Alter Studio-Tab nach einer AGB-Änderung: Zustimmung zur aktuellen
+      // Fassung neu einholen, statt eine nie gezeigte Fassung zu speichern.
+      if (input.agbVersion !== AGB_VERSION) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Unsere AGB wurden aktualisiert. Bitte lade die Seite neu und bestätige sie erneut.",
         });
       }
       const loaded = await loadStudioWebsite(input.token, ctx.user);
@@ -369,6 +384,7 @@ export const commerceProcedures = {
         token: input.token,
         billingInterval: input.billingInterval,
         b2bConfirmedAt: Math.floor(Date.now() / 1000),
+        agbVersion: AGB_VERSION,
         // sanitizeAddOns statt state.addOns direkt: eine veraltete DB-Zeile
         // mit aiChat/booking/team=true (z. B. aus der Zeit vor Finding I1)
         // darf weder in die Preis-Summe noch in die Stripe-Metadaten

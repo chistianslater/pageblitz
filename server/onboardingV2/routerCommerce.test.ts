@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import type { TrpcContext } from "../_core/context";
 import { formatZodTrpcMessage } from "../_core/trpc";
 import { LegalPatchSchema } from "../../shared/onboardingV2/patches";
+import { AGB_VERSION } from "../../shared/agb";
 
 vi.hoisted(() => {
   process.env.STRIPE_SECRET_KEY ||= "sk_test_dummy_for_unit_tests";
@@ -923,6 +924,25 @@ describe("onboardingV2.createCheckout", () => {
     expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
   });
 
+  test("ohne oder mit veralteter AGB-Fassung → BAD_REQUEST, kein Stripe-Aufruf", async () => {
+    await expect(
+      caller().onboardingV2.createCheckout({
+        token: "tok",
+        billingInterval: "yearly",
+        b2bConfirmed: true,
+      })
+    ).rejects.toThrow(/AGB wurden aktualisiert/);
+    await expect(
+      caller().onboardingV2.createCheckout({
+        token: "tok",
+        billingInterval: "yearly",
+        b2bConfirmed: true,
+        agbVersion: "2000-01-01",
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
+  });
+
   test("ohne vollständiges Rechtliches → BAD_REQUEST, kein Stripe-Aufruf", async () => {
     // beforeEach: onboardingRow.legal* ist null, website.customerEmail null
     // → checkoutReady bleibt false.
@@ -931,6 +951,7 @@ describe("onboardingV2.createCheckout", () => {
         token: "tok",
         billingInterval: "yearly",
         b2bConfirmed: true,
+        agbVersion: AGB_VERSION,
       })
     ).rejects.toMatchObject({
       code: "BAD_REQUEST",
@@ -965,6 +986,7 @@ describe("onboardingV2.createCheckout", () => {
       token: "tok",
       billingInterval: "yearly",
         b2bConfirmed: true,
+        agbVersion: AGB_VERSION,
     });
 
     expect(result).toEqual({ url: "https://stripe/session" });
@@ -977,6 +999,7 @@ describe("onboardingV2.createCheckout", () => {
         token: "tok",
         billingInterval: "yearly",
         b2bConfirmedAt: expect.any(Number),
+        agbVersion: AGB_VERSION,
       })
     );
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
@@ -1027,6 +1050,7 @@ describe("onboardingV2.createCheckout", () => {
       token: "tok",
       billingInterval: "yearly",
         b2bConfirmed: true,
+        agbVersion: AGB_VERSION,
     });
 
     expect(mockedCheckout.createStudioCheckoutSession).toHaveBeenCalledWith(
@@ -1075,6 +1099,7 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufende
         token: "tok",
         billingInterval: "yearly",
         b2bConfirmed: true,
+        agbVersion: AGB_VERSION,
       })
     ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
     expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
@@ -1109,6 +1134,7 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufende
       token: "tok",
       billingInterval: "yearly",
         b2bConfirmed: true,
+        agbVersion: AGB_VERSION,
     });
     expect(result).toEqual({ url: "https://stripe/session" });
   });

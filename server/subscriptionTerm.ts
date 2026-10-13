@@ -43,6 +43,15 @@ export const SUB_META = {
 /** Metadatum (Session + Subscription) mit dem Zeitpunkt der B2B-Bestätigung. */
 export const B2B_META_KEY = "b2b_bestaetigt_at";
 
+/**
+ * Metadaten (Session + Subscription) zur AGB-Zustimmung: akzeptierte Fassung
+ * (shared/agb.ts AGB_VERSION) und Zeitpunkt. Das Häkchen im Studio deckt
+ * B2B und AGB gemeinsam ab, der Zeitpunkt ist also derselbe wie
+ * `b2b_bestaetigt_at`.
+ */
+export const AGB_VERSION_META_KEY = "agb_version";
+export const AGB_ACCEPTED_META_KEY = "agb_akzeptiert_at";
+
 /** Metadaten für eine neue Subscription (Checkout). */
 export function subscriptionMetadataFor(
   tariff: Tariff

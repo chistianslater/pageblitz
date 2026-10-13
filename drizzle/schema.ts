@@ -187,6 +187,10 @@ export const subscriptions = mysqlTable("subscriptions", {
   //                     im Checkout (Stripe-Metadatum b2b_bestaetigt_at)
   billingAnchorAt: bigint("billingAnchorAt", { mode: "number" }),
   b2bConfirmedAt: bigint("b2bConfirmedAt", { mode: "number" }),
+  //   agbVersion        im Checkout akzeptierte AGB-Fassung (shared/agb.ts
+  //                     AGB_VERSION, Stripe-Metadatum agb_version); der
+  //                     Zeitpunkt ist b2bConfirmedAt (ein Häkchen für beides)
+  agbVersion: varchar("agbVersion", { length: 32 }),
   // Finding I1: die Checkout-E-Mail (session.customer_details?.email ??
   // session.customer_email), lowercase/getrimmt, EINMALIG vom Webhook
   // gesetzt und danach nie mehr verändert — im Gegensatz zu
