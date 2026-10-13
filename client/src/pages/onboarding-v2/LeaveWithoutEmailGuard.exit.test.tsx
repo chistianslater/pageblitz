@@ -14,8 +14,9 @@ import {
   resetExitIntentForTests,
 } from "./exitIntent";
 
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 const track = vi.mocked(trackStudioEvent);
 let container: HTMLDivElement;
@@ -56,13 +57,15 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function mount(props: Partial<React.ComponentProps<typeof LeaveWithoutEmailGuard>> = {}) {
+function mount(
+  props: Partial<React.ComponentProps<typeof LeaveWithoutEmailGuard>> = {}
+) {
   const onSubmitEmail = props.onSubmitEmail ?? vi.fn(async () => {});
   act(() => {
     root.render(
       <LeaveWithoutEmailGuard
         armed
-        exitIntentEngaged
+        siteReady
         onSubmitEmail={onSubmitEmail}
         {...props}
       />
@@ -82,13 +85,63 @@ function flickOut(exitY = -5, exitX = 400) {
   act(() => {
     const t0 = performance.now();
     document.dispatchEvent(
-      new MouseEvent("mousemove", { clientX: exitX, clientY: 120, bubbles: true })
+      new MouseEvent("mousemove", {
+        clientX: exitX,
+        clientY: 120,
+        bubbles: true,
+      })
     );
     vi.advanceTimersByTime(30);
     void t0;
     document.documentElement.dispatchEvent(
       new MouseEvent("mouseout", {
         clientX: exitX,
+        clientY: exitY,
+        relatedTarget: null,
+        bubbles: true,
+      })
+    );
+  });
+}
+
+/** Gleich-origin-iframe mit festem Rechteck (jsdom kennt kein Layout). */
+function addFrame(top: number): HTMLIFrameElement {
+  const frame = document.createElement("iframe");
+  act(() => {
+    document.body.appendChild(frame);
+  });
+  frame.getBoundingClientRect = () =>
+    ({
+      top,
+      left: 0,
+      width: 800,
+      height: 600,
+      right: 800,
+      bottom: top + 600,
+      x: 0,
+      y: top,
+      toJSON() {},
+    }) as DOMRect;
+  Object.defineProperty(frame, "clientWidth", { value: 800 });
+  Object.defineProperty(frame, "clientHeight", { value: 600 });
+  return frame;
+}
+
+function flickOutOfFrame(frame: HTMLIFrameElement, exitY: number) {
+  const doc = frame.contentDocument!;
+  const win = frame.contentWindow! as unknown as typeof window;
+  act(() => {
+    doc.dispatchEvent(
+      new win.MouseEvent("mousemove", {
+        clientX: 300,
+        clientY: 120,
+        bubbles: true,
+      })
+    );
+    vi.advanceTimersByTime(30);
+    doc.documentElement.dispatchEvent(
+      new win.MouseEvent("mouseout", {
+        clientX: 300,
         clientY: exitY,
         relatedTarget: null,
         bubbles: true,
@@ -157,16 +210,70 @@ describe("LeaveWithoutEmailGuard — Exit-Intent", () => {
     expect(modal()).toBeNull();
   });
 
-  test("nicht ohne Interaktion — erst nach einem Klick im Studio", () => {
-    mount({ exitIntentEngaged: false });
-    wait(20_000);
+  test("die 20 s zählen erst ab fertiger Website, nicht ab Mount", () => {
+    mount({ siteReady: false });
+    wait(30_000);
     flickOut();
     expect(modal()).toBeNull();
-    act(() => {
-      document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
-    });
+    mount({ siteReady: true });
+    wait(10_000);
+    flickOut();
+    expect(modal()).toBeNull();
+    wait(10_000);
     flickOut();
     expect(modal()).not.toBeNull();
+  });
+
+  test("Ecke über die Seite (clientX < 0) löst nicht aus", () => {
+    mount();
+    wait(20_000);
+    flickOut(-5, -5);
+    expect(modal()).toBeNull();
+  });
+
+  test("Verlassen aus dem Vorschau-iframe über die Oberkante wird erkannt (auch nachträglich eingefügt)", async () => {
+    mount();
+    wait(20_000);
+    const frame = addFrame(0);
+    // MutationObserver meldet das neue iframe als Microtask.
+    await act(async () => {});
+    flickOutOfFrame(frame, -3);
+    expect(modal()).not.toBeNull();
+  });
+
+  test("iframe-Oberkante mitten im Fenster (Vorschau unter der Leiste) zählt nicht", () => {
+    const frame = addFrame(135);
+    mount();
+    wait(20_000);
+    flickOutOfFrame(frame, -3);
+    expect(modal()).toBeNull();
+  });
+
+  test("nach iframe-Neuladen (load) hängen die Listener am neuen Dokument", () => {
+    const frame = addFrame(0);
+    mount();
+    wait(20_000);
+    act(() => {
+      frame.dispatchEvent(new Event("load"));
+    });
+    flickOutOfFrame(frame, -3);
+    expect(modal()).not.toBeNull();
+  });
+
+  test("Fokus kehrt nach dem Schließen zum vorher fokussierten Element zurück", () => {
+    const button = document.createElement("button");
+    button.textContent = "Texte";
+    document.body.appendChild(button);
+    button.focus();
+    mount();
+    wait(20_000);
+    flickOut();
+    expect(document.activeElement?.id).toBe("pb-leave-email");
+    const close = document.querySelector<HTMLButtonElement>(
+      'button[aria-label="Schließen"]'
+    )!;
+    act(() => close.click());
+    expect(document.activeElement).toBe(button);
   });
 
   test("nicht, solange ein anderer Dialog offen ist oder der Checkout läuft", () => {
@@ -198,7 +305,9 @@ describe("LeaveWithoutEmailGuard — Exit-Intent", () => {
     });
     const form = document.querySelector("form")!;
     await act(async () => {
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      form.dispatchEvent(
+        new Event("submit", { bubbles: true, cancelable: true })
+      );
     });
     expect(onSubmitEmail).toHaveBeenCalledWith("kunde@betrieb.de");
     expect(modal()).toBeNull();

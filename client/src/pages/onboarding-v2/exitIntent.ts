@@ -7,10 +7,12 @@
  *
  * Bewusst zurückhaltend gegen Fehlalarme:
  * - nur Desktop mit Maus (`pointer: fine` und Hover), nie Touch,
- * - erst nach 20 s im Studio und nach einer Interaktion (oder wenn die
- *   Generierung fertig ist),
- * - nur beim Verlassen über die OBERKANTE und mit Schwung nach oben —
- *   wer langsam zur Adressleiste fährt, wird nicht unterbrochen,
+ * - erst 20 s nachdem die Website fertig im Studio steht (Uhr startet mit
+ *   der fertigen Seite, nicht beim Laden/Generieren),
+ * - nur beim Verlassen über die OBERKANTE (nicht über eine Ecke zur Seite
+ *   hinaus) und mit Schwung nach oben — wer langsam zur Adressleiste fährt,
+ *   wird nicht unterbrochen; auch aus der Vorschau (gleich-origin-iframe,
+ *   Koordinaten in den Viewport umgerechnet),
  * - höchstens einmal pro Sitzung, nie neben einem anderen Dialog, nie im
  *   Checkout.
  */
@@ -31,13 +33,14 @@ export interface ExitIntentInput {
   otherDialogOpen: boolean;
   /** Das Leave-Modal selbst ist schon offen. */
   modalOpen: boolean;
-  /** Zeit seit Betreten des Studios. */
-  dwellMs: number;
-  /** Mindestens eine Interaktion oder Generierung fertig. */
-  engaged: boolean;
+  /** Zeit seit die Website fertig ist; null = noch nicht fertig. */
+  dwellMs: number | null;
   /** `mouseout` mit `relatedTarget === null` — Zeiger verlässt das Fenster. */
   leftWindow: boolean;
+  /** Austrittspunkt im Viewport des Studios. */
+  clientX: number;
   clientY: number;
+  viewportWidth: number;
   /** Tempo nach oben in px/ms; null = keine Bewegungsdaten. */
   speed: number | null;
 }
@@ -46,8 +49,10 @@ export function shouldShowExitIntent(i: ExitIntentInput): boolean {
   if (!i.armed || !i.finePointer) return false;
   if (i.alreadyShown || i.checkoutInProgress) return false;
   if (i.otherDialogOpen || i.modalOpen) return false;
-  if (i.dwellMs < EXIT_INTENT_MIN_DWELL_MS || !i.engaged) return false;
+  if (i.dwellMs === null || i.dwellMs < EXIT_INTENT_MIN_DWELL_MS) return false;
   if (!i.leftWindow || i.clientY > EXIT_INTENT_TOP_PX) return false;
+  // Ecke: über die Seite hinaus, nicht nach oben zum Schließen.
+  if (i.clientX < 0 || i.clientX > i.viewportWidth) return false;
   if (i.speed !== null && i.speed < EXIT_INTENT_MIN_SPEED) return false;
   return true;
 }
@@ -63,6 +68,22 @@ export function upwardSpeed(
   const dt = t - prev.t;
   if (dt <= 0) return dy > 0 ? Infinity : dy < 0 ? -Infinity : 0;
   return dy / dt;
+}
+
+/**
+ * Punkt im Vorschau-iframe → Studio-Viewport. Die Vorschau kann skaliert
+ * sein (Rechteck kleiner als das Dokument), daher mit Faktor.
+ */
+export function mapFramePoint(
+  rect: { top: number; left: number; width: number; height: number },
+  frameWidth: number,
+  frameHeight: number,
+  clientY: number,
+  clientX: number
+): { x: number; y: number } {
+  const sx = frameWidth > 0 ? rect.width / frameWidth : 1;
+  const sy = frameHeight > 0 ? rect.height / frameHeight : 1;
+  return { x: rect.left + clientX * sx, y: rect.top + clientY * sy };
 }
 
 type MatchMediaHost = { matchMedia?: (query: string) => { matches: boolean } };
@@ -135,30 +156,24 @@ export function otherDialogOpen(doc: Document): boolean {
 }
 
 /**
- * Betreten des Studios — einmal pro Seitenaufruf gemerkt, damit ein
- * Wechsel zwischen Generierungs-Screen und Studio (der Guard wird dabei neu
- * gemountet) die 20 s nicht neu startet.
+ * Zeitpunkt, an dem die Website fertig im Studio stand — einmal pro
+ * Seitenaufruf gemerkt, damit ein Neu-Mount des Guards die 20 s nicht neu
+ * startet.
  */
-let studioEnteredAt: number | null = null;
-let interacted = false;
+let siteReadyAt: number | null = null;
 
-export function noteStudioEntered(now: number): number {
-  if (studioEnteredAt === null) studioEnteredAt = now;
-  return studioEnteredAt;
+export function noteSiteReady(now: number): number {
+  if (siteReadyAt === null) siteReadyAt = now;
+  return siteReadyAt;
 }
 
-export function noteStudioInteraction(): void {
-  interacted = true;
-}
-
-export function studioInteracted(): boolean {
-  return interacted;
+export function siteReadySince(): number | null {
+  return siteReadyAt;
 }
 
 /** Nur für Tests: Modulzustand zurücksetzen. */
 export function resetExitIntentForTests(): void {
   shownInMemory = false;
   checkoutInProgress = false;
-  studioEnteredAt = null;
-  interacted = false;
+  siteReadyAt = null;
 }

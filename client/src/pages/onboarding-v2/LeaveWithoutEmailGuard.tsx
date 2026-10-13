@@ -4,13 +4,13 @@ import { trackStudioEvent } from "@/lib/studioEvents";
 import {
   exitIntentAlreadyShown,
   isFinePointerDevice,
+  mapFramePoint,
   markExitIntentShown,
-  noteStudioEntered,
-  noteStudioInteraction,
+  noteSiteReady,
   otherDialogOpen,
   shouldShowExitIntent,
+  siteReadySince,
   studioCheckoutInProgress,
-  studioInteracted,
   upwardSpeed,
 } from "./exitIntent";
 
@@ -98,7 +98,8 @@ interface LeaveWithoutEmailDialogProps {
  * Alert-Dialog beim Verlassen: die E-Mail wird DIREKT HIER erfasst
  * (User-Bug 2026-08-29: der frühere „E-Mail hinterlassen"-Button sprang zu
  * einem Feld, das auf vielen Screens gar nicht existierte). Kein
- * Backdrop-Dismiss; Escape springt ins E-Mail-Feld statt zu schließen.
+ * Backdrop-Dismiss; Escape und ✕ schließen (= bleiben, ohne E-Mail). Beim
+ * Schließen kehrt der Fokus zum vorher fokussierten Element zurück.
  */
 export function LeaveWithoutEmailDialog({
   open,
@@ -112,9 +113,22 @@ export function LeaveWithoutEmailDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Fokus: beim Öffnen ins E-Mail-Feld, beim Schließen zurück dorthin, wo
+  // er vorher war (nur [open] — onDismiss wechselt bei jedem Render).
   useEffect(() => {
     if (!open) return;
+    const previous =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     emailRef.current?.focus();
+    return () => {
+      if (previous?.isConnected) previous.focus();
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -171,9 +185,7 @@ export function LeaveWithoutEmailDialog({
         <h2 id="pb-leave-title">{copy.modalTitle}</h2>
         <p id="pb-leave-body">{copy.modalBody}</p>
         <form className="pb-studio-leave-modal-form" onSubmit={submit}>
-          <label htmlFor="pb-leave-email">
-            {copy.emailLabel}
-          </label>
+          <label htmlFor="pb-leave-email">{copy.emailLabel}</label>
           <input
             ref={emailRef}
             id="pb-leave-email"
@@ -225,10 +237,10 @@ interface LeaveWithoutEmailGuardProps {
    */
   initialPendingHref?: string | null;
   /**
-   * Exit-Intent zählt ohne eigene Interaktion als „beschäftigt“ (z. B.
-   * Generierung fertig, Studio steht). Sonst erst nach Klick/Taste.
+   * Website steht fertig im Studio — ab da laufen die 20 s bis zum
+   * Exit-Intent (exitIntent.ts). Ohne fertige Seite kein Exit-Intent.
    */
-  exitIntentEngaged?: boolean;
+  siteReady?: boolean;
 }
 
 type PendingLeave =
@@ -252,7 +264,7 @@ export function LeaveWithoutEmailGuard({
   armed,
   onSubmitEmail,
   initialPendingHref = null,
-  exitIntentEngaged = false,
+  siteReady = false,
 }: LeaveWithoutEmailGuardProps) {
   const [pending, setPending] = useState<PendingLeave | null>(() =>
     initialPendingHref ? { kind: "href", href: initialPendingHref } : null
@@ -260,8 +272,6 @@ export function LeaveWithoutEmailGuard({
   const allowBackRef = useRef(false);
   const pendingRef = useRef<PendingLeave | null>(pending);
   pendingRef.current = pending;
-  const engagedRef = useRef(exitIntentEngaged);
-  engagedRef.current = exitIntentEngaged;
 
   useEffect(() => {
     if (!armed) return;
@@ -321,20 +331,26 @@ export function LeaveWithoutEmailGuard({
     return () => window.removeEventListener("popstate", onPopState);
   }, [armed]);
 
+  useEffect(() => {
+    if (siteReady) noteSiteReady(Date.now());
+  }, [siteReady]);
+
   // Exit-Intent: Maus verlässt das Fenster schnell über die Oberkante
-  // (Regeln in ./exitIntent.ts). Desktop only, einmal pro Sitzung.
+  // (Regeln in ./exitIntent.ts). Desktop only, einmal pro Sitzung. Die
+  // Vorschau ist ein gleich-origin-iframe — dessen Ereignisse sieht das
+  // Studio-Dokument nicht, daher hängen dieselben Listener auch dort
+  // (Koordinaten in den Studio-Viewport umgerechnet, neu bei jedem load).
   useEffect(() => {
     if (!armed) return;
     if (!isFinePointerDevice(window)) return;
-    const enteredAt = noteStudioEntered(Date.now());
     let last: { y: number; t: number } | null = null;
-    const onMove = (event: MouseEvent) => {
-      last = { y: event.clientY, t: Date.now() };
+
+    const onPoint = (y: number) => {
+      last = { y, t: Date.now() };
     };
-    const onInteract = () => noteStudioInteraction();
-    const onOut = (event: MouseEvent) => {
-      if (event.relatedTarget !== null) return;
+    const onExit = (x: number, y: number) => {
       const now = Date.now();
+      const readyAt = siteReadySince();
       const show = shouldShowExitIntent({
         armed: true,
         finePointer: true,
@@ -342,26 +358,92 @@ export function LeaveWithoutEmailGuard({
         checkoutInProgress: studioCheckoutInProgress(),
         otherDialogOpen: otherDialogOpen(document),
         modalOpen: pendingRef.current !== null,
-        dwellMs: now - enteredAt,
-        engaged: engagedRef.current || studioInteracted(),
+        dwellMs: readyAt === null ? null : now - readyAt,
         leftWindow: true,
-        clientY: event.clientY,
-        speed: upwardSpeed(last, event.clientY, now),
+        clientX: x,
+        clientY: y,
+        viewportWidth: window.innerWidth,
+        speed: upwardSpeed(last, y, now),
       });
       if (!show) return;
       markExitIntentShown();
       setPending({ kind: "exit" });
       trackStudioEvent("exit_intent_gezeigt");
     };
+
+    const onMove = (event: MouseEvent) => onPoint(event.clientY);
+    const onOut = (event: MouseEvent) => {
+      if (event.relatedTarget !== null) return;
+      onExit(event.clientX, event.clientY);
+    };
     document.addEventListener("mousemove", onMove, { passive: true });
     document.addEventListener("mouseout", onOut);
-    document.addEventListener("pointerdown", onInteract, true);
-    document.addEventListener("keydown", onInteract, true);
+
+    // ── Vorschau-iframes ──
+    const frameCleanups = new Map<HTMLIFrameElement, () => void>();
+    const attachFrame = (frame: HTMLIFrameElement) => {
+      if (frameCleanups.has(frame)) return;
+      let detachDoc: (() => void) | null = null;
+      const bindDoc = () => {
+        detachDoc?.();
+        detachDoc = null;
+        let doc: Document | null = null;
+        try {
+          doc = frame.contentDocument; // fremde Origin → null/Fehler
+        } catch {
+          doc = null;
+        }
+        if (!doc) return;
+        const map = (event: MouseEvent) =>
+          mapFramePoint(
+            frame.getBoundingClientRect(),
+            frame.clientWidth,
+            frame.clientHeight,
+            event.clientY,
+            event.clientX
+          );
+        const move = (event: MouseEvent) => onPoint(map(event).y);
+        const out = (event: MouseEvent) => {
+          if (event.relatedTarget !== null) return;
+          const p = map(event);
+          onExit(p.x, p.y);
+        };
+        doc.addEventListener("mousemove", move, { passive: true });
+        doc.addEventListener("mouseout", out);
+        detachDoc = () => {
+          doc!.removeEventListener("mousemove", move);
+          doc!.removeEventListener("mouseout", out);
+        };
+      };
+      bindDoc();
+      frame.addEventListener("load", bindDoc);
+      frameCleanups.set(frame, () => {
+        frame.removeEventListener("load", bindDoc);
+        detachDoc?.();
+      });
+    };
+    const scanFrames = () => {
+      document.querySelectorAll("iframe").forEach(attachFrame);
+      for (const [frame, cleanup] of frameCleanups) {
+        if (!frame.isConnected) {
+          cleanup();
+          frameCleanups.delete(frame);
+        }
+      }
+    };
+    scanFrames();
+    const observer =
+      typeof MutationObserver === "function"
+        ? new MutationObserver(scanFrames)
+        : null;
+    observer?.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseout", onOut);
-      document.removeEventListener("pointerdown", onInteract, true);
-      document.removeEventListener("keydown", onInteract, true);
+      observer?.disconnect();
+      for (const cleanup of frameCleanups.values()) cleanup();
+      frameCleanups.clear();
     };
   }, [armed]);
 

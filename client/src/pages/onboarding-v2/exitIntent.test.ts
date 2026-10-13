@@ -5,6 +5,7 @@ import {
   EXIT_INTENT_STORAGE_KEY,
   exitIntentAlreadyShown,
   isFinePointerDevice,
+  mapFramePoint,
   markExitIntentShown,
   markStudioCheckoutStarted,
   resetExitIntentForTests,
@@ -22,8 +23,9 @@ const ready = (overrides: Partial<ExitIntentInput> = {}): ExitIntentInput => ({
   otherDialogOpen: false,
   modalOpen: false,
   dwellMs: EXIT_INTENT_MIN_DWELL_MS,
-  engaged: true,
   leftWindow: true,
+  clientX: 400,
+  viewportWidth: 1440,
   clientY: 0,
   speed: 2,
   ...overrides,
@@ -45,6 +47,16 @@ describe("shouldShowExitIntent", () => {
     expect(shouldShowExitIntent(ready({ leftWindow: false }))).toBe(false);
   });
 
+  test("Ecke über die Seite (clientX außerhalb des Fensters) zählt nicht", () => {
+    expect(shouldShowExitIntent(ready({ clientX: -4, clientY: -4 }))).toBe(
+      false
+    );
+    expect(shouldShowExitIntent(ready({ clientX: 1445, clientY: -4 }))).toBe(
+      false
+    );
+    expect(shouldShowExitIntent(ready({ clientX: 0 }))).toBe(true);
+  });
+
   test("langsames Hinfahren zur Adressleiste löst nicht aus", () => {
     expect(
       shouldShowExitIntent(ready({ speed: EXIT_INTENT_MIN_SPEED / 4 }))
@@ -63,10 +75,24 @@ describe("shouldShowExitIntent", () => {
     expect(shouldShowExitIntent(ready({ modalOpen: true }))).toBe(false);
   });
 
-  test("erst nach 20 s im Studio und mit Interaktion (oder fertiger Generierung)", () => {
+  test("erst 20 s nachdem die Website fertig ist", () => {
     expect(EXIT_INTENT_MIN_DWELL_MS).toBe(20_000);
     expect(shouldShowExitIntent(ready({ dwellMs: 19_999 }))).toBe(false);
-    expect(shouldShowExitIntent(ready({ engaged: false }))).toBe(false);
+    expect(shouldShowExitIntent(ready({ dwellMs: null }))).toBe(false);
+  });
+});
+
+describe("mapFramePoint", () => {
+  test("rechnet iframe-Koordinaten (inkl. Skalierung) in den Viewport um", () => {
+    const rect = { top: 135, left: 450, width: 480, height: 300 };
+    expect(mapFramePoint(rect, 960, 600, -3, 100)).toEqual({
+      x: 500,
+      y: 133.5,
+    });
+    const top = { top: 0, left: 0, width: 1440, height: 900 };
+    expect(mapFramePoint(top, 1440, 900, -2, 700)).toEqual({ x: 700, y: -2 });
+    // Ohne Breite/Höhe (versteckt): 1:1
+    expect(mapFramePoint(top, 0, 0, 5, 7)).toEqual({ x: 7, y: 5 });
   });
 });
 
@@ -118,7 +144,12 @@ describe("Sitzungs-Sperre und Checkout-Flag", () => {
   test("isFinePointerDevice: Maus ja, Touch/kein Hover nein", () => {
     const mm = (fine: boolean, hoverNone: boolean) => ({
       matchMedia: (q: string) => ({
-        matches: q === "(pointer: fine)" ? fine : q === "(hover: none)" ? hoverNone : false,
+        matches:
+          q === "(pointer: fine)"
+            ? fine
+            : q === "(hover: none)"
+              ? hoverNone
+              : false,
       }),
     });
     expect(isFinePointerDevice(mm(true, false))).toBe(true);
