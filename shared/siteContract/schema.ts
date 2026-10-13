@@ -53,9 +53,8 @@ export const SECTION_TYPES = [
   "partners",
   // Nur innerhalb von Page.sections gültig (siehe PageSectionSchema) — NICHT
   // Teil von SectionV2Schema (Startseiten-Sektionen), damit die
-  // Exhaustiveness-Checks ("const exhaustive: never = section") in den 14
-  // Pack-Renderern (client/src/components/site/packs/*/index.tsx) unverändert
-  // bleiben. Trotzdem Teil von SECTION_TYPES/SectionType, weil mehrere
+  // Exhaustiveness-Checks ("const exhaustive: never = section") der
+  // Render-Module unverändert bleiben. Trotzdem Teil von SECTION_TYPES/SectionType, weil mehrere
   // Record<SectionType, …>-Karten (SECTION_ANCHORS, SECTION_FIELD_DOC,
   // SECTION_LABELS) exhaustiv über SectionType sind und Task 3/4/5 diesen
   // Wert dort brauchen.

@@ -28,6 +28,8 @@
  */
 import { getDb, listWebsites, updateWebsite } from "../server/db";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
+import { asSystemDoc } from "../shared/designSystems/apply";
+import { assertV2SafeWrite } from "../server/v2WriteGuard";
 import { galerieBereinigen, type GalerieBild } from "../server/galerie";
 import { buildStockFallbackImages } from "../server/industryImages";
 
@@ -66,7 +68,8 @@ async function main(): Promise<void> {
   for (const website of alle) {
     const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
     if (!parsed.success) continue;
-    const doc = parsed.data;
+    // Geschrieben wird immer ein System-Dokument (rev 3).
+    const doc = asSystemDoc(parsed.data);
 
     if (website.status !== "preview") {
       uebersprungenVerkauft += 1;
@@ -126,6 +129,7 @@ async function main(): Promise<void> {
       const sections = [...doc.sections];
       sections[galerieIndex] = { ...galerie, images: bilder };
       const naechstes = WebsiteDataV2Schema.parse({ ...doc, sections });
+      assertV2SafeWrite(website.websiteData, naechstes);
       await updateWebsite(website.id, { websiteData: naechstes as never });
     }
   }

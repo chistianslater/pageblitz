@@ -1,32 +1,24 @@
 /**
  * Reine Helfer für die Admin-Websites-Liste (`WebsitesPage.tsx`), bewusst
  * ohne React/tRPC-Abhängigkeit gehalten, damit sie ohne Testharness
- * unit-testbar bleiben (B5 Task 3: Pack-Anzeige + Studio-Link statt
- * veraltetem 79-€-CheckoutDialog).
+ * unit-testbar bleiben (Designrichtung + Studio-Link).
  */
-import { STYLE_PACKS } from "@shared/stylePacks";
-import type { PackId } from "@shared/siteContract/types";
+import { getSystem } from "@shared/designSystems/registry";
+import { getPalette } from "@shared/designSystems/palette";
+import { systemDocOf } from "@/lib/systemDoc";
 
-const FALLBACK_PACK_NAME = "—";
-
-function isPackId(value: string): value is PackId {
-  return value in STYLE_PACKS;
-}
+const FALLBACK_DESIGN_NAME = "—";
 
 /**
- * Liest `stylePackId` aus `websiteData` (v2) und liefert den Pack-Namen.
- * v1-Websites (kein `stylePackId`) oder unbekannte/nicht mehr registrierte
- * Packs liefern den Fallback "—" statt abzustürzen.
+ * Designrichtung einer Website: „System · Farbstimmung“ (z. B. „Raster ·
+ * Papier“). Alte Dokumente laufen über `systemDocOf` und zeigen ihr
+ * Hauptsystem; ohne gültiges v2-Dokument kommt der Fallback „—“.
  */
-export function packNameFor(websiteData: unknown): string {
-  if (!websiteData || typeof websiteData !== "object") {
-    return FALLBACK_PACK_NAME;
-  }
-  const stylePackId = (websiteData as { stylePackId?: unknown }).stylePackId;
-  if (typeof stylePackId !== "string" || !isPackId(stylePackId)) {
-    return FALLBACK_PACK_NAME;
-  }
-  return STYLE_PACKS[stylePackId]?.name ?? FALLBACK_PACK_NAME;
+export function designNameFor(websiteData: unknown): string {
+  const doc = systemDocOf(websiteData);
+  const def = doc?.system ? getSystem(doc.system) : undefined;
+  if (!doc || !def) return FALLBACK_DESIGN_NAME;
+  return `${def.name} · ${getPalette(def, doc.palette).name}`;
 }
 
 /**

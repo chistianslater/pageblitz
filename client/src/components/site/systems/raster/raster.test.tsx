@@ -55,14 +55,6 @@ describe("Raster: Grundgerüst", () => {
     );
   });
 
-  test("packOverride wirkt bei rev 3 nicht", () => {
-    const html = renderToStaticMarkup(
-      <SiteRenderer data={rasterDoc()} packOverride="werkbank" now={TEST_NOW} />
-    );
-    expect(html).toContain('data-pb-system="raster"');
-    expect(html).not.toContain("pb-werkbank");
-  });
-
   test("Modul-CSS nutzt nur System-Variablen, keine Pack-Variablen", () => {
     const part = RASTER_CSS.slice(
       RASTER_CSS.indexOf(".pb-raster"),

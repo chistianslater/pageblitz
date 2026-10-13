@@ -34,14 +34,14 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
       // aus — sonst blieben Sektionen unterhalb des Folds im fullPage-
       // Screenshot unsichtbar.
       await page.emulateMedia({ reducedMotion: "reduce" });
-      await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
+      await page.goto("/dev/site-preview?system=raster&fixture=features");
       await page.waitForLoadState("networkidle");
       await waitForContactIslandMounted(page);
       await expect(page.getByRole("button", { name: "Chat" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Termin" })).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
       await expect(page).toHaveScreenshot(
-        `islands-werkbank-features-${name}.png`,
+        `islands-raster-features-${name}.png`,
         { fullPage: true, animations: "disabled" }
       );
     });
@@ -51,7 +51,7 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
     page,
   }) => {
     await page.setViewportSize(VIEWPORTS.desktop);
-    await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
+    await page.goto("/dev/site-preview?system=raster&fixture=features");
     await page.waitForLoadState("networkidle");
     await waitForContactIslandMounted(page);
 
@@ -64,16 +64,16 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
     await expect(dialog).toContainText(/nach der Freischaltung/);
     await page.evaluate(() => document.fonts.ready);
     await expect(dialog).toHaveScreenshot(
-      "islands-werkbank-features-termin-dialog.png"
+      "islands-raster-features-termin-dialog.png"
     );
   });
 
-  test("FAB „Chat“ öffnet klassisches Chatfenster mit Pack-Schrift", async ({
+  test("FAB „Chat“ öffnet klassisches Chatfenster mit der Schrift des Systems", async ({
     page,
   }) => {
     await page.setViewportSize(VIEWPORTS.desktop);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
+    await page.goto("/dev/site-preview?system=raster&fixture=features");
     await page.waitForLoadState("networkidle");
     await waitForContactIslandMounted(page);
 
@@ -91,18 +91,19 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
       el => getComputedStyle(el).fontFamily
     );
     expect(fontFamily.toLowerCase()).not.toMatch(/times/);
-    expect(fontFamily).toMatch(/Inter/i);
+    // Raster setzt Geist (--sys-font-text → --pb-font-body der Inseln).
+    expect(fontFamily).toMatch(/Geist/i);
 
     await page.evaluate(() => document.fonts.ready);
     await expect(dialog).toHaveScreenshot(
-      "islands-werkbank-features-chat-dialog.png"
+      "islands-raster-features-chat-dialog.png"
     );
   });
 
   test("Chatfenster auf Mobil als Blatt von unten", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.mobil);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
+    await page.goto("/dev/site-preview?system=raster&fixture=features");
     await page.waitForLoadState("networkidle");
     await waitForContactIslandMounted(page);
 
@@ -112,7 +113,7 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
     await expect(dialog).toContainText("Online");
     await page.evaluate(() => document.fonts.ready);
     await expect(dialog).toHaveScreenshot(
-      "islands-werkbank-features-chat-dialog-mobil.png"
+      "islands-raster-features-chat-dialog-mobil.png"
     );
   });
 

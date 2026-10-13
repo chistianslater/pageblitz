@@ -1,18 +1,50 @@
 import { describe, expect, test } from "vitest";
-import { packNameFor, studioHrefFor } from "./websitesPageLogic";
+import { designNameFor, studioHrefFor } from "./websitesPageLogic";
+import { getFixture } from "@shared/siteContract/fixtures";
+import {
+  withDesignSystem,
+  withPrimarySystem,
+} from "@shared/designSystems/apply";
+import { getSystem } from "@shared/designSystems/registry";
 
-describe("packNameFor", () => {
-  test("bekannte stylePackId → Pack-Name", () => {
-    expect(packNameFor({ stylePackId: "werkbank" })).toBe("Werkbank");
-    expect(packNameFor({ stylePackId: "zunft" })).toBe("Zunft");
+describe("designNameFor", () => {
+  test("System-Dokument → „System · Farbstimmung“", () => {
+    const raster = getSystem("raster")!;
+    const doc = withDesignSystem(
+      getFixture("werkbank", "full"),
+      "raster",
+      raster.palettes[2].id
+    );
+    expect(designNameFor(doc)).toBe(
+      `${raster.name} · ${raster.palettes[2].name}`
+    );
   });
-  test("unbekannte stylePackId → Fallback", () => {
-    expect(packNameFor({ stylePackId: "nicht-registriert" })).toBe("—");
+
+  test("ohne gewählte Palette gilt die erste Farbstimmung", () => {
+    const journal = getSystem("journal")!;
+    const { palette: _p, ...doc } = withDesignSystem(
+      getFixture("salon-noir", "full"),
+      "journal"
+    );
+    expect(designNameFor(doc)).toBe(
+      `${journal.name} · ${journal.palettes[0].name}`
+    );
   });
-  test("keine stylePackId (v1-Website) → Fallback", () => {
-    expect(packNameFor({})).toBe("—");
-    expect(packNameFor(null)).toBe("—");
-    expect(packNameFor(undefined)).toBe("—");
+
+  test("altes Dokument (ohne System) zeigt sein Hauptsystem, nie den Pack-Namen", () => {
+    const old = getFixture("zunft", "full");
+    const primary = withPrimarySystem(old);
+    const def = getSystem(primary.system!)!;
+    const name = designNameFor(old);
+    expect(name.startsWith(`${def.name} · `)).toBe(true);
+    expect(name).not.toContain("Zunft");
+  });
+
+  test("kein v2-Dokument → Fallback", () => {
+    expect(designNameFor({})).toBe("—");
+    expect(designNameFor({ stylePackId: "werkbank" })).toBe("—");
+    expect(designNameFor(null)).toBe("—");
+    expect(designNameFor(undefined)).toBe("—");
   });
 });
 

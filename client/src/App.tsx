@@ -25,10 +25,6 @@ const PageblitzCookieBanner = lazy(
   () => import("./components/PageblitzCookieBanner")
 );
 const NotFound = lazy(() => import("@/pages/NotFound"));
-const DesignLab = import.meta.env.DEV
-  ? lazy(() => import("./pages/design-lab/DesignLab"))
-  : NotFound;
-const SystemDesignReview = import.meta.env.DEV ? lazy(() => import("./pages/design-lab/SystemDesignReview")) : NotFound;
 const PageblitzImpressum = lazy(() => import("./pages/PageblitzImpressum"));
 const PageblitzDatenschutz = lazy(() => import("./pages/PageblitzDatenschutz"));
 
@@ -208,15 +204,11 @@ function Router() {
   return (
     <Suspense key={location} fallback={<PageLoader />}>
       <Switch>
-        {import.meta.env.DEV && <Route path="/design-system" component={SystemDesignReview} />}
-        {import.meta.env.DEV && (
-          <Route path="/design-lab" component={DesignLab} />
-        )}
         <Route path="/" component={LandingPage} />
         <Route path="/impressum" component={PageblitzImpressum} />
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
         <Route path="/start" component={StartPage} />
-        {/* Interne Pack-Galerie — seit 2026-08-31 nur für Admins
+        {/* Interne System-Übersicht — seit 2026-08-31 nur für Admins
             (Betreiber: „auf jeden Fall hinter Admin-Login"). */}
         <Route path="/design-review">
           {() => (
@@ -314,9 +306,7 @@ function AppContent() {
 
   // Kunden-Website-Routen: kein PageBlitz-Banner (auch bei Subdomain-Zugriff)
   const isCustomerSite =
-    location.startsWith("/site/") ||
-    !!getCustomerSubdomain() ||
-    (import.meta.env.DEV && (location === "/design-lab" || location === "/design-system"));
+    location.startsWith("/site/") || !!getCustomerSubdomain();
 
   return (
     <>

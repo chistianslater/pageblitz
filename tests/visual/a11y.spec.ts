@@ -1,6 +1,5 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { PACK_IDS } from "@shared/siteContract/types";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 
 // Konsistent mit client/src/lib/consent.ts (CONSENT_KEY) und dem gleichnamigen
@@ -47,7 +46,7 @@ test.beforeEach(async ({ page }) => {
   // Statischer Prüfstand: Der Landing-Scroll-Scrub (GSAP) hält Sektionen
   // unterhalb des Folds im Ausgangszustand (Opacity .3) — axe würde den
   // Übergangszustand statt des Lesezustands messen. Mit reduced-motion
-  // rendert alles statisch-sichtbar (wie packs.spec/studio.spec).
+  // rendert alles statisch-sichtbar (wie systems.spec/studio.spec).
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
 
@@ -105,58 +104,66 @@ test.describe("A11y (axe): Landingpage", () => {
   });
 });
 
-test.describe("A11y (axe): Demo-Seiten je Pack", () => {
-  for (const pack of PACK_IDS) {
-    test(`/demo/${pack}`, async ({ page }) => {
+/**
+ * Öffentliche System-Demos (`/demo/system/<System>/<Beispiel>`) — dieselben
+ * Ziele, auf die die alten Pack-Demos per 301 zeigen [E9]: je System ein
+ * Beispiel, für das es Hauptsystem ist. Gleiches Gate: 0 critical/serious.
+ */
+const SYSTEM_DEMOS = [
+  "/demo/system/journal/friseur",
+  "/demo/system/raster/steuerberater",
+  "/demo/system/werkstoff/schreinerei",
+  "/demo/system/plakat/musikschule",
+  "/demo/system/klar/zahnarzt",
+  "/demo/system/nacht/restaurant",
+] as const;
+
+test.describe("A11y (axe): System-Demos", () => {
+  for (const path of SYSTEM_DEMOS) {
+    test(path, async ({ page }) => {
       await skipCookieBanner(page);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(`/demo/${pack}`);
+      await page.goto(path);
       await page.waitForLoadState("networkidle");
-      await expectNoSeriousViolations(page, `/demo/${pack}`);
+      await expectNoSeriousViolations(page, path);
     });
   }
 });
 
-/**
- * Mobile Stichprobe (B7 Welle-0-Review, Important 2): die Q4-Mobil-Nav-
- * Umstellung (zentrierte Header — Logo Zeile 1, Links als kompakte Zeilen
- * darunter, siehe Welle-0-Bericht) betrifft genau diese drei Packs; die
- * Desktop-Läufe oben decken den 390px-Zustand nicht ab. Gleiches Gate:
- * 0 critical/serious.
- */
-test.describe("A11y (axe): Demo-Seiten Mobil 390 (Q4-Packs)", () => {
-  for (const pack of ["salon-noir", "gusto", "zunft"] as const) {
-    test(`/demo/${pack} Mobile 390`, async ({ page }) => {
+test.describe("A11y (axe): System-Demos Mobil 390 (Stichprobe)", () => {
+  for (const path of [SYSTEM_DEMOS[0], SYSTEM_DEMOS[3], SYSTEM_DEMOS[5]]) {
+    test(`${path} Mobile 390`, async ({ page }) => {
       await skipCookieBanner(page);
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto(`/demo/${pack}`);
+      await page.goto(path);
       await page.waitForLoadState("networkidle");
-      await expectNoSeriousViolations(page, `/demo/${pack} (Mobile 390)`);
+      await expectNoSeriousViolations(page, `${path} (Mobile 390)`);
     });
   }
 });
 
 /**
- * Stichprobe (Plan B6, Task 4): die neue pageHeader-Sektion + Nav-Umstellung
- * auf `buildNavItems` (inkl. `aria-current`) landet in allen 14 Packs
- * identisch (siehe `moduleParity.test.ts` für die vitest-Abdeckung aller
- * 14). Hier reichen 3 strukturell unterschiedliche Packs als E2E-Stichprobe
- * (axe braucht echtes Rendering/Layout, das vitest+renderToStaticMarkup
- * nicht prüft): werkbank (einspaltige Nav), gusto (links/rechts-geteilte
- * Nav, siehe packs/gusto/index.tsx), kanzlei (einspaltige Nav + zusätzlicher
- * Hero-CTA-Link im selben Nav-Container).
+ * Unterseite (pageHeader + `aria-current` in der Navigation) je System über
+ * die Dev-Vorschau (`?seite=`): axe braucht echtes Rendering/Layout, das
+ * vitest+renderToStaticMarkup nicht prüft.
  */
-test.describe("A11y (axe): Demo-Unterseiten je Pack (Stichprobe)", () => {
-  for (const pack of ["werkbank", "gusto", "kanzlei"] as const) {
-    test(`/demo/${pack}/leistungen-im-detail`, async ({ page }) => {
+test.describe("A11y (axe): Unterseite je System", () => {
+  for (const system of [
+    "journal",
+    "raster",
+    "werkstoff",
+    "plakat",
+    "klar",
+    "nacht",
+  ] as const) {
+    test(`${system} /leistungen-im-detail`, async ({ page }) => {
       await skipCookieBanner(page);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(`/demo/${pack}/leistungen-im-detail`);
-      await page.waitForLoadState("networkidle");
-      await expectNoSeriousViolations(
-        page,
-        `/demo/${pack}/leistungen-im-detail`
+      await page.goto(
+        `/dev/site-preview?system=${system}&fixture=full&seite=leistungen-im-detail`
       );
+      await page.waitForLoadState("networkidle");
+      await expectNoSeriousViolations(page, `${system} /leistungen-im-detail`);
     });
   }
 });

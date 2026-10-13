@@ -72,9 +72,8 @@ body {
    (Quelle/Lizenz: dortige README.md + OFL.txt), per `<link rel="preload"
    as="font">` in `client/index.html` früh angestoßen. Kein Google-Fonts-
    Request mehr auf `/` (vorher: fonts.googleapis.com-CSS + fonts.gstatic.com-
-   WOFF2 = zwei fremde Origins im kritischen Pfad). v2-Packs bringen ihre
-   Fonts selbst mit (SSR-Head aus der Verfassung, CSR-Fallback über
-   `client/src/lib/packFonts.ts`). */
+   WOFF2 = zwei fremde Origins im kritischen Pfad). Die Designsysteme der
+   Kundenseiten bringen ihre Schriften selbst mit (/fonts/systems/). */
 @font-face {
   font-family: "Space Grotesk";
   font-style: normal;
@@ -2004,33 +2003,6 @@ html.lp-nav-open body {
 /* Dunkle Feature-Bühne: trennt die drei „arbeitenden" Funktionen sichtbar
    von Template-/Studio-Beweisen und bricht die helle Seitenmonotonie.
    Zeichnungen bleiben als helle technische Karten erhalten. */
-/* Horizontales Karussell (PackShowcase): native Scrollbar ausblenden, der
-   Scroll-Bereich selbst bleibt per Touch/Trackpad/Tastatur (Pfeil-Buttons)
-   bedienbar. */
-.pb-carousel-track {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  /* Weicher Auslauf statt harter Kante (2026-08-29): rechts stärker,
-     links dezent — signalisiert „hier geht es weiter". */
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    #000 2.5%,
-    #000 86%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    #000 2.5%,
-    #000 86%,
-    transparent 100%
-  );
-}
-.pb-carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
    PAGEBLITZ DESIGN SYSTEM (v2)
    All generated website layouts use these tokens for consistent quality.

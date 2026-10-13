@@ -30,8 +30,7 @@ export { OfferEditor, validateOffer };
  * (`prefersMenu: true`, z. B. gusto/zunft/marktplatz — siehe
  * shared/stylePacks/types.ts) starten im Speisekarten- statt
  * Leistungen-Modus (B4c Task 7). Unbekannte/nicht registrierte Pack-IDs
- * fallen auf FALLBACK_PACK zurück (kein prefersMenu → Leistungen), analog
- * zu client/src/lib/packAccent.ts.
+ * fallen auf FALLBACK_PACK zurück (kein prefersMenu → Leistungen).
  */
 export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
   const services = doc.sections.find(

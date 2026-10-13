@@ -1,5 +1,4 @@
 import type { DesignSystemId } from "../../../shared/designSystems/types";
-import { mountSiteEntrance } from "../components/site/artDirection/siteEntrance";
 import { mountJournalMotion } from "../components/site/systems/journal/motion";
 import { mountRasterMotion } from "../components/site/systems/raster/motion";
 import { mountWerkstoffMotion } from "../components/site/systems/werkstoff/motion";
@@ -20,10 +19,7 @@ export const ISLAND_MOTION: Partial<Record<DesignSystemId, Mount>> = {
   nacht: mountNachtMotion,
 };
 
-/**
- * Wurzel eines Designsystems. Alte Rev-2-Packs tragen teils dieselbe Klasse
- * (`.pb-plakat`, `.pb-raster`) — erst `data-pb-system` macht es eindeutig.
- */
+/** Wurzel eines Designsystems (Klasse plus `data-pb-system`). */
 export function systemRootSelector(id: DesignSystemId): string {
   return `.pb-${id}[data-pb-system="${id}"]`;
 }
@@ -33,7 +29,6 @@ export function mountSiteMotion(doc: ParentNode): Array<() => void> {
   const all = (selector: string, mount: Mount) =>
     Array.from(doc.querySelectorAll<HTMLElement>(selector)).map(mount);
   return [
-    ...all('.pb-site[data-pb-revision="2"]', mountSiteEntrance),
     ...Object.entries(ISLAND_MOTION).flatMap(([id, mount]) =>
       all(systemRootSelector(id as DesignSystemId), mount!)
     ),

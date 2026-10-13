@@ -1,7 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import "../../packs";
 import "../registry";
 import { SiteRenderer } from "../../SiteRenderer";
 import { getFixture } from "../../../../../../shared/siteContract/fixtures";

@@ -22,7 +22,6 @@
 - Nicht enthalten: latin-ext/vietnamese-Subsets (Zeichen außerhalb latin
   fallen auf `system-ui`), kursive Schnitte (Space Grotesk hat keine).
 
-Die v2-Style-Packs der Kundenseiten laden ihre eigenen Schriften weiterhin
-von Google Fonts (SSR-Head aus der Pack-Verfassung bzw.
-`client/src/lib/packFonts.ts` im CSR-Fallback) — das ist hier bewusst nicht
-enthalten.
+Die Designsysteme der Kundenseiten bringen ihre Schriften selbst mit
+(`client/public/fonts/systems/`, `@font-face` im System-CSS, Vorladen im
+SSR-Kopf) — diese Datei beschreibt nur die Pageblitz-eigene Schrift.

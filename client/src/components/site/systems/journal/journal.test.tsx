@@ -1,7 +1,6 @@
 import React from "react";
 import { describe, expect, test } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import "../../packs";
 import "../registry";
 import { SiteRenderer } from "../../SiteRenderer";
 import { getFixture } from "../../../../../../shared/siteContract/fixtures";
@@ -70,18 +69,6 @@ describe("Journal: Grundgerüst", () => {
       /data-pb-(hero|services|about|gallery|deco|density|image|he)=/
     );
     expect(html).not.toContain("data-pb-slot");
-  });
-
-  test("packOverride wirkt bei rev 3 nicht", () => {
-    const html = renderToStaticMarkup(
-      <SiteRenderer
-        data={journalDoc()}
-        packOverride="werkbank"
-        now={new Date()}
-      />
-    );
-    expect(html).toContain('data-pb-system="journal"');
-    expect(html).not.toContain("pb-werkbank");
   });
 
   test("Kopfzeile mit Betriebsname und Navigation, Fuß mit Adresse", () => {

@@ -12,8 +12,12 @@ import express, { type Express } from "express";
 import supertest from "supertest";
 import type { Server } from "http";
 import { getFixture } from "../../shared/siteContract/fixtures";
-import { withDesignSystem } from "../../shared/designSystems/apply";
+import {
+  withDesignSystem,
+  withPrimarySystem,
+} from "../../shared/designSystems/apply";
 import { restoreDoc } from "../onboardingV2/versions";
+import { LANDING_SHOWROOM } from "../../shared/landingShowroom";
 
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
@@ -22,7 +26,11 @@ vi.mock("../db", () => ({
 }));
 
 // Import nach vi.mock, damit der Mock vor dem ersten Aufruf von registerSsrRoutes greift.
-import { invalidateSsrCache, registerSsrRoutes } from "./routes";
+import {
+  invalidateSsrCache,
+  legacyDemoTarget,
+  registerSsrRoutes,
+} from "./routes";
 import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
 
 /**
@@ -87,7 +95,7 @@ describe("SSR routes", () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('data-welcome="Willkommen in der Demo!"');
   });
-  test("unbekanntes Pack → 400 mit Meldung", async () => {
+  test("unbekannte Fixture (?pack=) → 400 mit Meldung", async () => {
     const app = express();
     registerSsrRoutes(app);
     const res = await request(app).get(
@@ -96,11 +104,62 @@ describe("SSR routes", () => {
     expect(res.status).toBe(400);
   });
 
-  test("unbekanntes Pack (Sonderzeichen) → 400-Body reflektiert den Parameter NICHT (kein reflected XSS)", async () => {
+  test("unbekannte Fixture (Sonderzeichen) → 400-Body reflektiert den Parameter NICHT (kein reflected XSS)", async () => {
     const app = express();
     registerSsrRoutes(app);
     const res = await request(app).get(
       "/dev/site-preview?pack=%3Cscript%3E&fixture=full"
+    );
+    expect(res.status).toBe(400);
+    expect(res.text).not.toContain("<script");
+  });
+
+  test("dev-preview ohne ?system= rendert das Hauptsystem der Fixture", async () => {
+    const app = express();
+    registerSsrRoutes(app);
+    for (const pack of ["werkbank", "gusto", "salon-noir"] as const) {
+      const res = await request(app).get(
+        `/dev/site-preview?pack=${pack}&fixture=full`
+      );
+      const primary = withPrimarySystem(getFixture(pack, "full")).system;
+      expect(res.status).toBe(200);
+      expect(res.text).toContain(`data-pb-system="${primary}"`);
+    }
+  });
+
+  test("dev-preview ignoriert ?variant= und ?hero= (Packs entfernt)", async () => {
+    const plain = await request(buildAppWithFallback()).get(
+      "/dev/site-preview?pack=werkbank&fixture=full"
+    );
+    const res = await request(buildAppWithFallback()).get(
+      "/dev/site-preview?pack=werkbank&fixture=full&variant=7&hero=collage"
+    );
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain("data-pb-hero");
+    expect(res.text.replace(/:\d{4,5}/g, "")).toBe(
+      plain.text.replace(/:\d{4,5}/g, "")
+    );
+  });
+
+  test("dev-preview ?seite= rendert eine Unterseite der Fixture; unbekannt → 404", async () => {
+    const app = buildAppWithFallback();
+    const page = await request(app).get(
+      "/dev/site-preview?system=raster&fixture=full&seite=leistungen-im-detail"
+    );
+    expect(page.status).toBe(200);
+    expect(page.text).toContain(
+      "Ein genauerer Blick auf unser Angebot, Schritt für Schritt."
+    );
+    const unknown = await request(app).get(
+      "/dev/site-preview?system=raster&fixture=full&seite=%3Cscript%3E"
+    );
+    expect(unknown.status).toBe(404);
+    expect(unknown.text).not.toContain("<script");
+  });
+
+  test("dev-preview: unbekannte Fixture-Art → 400 ohne Reflektieren", async () => {
+    const res = await request(buildAppWithFallback()).get(
+      "/dev/site-preview?system=journal&fixture=%3Cscript%3E"
     );
     expect(res.status).toBe(400);
     expect(res.text).not.toContain("<script");
@@ -279,141 +338,118 @@ describe("SSR routes", () => {
 
   });
 
-  describe("GET /demo/:pack", () => {
-    test("gültiges Pack → 200, noindex, 1h-Cache, enthält den Fixture-Business-Namen", async () => {
-      const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/werkbank");
-      const fixture = getFixture("werkbank", "full");
+  describe("alte Pack-Demos /demo/:pack → 301 auf die System-Demo [E9]", () => {
+    // Erstes Beispiel mit dieser Fixture in seinem Hauptsystem;
+    // raster (keine eigene Fixture unter den Beispielen) → Steuerberater.
+    const E9: Record<string, string> = {
+      werkbank: "/demo/system/werkstoff/schreinerei",
+      patina: "/demo/system/klar/physio",
+      kanzlei: "/demo/system/raster/steuerberater",
+      "salon-noir": "/demo/system/journal/friseur",
+      morgenlicht: "/demo/system/klar/zahnarzt",
+      marktplatz: "/demo/system/plakat/musikschule",
+      gusto: "/demo/system/nacht/restaurant",
+      landgut: "/demo/system/raster/gaertnerei",
+      atelier: "/demo/system/journal/fotografie",
+      klarwerk: "/demo/system/raster/it",
+      verve: "/demo/system/plakat/training",
+      zunft: "/demo/system/werkstoff/baeckerei",
+      schimmer: "/demo/system/journal/kosmetik",
+      fundament: "/demo/system/raster/makler",
+      karat: "/demo/system/werkstoff/laden",
+      plakat: "/demo/system/journal/tattoo",
+      raster: "/demo/system/raster/steuerberater",
+      strom: "/demo/system/werkstoff/elektro",
+      riviera: "/demo/system/journal/ferienwohnung",
+      ernte: "/demo/system/werkstoff/cafe",
+    };
 
-      expect(res.status).toBe(200);
-      expect(res.headers["x-robots-tag"]).toBe("noindex, nofollow");
-      expect(res.headers["cache-control"]).toContain("public");
-      expect(res.headers["cache-control"]).toContain("max-age=3600");
-      expect(res.text).toContain(fixture.businessName);
+    test("Tabelle deckt alle 20 Fixture-Schlüssel ab", () => {
+      for (const [pack, target] of Object.entries(E9)) {
+        expect(legacyDemoTarget(pack)).toBe(target);
+      }
+      expect(Object.keys(E9)).toHaveLength(20);
+      expect(legacyDemoTarget("disco")).toBeUndefined();
     });
 
-    test("unbekanntes Pack → 404", async () => {
+    test("Startseite, Unter- und Rechtsseiten → 301 auf dieselbe Adresse, 1h-Cache", async () => {
       const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/disco");
-      expect(res.status).toBe(404);
+      for (const path of [
+        "/demo/gusto",
+        "/demo/gusto/impressum",
+        "/demo/gusto/datenschutz",
+        "/demo/gusto/leistungen-im-detail",
+      ]) {
+        const res = await request(app).get(path);
+        expect(res.status).toBe(301);
+        expect(res.headers.location).toBe("/demo/system/nacht/restaurant");
+        expect(res.headers["cache-control"]).toBe("public, max-age=3600");
+      }
+      const raster = await request(app).get("/demo/raster");
+      expect(raster.status).toBe(301);
+      expect(raster.headers.location).toBe("/demo/system/raster/steuerberater");
     });
 
-    test("unbekanntes Pack → 404-Body reflektiert den Parameter NICHT (kein reflected XSS, generische Meldung)", async () => {
+    test("Showroom-Links der Startseite = Ziele der alten Showroom-Demos und rendern", async () => {
       const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/disco");
-      expect(res.status).toBe(404);
-      expect(res.text).toBe("Unbekanntes Pack");
-      expect(res.text).not.toContain("disco");
+      for (const item of LANDING_SHOWROOM) {
+        expect(item.href).toBe(legacyDemoTarget(item.image));
+        const res = await request(app).get(item.href);
+        expect(res.status, item.href).toBe(200);
+      }
     });
 
-    test("GET /demo/%3Cscript%3E → 404, Body enthält kein <script (weder über Routing- noch über Handler-Ebene reflektiert)", async () => {
+    test("jedes Ziel rendert (200)", async () => {
       const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/%3Cscript%3E");
-      expect(res.status).toBe(404);
-      expect(res.text).not.toContain("<script");
+      for (const target of new Set(Object.values(E9))) {
+        const res = await request(app).get(target);
+        expect(res.status, target).toBe(200);
+        expect(res.text).toContain("data-pb-system");
+      }
     });
 
-    test("Rechtsseiten unter /demo/:pack/impressum|datenschutz → 200, noindex/nofollow, 1h-Cache, enthält den Seitentitel", async () => {
+    test("unbekannte Demo → 404, Parameter nicht reflektiert", async () => {
       const app = buildAppWithFallback();
-      const impressum = await request(app).get("/demo/werkbank/impressum");
-      expect(impressum.status).toBe(200);
-      expect(impressum.headers["x-robots-tag"]).toBe("noindex, nofollow");
-      expect(impressum.headers["cache-control"]).toContain("public");
-      expect(impressum.headers["cache-control"]).toContain("max-age=3600");
-      expect(impressum.text).toContain("Impressum");
-
-      const datenschutz = await request(app).get("/demo/werkbank/datenschutz");
-      expect(datenschutz.status).toBe(200);
-      expect(datenschutz.headers["x-robots-tag"]).toBe("noindex, nofollow");
-      expect(datenschutz.text).toContain("Datenschutz");
+      for (const path of [
+        "/demo/disco",
+        "/demo/disco/impressum",
+        "/demo/disco/leistungen-im-detail",
+        "/demo/Werkbank",
+      ]) {
+        const res = await request(app).get(path);
+        expect(res.status).toBe(404);
+        expect(res.text).toBe("Unbekannte Demo");
+      }
+      const xss = await request(app).get("/demo/%3Cscript%3E");
+      expect(xss.status).toBe(404);
+      expect(xss.text).not.toContain("<script");
     });
 
-    // Seit Plan B6 (Task 3) matcht /demo/:pack/:page([a-z0-9-]+) auch
-    // unbekannte Unterseiten (handleDemoPageRoute) — die Route antwortet
-    // jetzt selbst mit einem generischen 404 statt next()/SPA-Fallback (vor
-    // Task 3 gab es für dieses Pfadmuster gar keine Route).
-    test("/demo/:pack/<unbekannte Unterseite> → eigenes 404, Parameter nicht reflektiert", async () => {
+    test("alte Bauplan-Übersicht → 301 auf die System-Demo; unbekannt → 404", async () => {
       const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/werkbank/foo");
-      expect(res.status).toBe(404);
-      expect(res.text).toBe("Unbekannte Seite");
-      expect(res.text).not.toContain("foo");
+      const res = await request(app).get("/demo/bauplan/friseur/stage");
+      expect(res.status).toBe(301);
+      expect(res.headers.location).toBe("/demo/system/journal/friseur");
+      const cf = await request(app).get("/demo/bauplan/restaurant/colorfield");
+      expect(cf.headers.location).toBe("/demo/system/nacht/restaurant");
+      const unknown = await request(app).get("/demo/bauplan/gibtsnicht/stage");
+      expect(unknown.status).toBe(404);
+      expect(unknown.text).not.toContain("gibtsnicht");
     });
 
-    test("/demo/<unbekanntes Pack>/impressum → 404, Body reflektiert den Parameter NICHT", async () => {
-      const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/disco/impressum");
-      expect(res.status).toBe(404);
-      expect(res.text).toBe("Unbekanntes Pack");
-      expect(res.text).not.toContain("disco");
-    });
-
-    test("statische Fixture-Assets unter /demo/* (z. B. .svg) matchen die Route nicht — fallen auf die nachfolgende Middleware durch (Regressionsfund: client/public/demo/*.webp wurde vorher von dieser Route abgefangen)", async () => {
+    test("statische Fixture-Assets unter /demo/* (z. B. .webp) matchen die Route nicht — fallen auf die nachfolgende Middleware durch", async () => {
       const app = buildAppWithOkFallback();
       const res = await request(app).get("/demo/werkbank-hero.webp");
       expect(res.status).toBe(200);
       expect(res.text).toBe("OK-Fallback");
     });
 
-    test("Pack-Segment mit Großbuchstaben matcht die Route (Express-Routing ist standardmäßig case-insensitive), scheitert aber an isKnownPackId → sichere generische 404", async () => {
-      const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/Werkbank");
-      expect(res.status).toBe(404);
-      expect(res.text).toBe("Unbekanntes Pack");
-    });
-
-    test("kein DB-Zugriff (Fixture statt echter Website)", async () => {
+    test("kein DB-Zugriff", async () => {
       (getWebsiteBySlug as Mock).mockReset();
       const app = buildAppWithFallback();
       await request(app).get("/demo/kanzlei");
+      await request(app).get("/demo/werkbank/leistungen-im-detail");
       expect(getWebsiteBySlug).not.toHaveBeenCalled();
-    });
-
-    describe("Demo-Unterseite /demo/:pack/:page (Plan B6, Task 3)", () => {
-      test("bekannte Fixture-Page → 200, noindex, 1h-Cache, enthält den Page-Titel", async () => {
-        const app = buildAppWithFallback();
-        const res = await request(app).get(
-          "/demo/werkbank/leistungen-im-detail"
-        );
-        expect(res.status).toBe(200);
-        expect(res.headers["x-robots-tag"]).toBe("noindex, nofollow");
-        expect(res.headers["cache-control"]).toBe("public, max-age=3600");
-        expect(res.text).toContain("Leistungen im Detail");
-      });
-
-      test("unbekannte Page → 404, Body reflektiert den Parameter NICHT", async () => {
-        const app = buildAppWithFallback();
-        const res = await request(app).get("/demo/werkbank/%3Cscript%3E");
-        expect(res.status).toBe(404);
-        expect(res.text).not.toContain("<script");
-      });
-
-      test("unbekanntes Pack → 404, Body reflektiert den Parameter NICHT", async () => {
-        const app = buildAppWithFallback();
-        const res = await request(app).get("/demo/disco/leistungen-im-detail");
-        expect(res.status).toBe(404);
-        expect(res.text).toBe("Unbekanntes Pack");
-        expect(res.text).not.toContain("disco");
-      });
-
-      test("Legal-Segmente (impressum/datenschutz) laufen weiterhin über handleDemoLegalRoute, nicht über die Page-Route", async () => {
-        const app = buildAppWithFallback();
-        const res = await request(app).get("/demo/werkbank/impressum");
-        expect(res.status).toBe(200);
-        expect(res.text).toContain("Impressum");
-        // Die Navigation (System-Rahmen) darf auf die Unterseite verlinken —
-        // ihr Inhalt erscheint aber nicht.
-        expect(res.text).not.toContain(
-          "Ein genauerer Blick auf unser Angebot, Schritt für Schritt."
-        );
-      });
-
-      test("kein DB-Zugriff (Fixture statt echter Website)", async () => {
-        (getWebsiteBySlug as Mock).mockReset();
-        const app = buildAppWithFallback();
-        await request(app).get("/demo/werkbank/leistungen-im-detail");
-        expect(getWebsiteBySlug).not.toHaveBeenCalled();
-      });
     });
   });
 

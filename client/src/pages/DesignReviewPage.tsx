@@ -9,11 +9,9 @@ import {
 } from "lucide-react";
 import { DESIGN_SYSTEMS, systemsForDoc } from "@shared/designSystems";
 import type { DesignSystemId } from "@shared/designSystems/types";
-import { PACK_SUMMARY } from "@shared/stylePacks/summary";
 import {
   SHOWCASES,
   type Showcase,
-  type ShowcaseEntry,
 } from "@shared/showcases/blueprintShowcaseList";
 
 type Viewport = "desktop" | "mobile";
@@ -23,15 +21,6 @@ type PreviewTarget = {
   title: string;
   src: string;
 };
-
-const ENTRY_LABEL: Record<ShowcaseEntry, string> = {
-  stage: "Bühne",
-  colorfield: "Farbfläche",
-};
-
-function bauplanSrc(id: string, entry: ShowcaseEntry, live = false): string {
-  return `/demo/bauplan/${id}/${entry}${live ? "?live=1" : ""}`;
-}
 
 function systemSrc(
   system: string,
@@ -102,10 +91,9 @@ function Segmented<T extends string>({
 }
 
 /**
- * Interne Übersicht (2026-08-31, Betreiber-Wunsch; seit 2026-10-06 mit den
- * Branchen-Bauplänen): oben, was ein Kunde der jeweiligen Branche heute
- * bekommt, darunter die 20 Packs als Rohfassung. Hinter dem Admin-Login
- * (AdminRoute in App.tsx). Kein localStorage.
+ * Interne Übersicht (2026-08-31, Betreiber-Wunsch): je Designsystem die
+ * Beispielbetriebe, deren Hauptsystem es ist, in allen Farbstimmungen.
+ * Hinter dem Admin-Login (AdminRoute in App.tsx). Kein localStorage.
  */
 function PreviewDialog({
   target,
@@ -246,86 +234,19 @@ function ScaledFrame({ src, title }: { src: string; title: string }) {
   );
 }
 
-function BauplanCard({
-  showcase,
-  onOpen,
-}: {
+type OpenState = {
+  system: string;
   showcase: Showcase;
-  onOpen: (entry: ShowcaseEntry) => void;
-}) {
-  const [entry, setEntry] = useState<ShowcaseEntry>("stage");
-  return (
-    <article className="overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface">
-      <button
-        type="button"
-        onClick={() => onOpen(entry)}
-        aria-label={`${showcase.label} ansehen`}
-        className="group relative block w-full overflow-hidden border-b border-lp-line text-left"
-      >
-        <ScaledFrame
-          src={bauplanSrc(showcase.id, entry)}
-          title={`${showcase.label} – ${ENTRY_LABEL[entry]}`}
-        />
-        <span className="absolute right-3 bottom-3 inline-flex h-9 items-center gap-2 rounded-full bg-lp-ink px-3 text-[0.78rem] font-medium text-lp-canvas">
-          Ansehen
-          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </span>
-      </button>
-      <div className="flex flex-wrap items-center gap-3 p-5">
-        <div className="mr-auto min-w-0">
-          <h3 className="text-[1.2rem] font-medium">{showcase.label}</h3>
-          <p className="mt-0.5 text-[0.84rem] text-lp-muted">
-            Beispiel: {showcase.sample}
-          </p>
-        </div>
-        <Segmented
-          small
-          label="Einstieg"
-          value={entry}
-          onChange={setEntry}
-          options={[
-            { value: "stage", label: ENTRY_LABEL.stage },
-            { value: "colorfield", label: ENTRY_LABEL.colorfield },
-          ]}
-        />
-      </div>
-    </article>
-  );
-}
-
-type OpenState =
-  | { kind: "pack"; packId: string }
-  | {
-      kind: "system";
-      system: string;
-      showcase: Showcase;
-      palette: string;
-      live: boolean;
-    }
-  | { kind: "bauplan"; showcase: Showcase; entry: ShowcaseEntry; live: boolean }
-  | null;
+  palette: string;
+  live: boolean;
+} | null;
 
 function previewTarget(open: OpenState): PreviewTarget | null {
   if (!open) return null;
-  if (open.kind === "pack") {
-    const summary = PACK_SUMMARY.find(pack => pack.id === open.packId);
-    return {
-      kicker: "Pack (Rohfassung)",
-      title: summary?.name ?? open.packId,
-      src: `/demo/${open.packId}`,
-    };
-  }
-  if (open.kind === "system") {
-    return {
-      kicker: `System ${open.system} · Palette ${open.palette}`,
-      title: `${open.showcase.label} – ${open.showcase.sample}`,
-      src: systemSrc(open.system, open.showcase.id, open.palette, open.live),
-    };
-  }
   return {
-    kicker: `${open.showcase.group} · ${ENTRY_LABEL[open.entry]}`,
+    kicker: `System ${open.system} · Palette ${open.palette}`,
     title: `${open.showcase.label} – ${open.showcase.sample}`,
-    src: bauplanSrc(open.showcase.id, open.entry, open.live),
+    src: systemSrc(open.system, open.showcase.id, open.palette, open.live),
   };
 }
 
@@ -367,47 +288,12 @@ function SystemCard({
   );
 }
 
-function groupedShowcases(): [string, Showcase[]][] {
-  const groups = new Map<string, Showcase[]>();
-  for (const showcase of SHOWCASES)
-    groups.set(showcase.group, [
-      ...(groups.get(showcase.group) ?? []),
-      showcase,
-    ]);
-  return Array.from(groups.entries());
-}
-
 export default function DesignReviewPage() {
   const [open, setOpen] = useState<OpenState>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const target = previewTarget(open);
 
-  const bauplanControls =
-    open?.kind === "bauplan" ? (
-      <>
-        <Segmented
-          label="Einstieg"
-          value={open.entry}
-          onChange={entry => setOpen({ ...open, entry })}
-          options={[
-            { value: "stage", label: ENTRY_LABEL.stage },
-            { value: "colorfield", label: ENTRY_LABEL.colorfield },
-          ]}
-        />
-        <Segmented
-          label="Ansicht"
-          value={open.live ? "live" : "preview"}
-          onChange={mode => setOpen({ ...open, live: mode === "live" })}
-          options={[
-            { value: "preview", label: "Vorschau" },
-            { value: "live", label: "Fertige Seite" },
-          ]}
-        />
-      </>
-    ) : undefined;
-
-  const systemControls =
-    open?.kind === "system" ? (
+  const systemControls = open ? (
       <Segmented
         label="Ansicht"
         value={open.live ? "live" : "preview"}
@@ -437,12 +323,6 @@ export default function DesignReviewPage() {
             <a href="#systeme" className="hover:text-lp-ink">
               Systeme
             </a>
-            <a href="#bauplaene" className="hover:text-lp-ink">
-              Baupläne
-            </a>
-            <a href="#packs" className="hover:text-lp-ink">
-              {PACK_SUMMARY.length} Packs
-            </a>
           </nav>
         </div>
       </header>
@@ -456,10 +336,10 @@ export default function DesignReviewPage() {
             </h1>
           </div>
           <p className="max-w-[40rem] text-[1rem] leading-7 text-lp-muted">
-            Je Branche ein Beispielbetrieb, so wie eine neu erzeugte Seite
-            aussieht: Einstieg Bühne (Querformat-Foto) oder Farbfläche, dazu der
-            Bauplan der Branche. „Vorschau" zeigt die Platzhalter, die der Kunde
-            im Studio sieht, „Fertige Seite" die Live-Fassung.
+            Je Designsystem die Beispielbetriebe, deren Hauptsystem es ist, in
+            allen drei Farbstimmungen, so wie eine neu erzeugte Seite aussieht.
+            „Vorschau" zeigt die Platzhalter, die der Kunde im Studio sieht,
+            „Fertige Seite" die Live-Fassung.
           </p>
         </div>
 
@@ -488,7 +368,6 @@ export default function DesignReviewPage() {
                           palette={palette}
                           onOpen={() =>
                             setOpen({
-                              kind: "system",
                               system: def.id,
                               showcase,
                               palette: palette.id,
@@ -505,91 +384,6 @@ export default function DesignReviewPage() {
           })}
         </section>
 
-        <section id="bauplaene" className="mt-20 scroll-mt-24 border-t border-lp-line pt-4">
-          {groupedShowcases().map(([group, showcases]) => (
-            <div key={group} className="mt-12">
-              <h2 className="flex items-baseline gap-3 text-[1.5rem] font-medium tracking-[-0.02em]">
-                {group}
-                <span className="text-[0.8rem] font-normal text-lp-muted">
-                  {showcases.length}{" "}
-                  {showcases.length === 1 ? "Beispiel" : "Beispiele"}
-                </span>
-              </h2>
-              <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {showcases.map(showcase => (
-                  <BauplanCard
-                    key={showcase.id}
-                    showcase={showcase}
-                    onOpen={entry =>
-                      setOpen({ kind: "bauplan", showcase, entry, live: false })
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section
-          id="packs"
-          className="mt-20 scroll-mt-24 border-t border-lp-line pt-12"
-        >
-          <h2 className="text-[1.5rem] font-medium tracking-[-0.02em]">
-            Die {PACK_SUMMARY.length} Packs (Rohfassung)
-          </h2>
-          <p className="mt-2 max-w-[44rem] text-[0.95rem] leading-7 text-lp-muted">
-            Farben, Schriften und Grundformen jeder Richtung — ohne Einstieg und
-            ohne Bauplan, so wie die Packs angelegt sind.
-          </p>
-          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {PACK_SUMMARY.map((pack, index) => (
-              <article
-                key={pack.id}
-                className="overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpen({ kind: "pack", packId: pack.id })}
-                  aria-label={`${pack.name} ansehen`}
-                  className="group relative block w-full overflow-hidden border-b border-lp-line bg-white text-left"
-                >
-                  <img
-                    src={`/pack-previews/${pack.id}.webp`}
-                    width={800}
-                    height={500}
-                    loading="lazy"
-                    decoding="async"
-                    alt=""
-                    className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.015]"
-                  />
-                  <span className="absolute right-3 bottom-3 inline-flex h-9 items-center gap-2 rounded-full bg-lp-ink px-3 text-[0.78rem] font-medium text-lp-canvas">
-                    Ansehen
-                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </span>
-                </button>
-
-                <div className="flex items-start gap-4 p-5">
-                  <span className="mt-1 text-[0.72rem] tabular-nums text-lp-muted">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-[1.3rem] font-medium">{pack.name}</h3>
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: pack.accent }}
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <p className="mt-1 text-[0.88rem] leading-6 text-lp-muted">
-                      {pack.essence}
-                    </p>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
       </main>
 
       <PreviewDialog
@@ -597,7 +391,7 @@ export default function DesignReviewPage() {
         viewport={viewport}
         onViewportChange={setViewport}
         onClose={() => setOpen(null)}
-        controls={bauplanControls ?? systemControls}
+        controls={systemControls}
       />
     </div>
   );

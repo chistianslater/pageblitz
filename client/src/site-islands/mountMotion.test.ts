@@ -87,4 +87,21 @@ describe("Montage nur an echten Designsystem-Wurzeln", () => {
       expect(asked).not.toContain(`.pb-${id}`);
     }
   });
+
+  test("keine rev-2-Einstiegsbewegung mehr (Packs entfernt)", () => {
+    const asked: string[] = [];
+    const doc = {
+      querySelectorAll: (sel: string) => {
+        asked.push(sel);
+        return [] as unknown as NodeListOf<HTMLElement>;
+      },
+    } as unknown as ParentNode;
+    mountSiteMotion(doc);
+    expect(asked.some(sel => sel.includes("data-pb-revision"))).toBe(false);
+    expect(
+      asked.every(
+        sel => sel.includes("[data-pb-system") || sel === ".pb-site[data-pb-system]"
+      )
+    ).toBe(true);
+  });
 });

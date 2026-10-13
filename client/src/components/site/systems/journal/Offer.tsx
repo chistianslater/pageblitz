@@ -22,7 +22,7 @@ import {
  *
  * Erfunden wird nichts: Platzhalter für Preise, Speisekarte und Team
  * erscheinen nur in der Vorschau, solange der Abschnitt fehlt — Text aus
- * dem Bauplan, wie in artDirection/entrySections.tsx.
+ * dem Bauplan.
  */
 
 type P<T extends JournalSection["type"]> = {

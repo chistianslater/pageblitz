@@ -60,15 +60,11 @@ describe("Werkstoff: Grundgerüst", () => {
     expect(css).toContain("/fonts/systems/dm-mono-latin-500.woff2");
   });
 
-  test("kein Pack- oder rev-2-CSS, packOverride wirkt nicht", () => {
+  test("kein Pack- oder rev-2-CSS", () => {
     const doc = werkstoffDoc();
     const html = render(doc);
     expect(html).not.toContain(`pb-${doc.stylePackId}`);
     expect(html).not.toContain("pb-art-hero");
-    const over = renderToStaticMarkup(
-      <SiteRenderer data={doc} packOverride="raster" now={TEST_NOW} />
-    );
-    expect(over).toContain('data-pb-system="werkstoff"');
   });
 
   test("Modul-CSS nur mit System-Variablen, keine freien Pixelmaße", () => {

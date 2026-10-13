@@ -11,6 +11,7 @@ import {
   getSystem,
   asSystemDoc,
   withDesignSystem,
+  withPrimarySystem,
   type DesignSystemDef,
   type DesignSystemId,
 } from "../../shared/designSystems";
@@ -18,18 +19,15 @@ import {
   findShowcase,
   showcaseDoc,
   systemShowcaseDoc,
+  SHOWCASES,
+  type Showcase,
 } from "../../shared/showcases/blueprintShowcase";
-import { withArtDirection } from "../../shared/stylePacks/artDirection";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
   PACK_IDS,
   type PackId,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
-import {
-  deriveDesignProfile,
-  HERO_LAYOUTS,
-} from "../../shared/siteContract/designProfile";
 import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
 import { restoreDoc } from "../onboardingV2/versions";
 import {
@@ -159,6 +157,7 @@ export function invalidateSsrCache(slug: string): void {
   }
 }
 
+/** Fixture-Schlüssel (historisch Pack-IDs) — nur noch für Fixtures/Seeds. */
 function isKnownPackId(value: string): value is PackId {
   return (PACK_IDS as readonly string[]).includes(value);
 }
@@ -372,7 +371,13 @@ function resolveSiteRequest(req: Request): {
   return null;
 }
 
-/** GET /dev/site-preview?pack=<id>&fixture=<full|minimal|features> — nur außerhalb production. */
+/**
+ * GET /dev/site-preview?system=<id>&palette=<id>&pack=<fixture>&fixture=<full|minimal|features>&seite=<page-slug>
+ * — nur außerhalb production. `?pack=` wählt nur noch die Fixture (Schlüssel
+ * = Textstimme, Standard `salon-noir`); ohne `?system=` rendert das
+ * Hauptsystem der Fixture. `?seite=` rendert eine Unterseite der Fixture
+ * (nur bekannte, sonst 404). Parameter werden nie in die Antwort gespiegelt.
+ */
 function handleDevPreview(req: Request, res: Response): void {
   if (process.env.NODE_ENV === "production") {
     res.status(404).send("Not found");
@@ -381,12 +386,22 @@ function handleDevPreview(req: Request, res: Response): void {
 
   const systemQuery = readSystemQuery(req, res);
   if (systemQuery === null) return;
-  const packParam =
-    typeof req.query.pack === "string" ? req.query.pack : "";
+  const packParam = typeof req.query.pack === "string" ? req.query.pack : "";
   const fixtureParam =
     typeof req.query.fixture === "string" ? req.query.fixture : "full";
+  if (packParam && !isKnownPackId(packParam)) {
+    res.status(400).type("text/plain").send("Unbekannte Fixture");
+    return;
+  }
+  if (!isFixtureKind(fixtureParam)) {
+    res
+      .status(400)
+      .type("text/plain")
+      .send("Unbekannte Fixture (erwartet: full|minimal|features)");
+    return;
+  }
 
-  if (systemQuery && isFixtureKind(fixtureParam)) {
+  try {
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     const fixture = getFixture(
       isKnownPackId(packParam) ? packParam : "salon-noir",
@@ -400,85 +415,20 @@ function handleDevPreview(req: Request, res: Response): void {
       nameParam && nameParam.length <= 80
         ? { ...fixture, businessName: nameParam }
         : fixture;
-    const { html, status } = renderSiteHtml(
-      withDesignSystem(base, systemQuery.system, systemQuery.palette),
-      {
-        origin,
-        now: new Date("2026-08-19T10:00:00"),
-        slug: "demo",
-        site: { chatWelcomeMessage: "Willkommen in der Demo!" },
-      }
-    );
-    res.status(status).type("html").send(html);
-    return;
-  }
-
-  if (!isKnownPackId(packParam)) {
-    // Bewusst OHNE den Parameter im Body zu reflektieren — siehe
-    // handleDemoRoute weiter unten (reflected XSS via Query-Parameter).
-    res.status(400).type("text/plain").send("Unbekanntes Pack");
-    return;
-  }
-  if (!isFixtureKind(fixtureParam)) {
-    // Bewusst OHNE den Parameter im Body zu reflektieren (siehe oben).
-    res
-      .status(400)
-      .type("text/plain")
-      .send("Unbekannte Fixture (erwartet: full|minimal|features)");
-    return;
-  }
-
-  try {
-    const fixture = getFixture(packParam, fixtureParam);
-    // Dev-only Variantenvorschau für Visual-/Manuelltests:
-    // ?variant=0..31 leitet dasselbe Profil ab wie die Generierung.
-    const variantRaw =
-      typeof req.query.variant === "string" ? req.query.variant : "";
-    const variant =
-      variantRaw !== "" && /^\d{1,2}$/.test(variantRaw)
-        ? Math.min(31, Number(variantRaw))
-        : null;
-    let data =
-      variant === null
-        ? fixture
-        : {
-            ...fixture,
-            designProfile: deriveDesignProfile(
-              {
-                stylePackId: fixture.stylePackId,
-                businessName: fixture.businessName,
-                businessCategory: fixture.businessCategory,
-                sections: fixture.sections,
-              },
-              variant
-            ),
-          };
-    // Dev-only Hero-Override (?hero=collage|banner|…): nur bekannte Werte,
-    // Parameter wird nie reflektiert. Für Layouts, die der Varianten-
-    // Generator nie wählt (collage/banner), sonst nicht SSR-testbar.
-    const heroRaw = typeof req.query.hero === "string" ? req.query.hero : "";
-    if ((HERO_LAYOUTS as readonly string[]).includes(heroRaw)) {
-      const baseProfile =
-        data.designProfile ??
-        deriveDesignProfile({
-          stylePackId: fixture.stylePackId,
-          businessName: fixture.businessName,
-          businessCategory: fixture.businessCategory,
-          sections: fixture.sections,
-        });
-      data = {
-        ...data,
-        designProfile: {
-          ...baseProfile,
-          heroLayout: heroRaw as (typeof HERO_LAYOUTS)[number],
-        },
-      };
+    const data = systemQuery
+      ? withDesignSystem(base, systemQuery.system, systemQuery.palette)
+      : withPrimarySystem(base);
+    const seite = typeof req.query.seite === "string" ? req.query.seite : "";
+    const page = seite ? pageForPathname(data, `/${seite}`) : null;
+    if (seite && !page) {
+      res.status(404).type("text/plain").send("Unbekannte Seite");
+      return;
     }
-    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     // fixes Datum für deterministische Visual-Baselines (nur Dev-Preview,
-    // Kundenseiten-SSR unten bleibt bei Echtzeit).
+    // Kundenseiten-SSR bleibt bei Echtzeit).
     const { html, status } = renderSiteHtml(data, {
       origin,
+      ...(page ? { pathname: `/${page.slug}` } : {}),
       now: new Date("2026-08-19T10:00:00"),
       slug: "demo",
       site: { chatWelcomeMessage: "Willkommen in der Demo!" },
@@ -486,100 +436,72 @@ function handleDevPreview(req: Request, res: Response): void {
     res.status(status).type("html").send(html);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Fixture-Fehler";
-    res.status(400).send(message);
+    res.status(400).type("text/plain").send(message);
   }
 }
 
-/** Cache-Dauer für die öffentliche Style-Pack-Demo (statisches Fixture-HTML, ändert sich zur Laufzeit nie). */
+/** Cache-Dauer für die öffentlichen Demos (statisches HTML, ändert sich zur Laufzeit nie). */
 const DEMO_CACHE_CONTROL = "public, max-age=3600";
 
+/** Beispiel für `/demo/raster` — keine Fixture `raster` unter den Beispielen. */
+const LEGACY_DEMO_FALLBACK_SHOWCASE = "steuerberater";
+
+const systemDemoPathCache = new Map<string, string>();
+
 /**
- * Öffentliche Style-Pack-Demo für die Landingpage-Showcase (`PackShowcase`):
- * rendert `getFixture(pack, "full")` als eigenständige, cachebare Seite —
- * ungebunden an eine echte Website/Kunde, daher `noindex` und ohne DB-Query.
- * Inseln laufen im Preview-Modus (`islandsMode: "preview"`), damit ein
- * eventuell aktives Kontaktformular/Chat/Buchung aus der Demo heraus nichts
- * absenden kann — aktuell ein No-op, weil Fixture "full" keine Features
- * aktiviert hat (siehe `shared/siteContract/fixtures.ts`), schützt aber,
- * falls sich das ändert.
- *
- * Route-Regex `:pack([a-z0-9-]+)` matcht NUR Pack-ID-artige Segmente — ein
- * Segment mit Punkt/Großbuchstaben/Sonderzeichen (z. B. eine statische Datei
- * wie `/demo/werkbank-hero.webp` unter `client/public/demo/`) matcht diese
- * Route gar nicht erst und fällt automatisch auf die nachfolgende Static-/
- * SPA-Middleware durch (Regressionsfund: die Fixture-Bilder der Demo-Seiten
- * selbst liegen unter genau diesem Pfadpräfix). Rechtsseiten
- * (`/demo/:pack/impressum|datenschutz`) haben eine eigene Route
- * (`handleDemoLegalRoute` weiter unten), weil sie ein zweites Pfadsegment
- * brauchen und dieses Regex nur ein Segment matcht.
+ * Adresse eines Beispielbetriebs in seinem Hauptsystem
+ * (`/demo/system/<Hauptsystem>/<Beispiel>`), einmal berechnet je Beispiel.
  */
-function handleDemoRoute(req: Request, res: Response): void {
-  const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
-  if (!isKnownPackId(packParam)) {
-    // Bewusst OHNE den Parameter im Body zu reflektieren (öffentliche,
-    // ungegatete Route) — ein Query-/Pfad-Wert wie `<script>...` würde sonst
-    // unescaped in einer text/html-Antwort landen (reflected XSS).
-    res.status(404).type("text/plain").send("Unbekanntes Pack");
-    return;
-  }
-  try {
-    const data = withArtDirection(getFixture(packParam, "full"));
-    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const basePath = `/demo/${packParam}`;
-    const { html, status } = renderSiteHtml(data, {
-      origin,
-      basePath,
-      slug: "demo",
-      site: {},
-      islandsMode: "preview",
-      // Festes Datum (wie /dev/site-preview) statt Echtzeit: mindestens ein
-      // Pack-Modul (morgenlicht) zeigt datumsabhängige "Heute geöffnet"-
-      // Badges (now.getDay()) — ohne fixes Datum würde die Landingpage-
-      // Showcase (PackShowcase, tests/visual/landing.spec.ts) an
-      // unterschiedlichen Wochentagen unterschiedliches HTML/Pixel-Diffs
-      // liefern.
-      now: new Date("2026-08-19T10:00:00"),
-    });
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
-    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
-    res.status(status).type("html").send(html);
-  } catch (err) {
-    console.error("[SSR] Pack-Demo-Render fehlgeschlagen:", err);
-    res.status(500).send("Demo konnte nicht gerendert werden");
-  }
+export function systemDemoPath(showcase: Showcase): string {
+  const cached = systemDemoPathCache.get(showcase.id);
+  if (cached) return cached;
+  const primary = withPrimarySystem(
+    showcaseDoc(showcase, showcase.systemEntry ?? "stage")
+  ).system;
+  const path = `/demo/system/${primary}/${showcase.id}`;
+  systemDemoPathCache.set(showcase.id, path);
+  return path;
 }
 
 /**
- * Bauplan-Übersicht (`/demo/bauplan/:id/:entry`, 2026-10-06): Beispielbetrieb
- * je Branche mit Einstieg und Bauplan, wie eine frisch erzeugte Seite.
- * Standard = Vorschau mit Platzhaltern; `?live=1` zeigt die fertige Seite.
+ * Ziel der alten Pack-Demo `/demo/<pack>` [E9]: erstes Beispiel mit dieser
+ * Fixture in seinem Hauptsystem; `raster` → Steuerberater. Unbekannt →
+ * `undefined` (404 ohne Reflektieren).
  */
-function handleBauplanDemoRoute(req: Request, res: Response): void {
-  const showcase = findShowcase(String(req.params.id ?? ""));
-  const entry = req.params.entry === "colorfield" ? "colorfield" : "stage";
-  if (!showcase) {
-    res.status(404).type("text/plain").send("Unbekannter Bauplan");
+export function legacyDemoTarget(pack: string): string | undefined {
+  if (!isKnownPackId(pack)) return undefined;
+  const showcase =
+    SHOWCASES.find(s => s.fixture === pack) ??
+    findShowcase(LEGACY_DEMO_FALLBACK_SHOWCASE);
+  return showcase ? systemDemoPath(showcase) : undefined;
+}
+
+/**
+ * Alte Pack-Demos (`/demo/:pack`, Unter- und Rechtsseiten): 301 auf die
+ * System-Demo [E9]. Die Route-Regex `:pack([a-z0-9-]+)` matcht nur
+ * Pack-ID-artige Segmente — statische Dateien unter `client/public/demo/`
+ * (z. B. `/demo/werkbank-hero.webp`) fallen auf die Static-Middleware
+ * durch. Unbekannt → 404, der Parameter wird nie gespiegelt.
+ */
+function handleLegacyDemoRedirect(req: Request, res: Response): void {
+  const target = legacyDemoTarget(String(req.params.pack ?? ""));
+  if (!target) {
+    res.status(404).type("text/plain").send("Unbekannte Demo");
     return;
   }
-  try {
-    const data = showcaseDoc(showcase, entry);
-    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const live = req.query.live === "1";
-    const { html, status } = renderSiteHtml(data, {
-      origin,
-      basePath: `/demo/bauplan/${showcase.id}/${entry}`,
-      slug: "demo",
-      site: {},
-      ...(live ? {} : { islandsMode: "preview" as const }),
-      now: new Date("2026-08-19T10:00:00"),
-    });
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
-    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
-    res.status(status).type("html").send(html);
-  } catch (err) {
-    console.error("[SSR] Bauplan-Demo-Render fehlgeschlagen:", err);
-    res.status(500).send("Demo konnte nicht gerendert werden");
+  res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+  res.redirect(301, target);
+}
+
+/** Alte Bauplan-Übersicht (`/demo/bauplan/:id/:entry`): 301 auf die System-Demo. */
+function handleBauplanDemoRedirect(req: Request, res: Response): void {
+  const showcase = findShowcase(String(req.params.id ?? ""));
+  if (!showcase) {
+    res.status(404).type("text/plain").send("Unbekannte Demo");
+    return;
   }
+  res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+  res.redirect(301, systemDemoPath(showcase));
 }
 
 /**
@@ -617,108 +539,6 @@ function handleSystemDemoRoute(req: Request, res: Response): void {
     res.status(status).type("html").send(html);
   } catch (err) {
     console.error("[SSR] System-Demo-Render fehlgeschlagen:", err);
-    res.status(500).send("Demo konnte nicht gerendert werden");
-  }
-}
-
-/**
- * Platzhalter-Rechtstext für die Pack-Demo: Fixtures haben absichtlich kein
- * `legal`-Feld (keine echte Firma dahinter, siehe `shared/siteContract/fixtures.ts`)
- * — dieser Hinweistext ersetzt die echten Rechtstexte NUR für die
- * Demo-Route, damit die Footer-Links in der Demo funktionieren statt 404 zu
- * liefern.
- */
-const DEMO_LEGAL_NOTICE =
-  "<p>Dies ist eine Demo-Seite ohne echtes Unternehmen. Echte Rechtstexte (Impressum, Datenschutz) werden automatisch erzeugt, sobald für ein Unternehmen eine Website erstellt wird.</p>";
-
-/**
- * Demo-Rechtsseiten (`/demo/:pack/impressum` und `/demo/:pack/datenschutz`):
- * rendert die Fixture wie `handleDemoRoute`, überschreibt aber `legal` mit
- * `DEMO_LEGAL_NOTICE`, damit die Footer-Links der Demo-Seite (Impressum/
- * Datenschutz) auf echten Inhalt statt 404 treffen. Gleiches
- * Caching/Robots-Verhalten wie `/demo/:pack` (öffentlich, cachebar, noindex).
- */
-function handleDemoLegalRoute(req: Request, res: Response): void {
-  const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
-  const pageParam = typeof req.params.page === "string" ? req.params.page : "";
-  if (!isKnownPackId(packParam)) {
-    // Bewusst OHNE den Parameter im Body zu reflektieren (siehe handleDemoRoute).
-    res.status(404).type("text/plain").send("Unbekanntes Pack");
-    return;
-  }
-  try {
-    const fixture = getFixture(packParam, "full");
-    const data = {
-      ...fixture,
-      legal: {
-        impressumHtml: DEMO_LEGAL_NOTICE,
-        datenschutzHtml: DEMO_LEGAL_NOTICE,
-      },
-    };
-    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const basePath = `/demo/${packParam}`;
-    const pathname =
-      pageParam === "datenschutz" ? "/datenschutz" : "/impressum";
-    const { html, status } = renderSiteHtml(data, {
-      origin,
-      basePath,
-      pathname,
-      slug: "demo",
-      site: {},
-    });
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
-    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
-    res.status(status).type("html").send(html);
-  } catch (err) {
-    console.error("[SSR] Demo-Rechtsseite-Render fehlgeschlagen:", err);
-    res.status(500).send("Demo konnte nicht gerendert werden");
-  }
-}
-
-/**
- * Demo-Unterseiten (`/demo/:pack/:page`, Plan B6 Task 3): rendert eine Page
- * aus der "full"-Fixture des Packs (jede "full"-Fixture hat seit Task 2 die
- * Demo-Page `leistungen-im-detail`). Muss NACH `handleDemoLegalRoute`
- * registriert werden — deren Pfad-Segment ist auf die Literale
- * "impressum"/"datenschutz" beschränkt, matcht also nie hierher, aber ohne
- * diese Reihenfolge würde ein generisches `:page([a-z0-9-]+)` VOR der
- * spezifischeren Route auch "impressum"/"datenschutz" abfangen und die
- * Legal-Sonderbehandlung (DEMO_LEGAL_NOTICE) übergehen. Unbekannte Pages
- * (Pack ohne diese Page, oder Tippfehler) → 404, Parameter nicht reflektiert
- * (wie die übrigen Demo-Routen).
- */
-function handleDemoPageRoute(req: Request, res: Response): void {
-  const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
-  const pageParam = typeof req.params.page === "string" ? req.params.page : "";
-  if (!isKnownPackId(packParam)) {
-    // Bewusst OHNE den Parameter im Body zu reflektieren (siehe handleDemoRoute).
-    res.status(404).type("text/plain").send("Unbekanntes Pack");
-    return;
-  }
-  try {
-    const data = withArtDirection(getFixture(packParam, "full"));
-    const page = pageForPathname(data, `/${pageParam}`);
-    if (!page) {
-      res.status(404).type("text/plain").send("Unbekannte Seite");
-      return;
-    }
-    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const basePath = `/demo/${packParam}`;
-    const { html, status } = renderSiteHtml(data, {
-      origin,
-      basePath,
-      pathname: `/${page.slug}`,
-      slug: "demo",
-      site: {},
-      islandsMode: "preview",
-      // Gleiches feste Datum wie handleDemoRoute — siehe Kommentar dort.
-      now: new Date("2026-08-19T10:00:00"),
-    });
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
-    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
-    res.status(status).type("html").send(html);
-  } catch (err) {
-    console.error("[SSR] Demo-Unterseite-Render fehlgeschlagen:", err);
     res.status(500).send("Demo konnte nicht gerendert werden");
   }
 }
@@ -900,22 +720,18 @@ export function registerSsrRoutes(app: Express): void {
     })
   );
   app.get("/dev/site-preview", handleDevPreview);
-  // Vor den Pack-Demos: sonst fängt /demo/:pack/:page „bauplan/…" ab.
+  // Vor den alten Pack-Demos: sonst fängt /demo/:pack/:page „bauplan/…" ab.
   app.get(
     "/demo/bauplan/:id([a-z0-9-]+)/:entry(stage|colorfield)",
-    handleBauplanDemoRoute
+    handleBauplanDemoRedirect
   );
   app.get(
     "/demo/system/:system([a-z]+)/:id([a-z0-9-]+)",
     handleSystemDemoRoute
   );
-  app.get(
-    "/demo/:pack([a-z0-9-]+)/:page(impressum|datenschutz)",
-    handleDemoLegalRoute
-  );
-  // Muss NACH der Legal-Route stehen — siehe Kommentar bei handleDemoPageRoute.
-  app.get("/demo/:pack([a-z0-9-]+)/:page([a-z0-9-]+)", handleDemoPageRoute);
-  app.get("/demo/:pack([a-z0-9-]+)", handleDemoRoute);
+  // Alte Pack-Demos samt Unter-/Rechtsseiten → 301 auf die System-Demo [E9].
+  app.get("/demo/:pack([a-z0-9-]+)/:page([a-z0-9-]+)", handleLegacyDemoRedirect);
+  app.get("/demo/:pack([a-z0-9-]+)", handleLegacyDemoRedirect);
   app.get(/^\/preview-ssr\/([A-Za-z0-9_-]{16,64})(\/.*)?$/, (req, res) => {
     void handlePreviewSsr(req, res);
   });

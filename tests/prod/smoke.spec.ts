@@ -51,7 +51,10 @@ const SMOKE_PAGES: SmokePage[] = [
     path: "/my-website",
     label: "Kunden-Dashboard (ohne Session → Redirect /login)",
   },
-  { path: "/demo/werkbank", label: "Style-Pack-Demo (SSR, Inseln-Bundle)" },
+  {
+    path: "/demo/system/raster/steuerberater",
+    label: "System-Demo (SSR, Motion-Bundle)",
+  },
   {
     // 32 Hex-Zeichen — wohlgeformt, aber kein existierender Token. Die
     // Studio-Shell (client/src/pages/onboarding-v2/StudioPage.tsx) muss
@@ -81,9 +84,8 @@ const SMOKE_PAGES: SmokePage[] = [
  * Muster für console.error-Meldungen, die auf JEDER Seite erwartet und für
  * diesen Smoke-Test irrelevant sind — externe Drittanbieter-Ressourcen
  * (Analytics, Fonts) sowie generische fehlgeschlagene Ressourcen-Loads
- * (Bilder u. Ä., z. B. eine unvollständige Fixture — verifiziert an
- * /demo/werkbank: `werkbank-about.jpg` fehlt unter `client/public/demo/`,
- * ein Daten-, kein Bundle-Problem). Der Browser meldet JEDEN
+ * (Bilder u. Ä., z. B. eine unvollständige Fixture — ein Daten-, kein
+ * Bundle-Problem). Der Browser meldet JEDEN
  * fehlgeschlagenen HTTP-Request automatisch als console.error, ohne die URL
  * im Text — bewusst nur 404 (nicht generisch alle Statuscodes), ein echter
  * 500er soll weiter durchschlagen. NICHT hierher gehören eigene
@@ -186,7 +188,7 @@ for (const smokePage of SMOKE_PAGES) {
     await page.waitForLoadState("networkidle");
 
     // Nicht jede Seite bindet zwingend eigenes JS ein — die reine
-    // SSR-Fixture-Demo (/demo/:pack ohne aktive Features) liefert z. B.
+    // SSR-Demo (/demo/system/… ohne aktive Features) liefert z. B.
     // bewusst KEIN Inseln-Bundle (siehe includeIslands in
     // server/ssr/renderSite.tsx: hasActiveFeatures(data) && Boolean(slug)).
     // Diese Schleife prüft nur: WENN Modul-Scripts/-Preloads im HTML
@@ -231,3 +233,13 @@ for (const smokePage of SMOKE_PAGES) {
     ).toHaveLength(0);
   });
 }
+
+test("Prod-Smoke: alte Pack-Demo /demo/gusto leitet per 301 auf die System-Demo", async ({
+  request,
+}) => {
+  const response = await request.get("/demo/gusto", { maxRedirects: 0 });
+  expect(response.status()).toBe(301);
+  expect(response.headers()["location"]).toBe("/demo/system/nacht/restaurant");
+  const target = await request.get("/demo/system/nacht/restaurant");
+  expect(target.status()).toBe(200);
+});

@@ -1,14 +1,11 @@
 import React from "react";
-import type { PackId } from "@shared/siteContract/types";
 import { parseV2 } from "./site/isV2";
 import { SiteRenderer } from "./site/SiteRenderer";
 import { LegacySitePlaceholder } from "./site/LegacySitePlaceholder";
-import "./site/packs/index";
 
 interface WebsiteRendererProps {
   websiteData: unknown;
   slug?: string;
-  packOverride?: PackId;
   islandsMode?: "live" | "preview";
   /** Website-Zeilenfelder außerhalb des Dokuments (z. B. `chatWelcomeMessage` für die KI-Chat-Insel). */
   site?: { chatWelcomeMessage?: string | null };
@@ -27,7 +24,6 @@ interface WebsiteRendererProps {
 export default function WebsiteRenderer({
   websiteData,
   slug,
-  packOverride,
   islandsMode,
   site,
   pathname,
@@ -41,7 +37,6 @@ export default function WebsiteRenderer({
   return (
     <SiteRenderer
       data={v2}
-      packOverride={packOverride}
       slug={slug}
       islandsMode={islandsMode}
       site={site}

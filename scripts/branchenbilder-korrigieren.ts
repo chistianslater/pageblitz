@@ -24,6 +24,8 @@
  */
 import { getDb, listWebsites, updateWebsite } from "../server/db";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
+import { asSystemDoc } from "../shared/designSystems/apply";
+import { assertV2SafeWrite } from "../server/v2WriteGuard";
 import {
   bildIdentitaet,
   buildStockFallbackImages,
@@ -63,7 +65,8 @@ async function main(): Promise<void> {
       verkauft += 1;
       continue;
     }
-    const doc = parsed.data;
+    // Geschrieben wird immer ein System-Dokument (rev 3).
+    const doc = asSystemDoc(parsed.data);
     const kategorie = doc.businessCategory ?? "";
     geprueft += 1;
 
@@ -133,9 +136,9 @@ async function main(): Promise<void> {
     if (ersetzt === 0) continue;
     geaendert.push({ slug: website.slug, kategorie, ersetzt });
     if (schreiben) {
-      await updateWebsite(website.id, {
-        websiteData: { ...doc, sections },
-      });
+      const naechstes = { ...doc, sections };
+      assertV2SafeWrite(website.websiteData, naechstes);
+      await updateWebsite(website.id, { websiteData: naechstes });
     }
   }
 

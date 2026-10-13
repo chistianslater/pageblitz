@@ -1,6 +1,5 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import "../../packs";
 import "../registry";
 import { SiteRenderer } from "../../SiteRenderer";
 import { afterEach, describe, expect, test, vi } from "vitest";

@@ -1,38 +1,11 @@
-import { ENTRY_LAYOUTS_CSS } from "./artDirection/entryLayouts";
 import {
   galleryIsStock,
   PhotoCredits,
   PHOTO_CREDITS_CSS,
 } from "./PhotoCredits";
-import { ENTRY_GASTRO_CSS } from "./artDirection/entryGastro";
-import {
-  ENTRY_SECTIONS_CSS,
-  EntryContext,
-  EntryDock,
-  entryState,
-} from "./artDirection/entrySections";
 import { mountGalleryInteractions } from "./galleryInteractions";
-import {
-  bestTextOn,
-  ensureTextContrast,
-  hexToHsl,
-  mix,
-  relativeLuminance,
-} from "../../../../shared/designSystems/colorMath";
-
-/** Ab dieser Sättigung wirkt eine Akzentfläche schreiend (gemessen an 24 Packs). */
-const LOUD_ACCENT_SATURATION = 0.6;
 import React, { useEffect, useRef } from "react";
-import {
-  getConstitution,
-  getFontPair,
-  toCssVars,
-} from "../../../../shared/stylePacks";
-import type {
-  PackId,
-  WebsiteDataV2,
-} from "../../../../shared/siteContract/types";
-import { PACK_MODULES } from "./packRegistry";
+import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
 import { SYSTEM_MODULES } from "./systems/registry";
 import { SystemContext, type SystemState } from "./systems/SystemContext";
 import { legacyPackVars } from "./systems/legacyVars";
@@ -42,58 +15,15 @@ import { getPalette } from "../../../../shared/designSystems/palette";
 import { systemCssVars } from "../../../../shared/designSystems/toCss";
 import { blueprintFor } from "../../../../shared/blueprints/blueprints";
 import { SiteIslands } from "./islands/SiteIslands";
-import { MOBILE_NAV_CSS } from "./mobileNavCss";
-import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";
-import { MOTION_CSS } from "./motionCss";
-import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { RICH_TEXT_CSS } from "./richText";
-import { STORY_CSS } from "./storySection";
-import { SECTION_LINK_CSS } from "./sectionLink";
-import { USP_CSS } from "./uspSection";
 import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
 import { AGE_GATE_CSS, AgeGateSsr } from "./ageGateSsr";
-import { PARTNERS_CSS } from "./partnersSection";
-import {
-  ART_DIRECTIONS,
-  artPalette,
-  deriveArtDirectedProfile,
-  keepEntryComposition,
-} from "../../../../shared/stylePacks/artDirection";
-import { ART_DIRECTION_CSS } from "./artDirection/artDirectionCss";
-import { EXTRA_SECTIONS_CSS } from "./extraSections";
-
-/** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
-const DECO_TOGGLE_CSS = `
-.pb-site[data-pb-deco="off"] .pb-deco{display:none!important}
-.pb-site[data-pb-deco-off~="blobs"] .pb-deco-blobs{display:none!important}
-.pb-site[data-pb-deco-off~="dots"] .pb-deco-dots{display:none!important}
-.pb-site[data-pb-deco-off~="sprigs"] .pb-deco-sprigs{display:none!important}
-.pb-site[data-pb-deco-off~="ornaments"] .pb-deco-ornaments{display:none!important}
-`;
-
-/**
- * Dezentes „Mit ♥ erstellt mit ⚡ Pageblitz"-Badge (Dashboard-Schalter
- * showBranding). Der siteEnhancer verschiebt es beim Laden IN den
- * Pack-Footer (Betreiber-Wunsch 2026-08-31: integriert statt
- * „runterhängend"); ohne JS bleibt es als schmale Zeile darunter.
- * color:inherit übernimmt die Footer-Textfarbe des jeweiligen Packs;
- * grid-column deckt Grid-Footer ab, in Flex/Block wirkungslos.
- */
-const BRANDING_CSS = `
-.pb-made-with{display:block;grid-column:1/-1;width:100%;padding:10px 20px 14px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.72rem;letter-spacing:.02em;color:inherit;text-decoration:none;opacity:1}
-.pb-made-with:hover{text-decoration:underline}
-.pb-made-with strong{font-weight:700}
-.pb-made-with svg{display:inline-block;width:.7em;height:.9em;vertical-align:-.08em;margin:0 .1em}
-.pb-made-with .pb-mw-heart{margin:0 .1em}
-`;
 import {
   ALBUM_CSS,
   albumChromeJson,
   flattenGalleryAlbums,
 } from "./galleryAlbums";
-import { DESIGN_PROFILE_CSS } from "./designProfileCss";
 import { mountDockAutoHide } from "./systems/shared/dockAutoHide";
-import { deriveDesignProfile } from "../../../../shared/siteContract/designProfile";
 import {
   buildNavItems,
   linkPageSections,
@@ -103,6 +33,22 @@ import {
   withAboutFallbackImage,
   withGalleryLimit,
 } from "./engine";
+
+/**
+ * Dezentes „Mit ♥ erstellt mit ⚡ Pageblitz"-Badge (Dashboard-Schalter
+ * showBranding). Der siteEnhancer verschiebt es beim Laden IN den
+ * Footer der Seite (Betreiber-Wunsch 2026-08-31: integriert statt
+ * „runterhängend"); ohne JS bleibt es als schmale Zeile darunter.
+ * color:inherit übernimmt die Footer-Textfarbe des jeweiligen Systems;
+ * grid-column deckt Grid-Footer ab, in Flex/Block wirkungslos.
+ */
+const BRANDING_CSS = `
+.pb-made-with{display:block;grid-column:1/-1;width:100%;padding:10px 20px 14px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.72rem;letter-spacing:.02em;color:inherit;text-decoration:none;opacity:1}
+.pb-made-with:hover{text-decoration:underline}
+.pb-made-with strong{font-weight:700}
+.pb-made-with svg{display:inline-block;width:.7em;height:.9em;vertical-align:-.08em;margin:0 .1em}
+.pb-made-with .pb-mw-heart{margin:0 .1em}
+`;
 
 /**
  * Bewegung je Designsystem (rev 3), als eigenes Chunk nachgeladen. Spiegelt
@@ -157,16 +103,8 @@ export const SiteRenderer: React.FC<{
   basePath?: string;
   now?: Date;
   /**
-   * Erzwingt ein anderes registriertes Pack für die Darstellung (Variant-
-   * Picker-Preview) — Inhalte (`data`) bleiben unverändert; Verfassung,
-   * Renderer-Modul und die für diese Richtung deterministisch abgeleitete
-   * Komposition wechseln. Ein nicht registrierter Override wird ignoriert;
-   * dann bleibt der gespeicherte `data.stylePackId` aktiv.
-   */
-  packOverride?: PackId;
-  /**
    * Slug der Kundenseite — geht an `SiteIslands` weiter (Formular-Action,
-   * Hydration-Ziel). Optional, weil einige Aufrufer (Variant-Picker-Preview)
+   * Hydration-Ziel). Optional, weil einige Aufrufer (CSR-Vorschauen)
    * keinen echten Slug haben; dann rendert `SiteIslands` mit leerem Slug.
    */
   slug?: string;
@@ -215,16 +153,14 @@ export const SiteRenderer: React.FC<{
    */
   pathname?: string;
   /**
-   * Rechtsseite im Rahmen eines Designsystems (rev 3): Kopf, Fuß, Schrift
-   * und Palette wie die Seite, Inhalt aus dem legalGenerator. Packs (rev
-   * 1/2) rendern Rechtsseiten weiter schlicht in renderLegalPage.
+   * Rechtsseite im Rahmen des Designsystems: Kopf, Fuß, Schrift und
+   * Palette wie die Seite, Inhalt aus dem legalGenerator.
    */
   legal?: { title: string; html: string };
 }> = ({
   data,
   basePath = "",
   now = new Date(),
-  packOverride,
   slug = "",
   site,
   islandsMode,
@@ -242,58 +178,13 @@ export const SiteRenderer: React.FC<{
   // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar. Systeme
   // mit „jedes Foto einmal" (freeGalleryBeyondShown) kürzen selbst
   // (claimPhotos): drei freie nach Einstieg, Angebotsfotos und Über uns.
-  const kuerztSelbst =
-    data.designRevision === 3 &&
-    Boolean(data.system) &&
-    getSystem(data.system!)?.freeGalleryBeyondShown === true;
-  if (!kuerztSelbst) data = withGalleryLimit(data);
-  // Designsystem (rev 3): eigenes Modul, eigene Variablen, kein Pack-Layout.
-  const systemDef =
-    data.designRevision === 3 && data.system
-      ? getSystem(data.system)
-      : undefined;
-  const effectiveData =
-    !systemDef &&
-    packOverride &&
-    packOverride !== data.stylePackId &&
-    PACK_MODULES[packOverride]
-      ? {
-          ...data,
-          stylePackId: packOverride,
-          designProfile: keepEntryComposition(
-            data.designProfile,
-            (data.designRevision === 2
-              ? deriveArtDirectedProfile
-              : deriveDesignProfile)({
-              stylePackId: packOverride,
-              businessName: data.businessName,
-              businessCategory: data.businessCategory,
-              sections: data.sections,
-            })
-          ),
-        }
-      : data;
+  const systemDef = data.system ? getSystem(data.system) : undefined;
+  if (systemDef?.freeGalleryBeyondShown !== true) data = withGalleryLimit(data);
+  const mod = systemDef ? SYSTEM_MODULES[systemDef.id] : undefined;
   const rootRef = useRef<HTMLDivElement>(null);
-  const motionKey = JSON.stringify(effectiveData);
+  const motionKey = JSON.stringify(data);
   useEffect(() => {
     if (rootRef.current) return mountGalleryInteractions(rootRef.current);
-  }, [motionKey]);
-  useEffect(() => {
-    if (effectiveData.designRevision !== 2 || !rootRef.current) return;
-    let cancelled = false;
-    let cleanup: (() => void) | undefined;
-    const root = rootRef.current;
-    import("./artDirection/siteEntrance")
-      .then(({ mountSiteEntrance }) => {
-        if (!cancelled) cleanup = mountSiteEntrance(root);
-      })
-      .catch(() => {
-        /* Content stays readable if the optional animation bundle fails. */
-      });
-    return () => {
-      cancelled = true;
-      cleanup?.();
-    };
   }, [motionKey]);
   useEffect(() => {
     const load = systemDef ? SYSTEM_MOTION[systemDef.id] : undefined;
@@ -318,136 +209,60 @@ export const SiteRenderer: React.FC<{
     if (!systemDef || !rootRef.current) return;
     return mountDockAutoHide(rootRef.current);
   }, [motionKey, systemDef?.id]);
-  const mod = systemDef
-    ? SYSTEM_MODULES[systemDef.id]
-    : PACK_MODULES[effectiveData.stylePackId];
-  if (!mod)
-    throw new Error(
-      systemDef
-        ? `System-Modul nicht registriert: ${systemDef.id}`
-        : `Pack-Modul nicht registriert: ${effectiveData.stylePackId}`
-    );
-  const vars = systemDef
-    ? withLegacyVars(systemCssVars(systemDef, effectiveData.palette))
-    : toCssVars(
-        getConstitution(effectiveData.stylePackId),
-        effectiveData.designRevision === 2
-          ? {
-              ...artPalette(effectiveData.stylePackId),
-              ...effectiveData.colorOverrides,
-            }
-          : effectiveData.colorOverrides,
-        getFontPair(effectiveData.fontPairId)
-      );
-  if (effectiveData.designRevision === 2) {
-    vars["--pb-art-accent-text"] = ensureTextContrast(
-      ensureTextContrast(vars["--pb-accent"], vars["--pb-canvas"], 4.7),
-      vars["--pb-surface"],
-      4.7
-    );
-    vars["--pb-art-inverse-accent"] = ensureTextContrast(
-      vars["--pb-accent"],
-      vars["--pb-ink"],
-      4.7
-    );
-    vars["--pb-art-dark-accent"] = ensureTextContrast(
-      vars["--pb-accent"],
-      "#191919",
-      4.7
-    );
-    // Dunkle Fläche des Packs (Bühne, Bogen) statt festem Braunschwarz
-    // (2026-10-06, Betreiber: „alles dunkelbraun im Hintergrund?").
-    const deep =
-      relativeLuminance(vars["--pb-canvas"]) <
-      relativeLuminance(vars["--pb-ink"])
-        ? vars["--pb-canvas"]
-        : vars["--pb-ink"];
-    vars["--pb-art-deep"] = mix(deep, "#000000", 0.82);
-    vars["--pb-art-on-accent"] = bestTextOn(vars["--pb-accent"]);
-    // Zitat-Band (2026-10-07, Betreiber: „bei manchen gut, bei anderen
-    // schlecht"): gedeckte Akzente tragen eine ganze Fläche, knallige
-    // (Signalorange, Neonblau, Pink) nicht — dann helle Fläche, Zitat in
-    // Textfarbe, nur ein Akzentstrich.
-    const loudAccent =
-      hexToHsl(vars["--pb-accent"]).s >= LOUD_ACCENT_SATURATION;
-    vars["--pb-art-quote-bg"] = loudAccent
-      ? vars["--pb-surface"]
-      : vars["--pb-accent"];
-    vars["--pb-art-quote-ink"] = loudAccent
-      ? vars["--pb-ink"]
-      : vars["--pb-art-on-accent"];
-    vars["--pb-art-quote-rule"] = loudAccent
-      ? vars["--pb-art-accent-text"]
-      : "transparent";
-  }
-  // Ohne persistiertes Profil greifen ausschließlich die handgestalteten
-  // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS
-  // die Komposition in allen 14 Packs über data-pb-slot.
-  // Rev 3 behält designProfile im Dokument (Studio-Schalter wie
-  // hiddenElements lesen die Module über data.designProfile), aber keine
-  // Pack-Layout-Attribute und kein DESIGN_PROFILE_CSS.
-  const designProfile = systemDef ? undefined : effectiveData.designProfile;
-  const entry = systemDef ? undefined : entryState(effectiveData, preview, now);
-  const systemState: SystemState | undefined = systemDef
-    ? {
-        data: effectiveData,
-        blueprint: blueprintFor(
-          effectiveData.businessCategory,
-          effectiveData.businessName,
-          effectiveData.blueprintFamily
-        ),
-        preview,
-        now,
-        contactIsland:
-          Boolean(slug) && Boolean(effectiveData.features?.contactForm),
-      }
-    : undefined;
-  const blueprintNav = (systemState?.blueprint ?? entry?.blueprint)?.navLabels;
+  if (!systemDef || !mod)
+    throw new Error(`System-Modul nicht registriert: ${data.system}`);
+  const vars = withLegacyVars(systemCssVars(systemDef, data.palette));
+  // designProfile bleibt im Dokument (Studio-Schalter wie hiddenElements
+  // lesen die Module über data.designProfile).
+  const systemState: SystemState = {
+    data,
+    blueprint: blueprintFor(
+      data.businessCategory,
+      data.businessName,
+      data.blueprintFamily
+    ),
+    preview,
+    now,
+    contactIsland: Boolean(slug) && Boolean(data.features?.contactForm),
+  };
+  const blueprintNav = systemState.blueprint?.navLabels;
   // Stockfotos nicht als „Referenzen" ausgeben (Betreiber 2026-10-07).
-  const stockGallery = galleryIsStock(effectiveData);
-  const navItems = buildNavItems(effectiveData, { pathname, basePath }).map(
-    item =>
-      item.sectionType === "gallery" && stockGallery
-        ? { ...item, label: "Einblicke", fixedLabel: true }
-        : blueprintNav && item.sectionType && blueprintNav[item.sectionType]
-          ? {
-              ...item,
-              label: blueprintNav[item.sectionType]!,
-              fixedLabel: true,
-            }
-          : item
+  const stockGallery = galleryIsStock(data);
+  const navItems = buildNavItems(data, { pathname, basePath }).map(item =>
+    item.sectionType === "gallery" && stockGallery
+      ? { ...item, label: "Einblicke", fixedLabel: true }
+      : blueprintNav && item.sectionType && blueprintNav[item.sectionType]
+        ? {
+            ...item,
+            label: blueprintNav[item.sectionType]!,
+            fixedLabel: true,
+          }
+        : item
   );
-  const currentPage = pageForPathname(effectiveData, pathname);
+  const currentPage = pageForPathname(data, pathname);
   // Eine Unterseite rendert über dasselbe `mod.Page` wie die Startseite —
   // nur mit den Page-Sektionen anstelle der Startseiten-Sektionen (siehe
   // pageContentSections: dieselben Zod-Schemas, strukturell kompatibler
-  // Cast). `pageHeader` ist darin NICHT enthalten (kein Startseiten-
-  // Sektionstyp); seit Task 4 rendern alle 14 Pack-Module `pageHeader` aus
-  // dem `sections`-Prop selbst (siehe `case "pageHeader"` in jedem
-  // Pack-Modul) — ein zusätzlicher generischer Fallback HIER würde die
-  // Kopfzeile doppelt rendern (zwei <h1>, a11y-Regression) und entfällt
-  // deshalb bewusst; `moduleParity.test.ts` sichert ab, dass kein Pack
-  // `pageHeader` vergisst.
+  // Cast). `pageHeader` rendert jedes System-Modul aus dem `sections`-Prop
+  // selbst; ein generischer Fallback hier würde die Kopfzeile doppelt
+  // rendern (zwei <h1>).
   //
   // Add-on-Gating (Plan B6 Task 6): `currentPage` ist nur gesetzt, wenn
   // `addOns.subpages` gebucht ist (pageForPathname → visiblePages); die
   // Page-Sektionen laufen durch dasselbe Gating wie die Startseite
   // (visiblePageSections: Galerie/Speisekarte/Preisliste ohne Add-on werden
   // auch auf Unterseiten nicht gerendert). Startseiten-Sektionen gatet
-  // `orderedSections` (engine.ts) in jedem Pack-Modul selbst.
+  // `orderedSections` (engine.ts) in jedem Modul selbst.
   // Kontakt/Galerie auf Unterseiten lesen die Startseite (linkPageSections)
   // — der Editor verspricht „übernimmt die Kontaktdaten"/„nutzt die
   // Galerie-Bilder", also darf die gespeicherte Kopie nie veralten.
   const pageSections = currentPage
-    ? linkPageSections(
-        effectiveData,
-        visiblePageSections(effectiveData, currentPage)
-      )
+    ? linkPageSections(data, visiblePageSections(data, currentPage))
     : undefined;
   const pageRenderData =
     currentPage && pageSections
       ? {
-          ...effectiveData,
+          ...data,
           sections: pageContentSections({
             ...currentPage,
             sections: pageSections,
@@ -455,119 +270,38 @@ export const SiteRenderer: React.FC<{
           sectionOrder: undefined,
           hiddenSections: undefined,
         }
-      : effectiveData;
-  // Galerie-Alben (2026-08-30): Packs bekommen die geflachte Bildliste;
+      : data;
+  // Galerie-Alben (2026-08-30): Module bekommen die geflachte Bildliste;
   // die Zuordnung wandert als JSON-Tag zur Chip-Leiste des siteEnhancers.
   const albumJson = albumChromeJson(pageRenderData);
-  const packRenderData = flattenGalleryAlbums(pageRenderData);
+  const moduleRenderData = flattenGalleryAlbums(pageRenderData);
   return (
     <div
       ref={rootRef}
-      className={`pb-site pb-${systemDef ? systemDef.id : effectiveData.stylePackId}`}
+      className={`pb-site pb-${systemDef.id}`}
       style={
-        (systemDef?.scheme
+        (systemDef.scheme
           ? { ...vars, colorScheme: systemDef.scheme }
           : vars) as React.CSSProperties
       }
-      data-pb-revision={effectiveData.designRevision}
-      data-pb-system={systemDef?.id}
-      data-pb-palette={
-        systemDef ? getPalette(systemDef, effectiveData.palette).id : undefined
-      }
-      data-pb-texture={
-        effectiveData.designRevision === 2
-          ? ART_DIRECTIONS[effectiveData.stylePackId].texture
-          : undefined
-      }
-      data-pb-hero={designProfile?.heroLayout}
-      data-pb-services={designProfile?.servicesLayout}
-      data-pb-about={designProfile?.aboutLayout}
-      data-pb-gallery={designProfile?.galleryLayout}
-      data-pb-hero-mobile={designProfile?.heroLayoutMobile}
-      data-pb-services-mobile={designProfile?.servicesLayoutMobile}
-      data-pb-about-mobile={designProfile?.aboutLayoutMobile}
-      data-pb-gallery-mobile={designProfile?.galleryLayoutMobile}
-      data-pb-testimonials={designProfile?.testimonialsLayout}
-      data-pb-testimonials-mobile={designProfile?.testimonialsLayoutMobile}
-      data-pb-contact={designProfile?.contactLayout}
-      data-pb-contact-mobile={designProfile?.contactLayoutMobile}
-      data-pb-density={designProfile?.density}
-      data-pb-image={designProfile?.imageTreatment}
-      data-pb-deco={designProfile?.decorations}
-      data-pb-deco-off={
-        designProfile?.hiddenDecorations?.join(" ") || undefined
-      }
-      data-pb-he={designProfile?.hiddenElements?.join(" ") || undefined}
+      data-pb-revision={data.designRevision}
+      data-pb-system={systemDef.id}
+      data-pb-palette={getPalette(systemDef, data.palette).id}
     >
-      {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)
-          für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts.
-          MOTION_CSS danach: dezente Scroll-Reveals/Hover-Feedback aller
-          Packs aus einer Quelle (siehe motionCss.ts). */}
       <style
         dangerouslySetInnerHTML={{
-          __html: systemDef
-            ? systemStyles(mod.css, {
-                album: Boolean(albumJson),
-                ageGate: site?.requiresAgeGate === true,
-                photoCredits: Boolean(effectiveData.photoCredits?.length),
-              })
-            : mod.css +
-              "\n" +
-              MOBILE_NAV_CSS +
-              "\n" +
-              MOTION_CSS +
-              "\n" +
-              REVIEW_CHROME_CSS +
-              "\n" +
-              RICH_TEXT_CSS +
-              "\n" +
-              STORY_CSS +
-              SECTION_LINK_CSS +
-              "\n" +
-              USP_CSS +
-              "\n" +
-              NOTICE_CSS +
-              "\n" +
-              EXTRA_SECTIONS_CSS +
-              "\n" +
-              PARTNERS_CSS +
-              "\n" +
-              DECO_TOGGLE_CSS +
-              "\n" +
-              BRANDING_CSS +
-              "\n" +
-              LAYOUT_POLISH_CSS +
-              (albumJson ? "\n" + ALBUM_CSS : "") +
-              (site?.requiresAgeGate === true ? "\n" + AGE_GATE_CSS : "") +
-              (designProfile
-                ? "\n" +
-                  (effectiveData.designRevision === 2
-                    ? DESIGN_PROFILE_CSS.replaceAll(
-                        "#start",
-                        "#start:not(.pb-art-hero)"
-                      )
-                    : DESIGN_PROFILE_CSS)
-                : "") +
-              (effectiveData.designRevision === 2
-                ? "\n" +
-                  ART_DIRECTION_CSS +
-                  "\n" +
-                  ENTRY_SECTIONS_CSS +
-                  "\n" +
-                  ENTRY_GASTRO_CSS +
-                  "\n" +
-                  ENTRY_LAYOUTS_CSS
-                : "") +
-              (effectiveData.photoCredits?.length
-                ? "\n" + PHOTO_CREDITS_CSS
-                : ""),
+          __html: systemStyles(mod.css, {
+            album: Boolean(albumJson),
+            ageGate: site?.requiresAgeGate === true,
+            photoCredits: Boolean(data.photoCredits?.length),
+          }),
         }}
       />
       {/* FSK-18-Overlay VOR allem Inhalt (fail-closed ohne JS); das
           Inline-Script der Komponente räumt es für bestätigte Besucher
           vor dem ersten Paint wieder weg. */}
       {site?.requiresAgeGate === true && (
-        <AgeGateSsr slug={slug} businessName={effectiveData.businessName} />
+        <AgeGateSsr slug={slug} businessName={data.businessName} />
       )}
       {albumJson && (
         <script
@@ -576,40 +310,25 @@ export const SiteRenderer: React.FC<{
           dangerouslySetInnerHTML={{ __html: albumJson }}
         />
       )}
-      {/* Saison-/Aktionsbanner GANZ OBEN, über der Pack-Navigation —
-          zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
-          Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
-      {!currentPage && !legal && <NoticeBanner data={effectiveData} />}
-      {systemState ? (
-        <SystemContext.Provider value={systemState}>
-          <mod.Page
-            data={packRenderData}
-            basePath={basePath}
-            now={now}
-            navItems={navItems}
-            pageTitle={currentPage?.title}
-            sections={pageSections}
-            legal={legal}
-          />
-          {!legal && <PhotoCredits data={effectiveData} />}
-        </SystemContext.Provider>
-      ) : (
-        <EntryContext.Provider value={entry}>
-          <mod.Page
-            data={packRenderData}
-            basePath={basePath}
-            now={now}
-            navItems={navItems}
-            pageTitle={currentPage?.title}
-            sections={pageSections}
-          />
-          <EntryDock />
-          <PhotoCredits data={effectiveData} />
-        </EntryContext.Provider>
-      )}
+      {/* Saison-/Aktionsbanner GANZ OBEN, über der Navigation — zentral
+          statt im Sektionsfluss (siehe noticeBanner.tsx). Nur auf der
+          Startseite; Unterseiten bleiben banner-frei. */}
+      {!currentPage && !legal && <NoticeBanner data={data} />}
+      <SystemContext.Provider value={systemState}>
+        <mod.Page
+          data={moduleRenderData}
+          basePath={basePath}
+          now={now}
+          navItems={navItems}
+          pageTitle={currentPage?.title}
+          sections={pageSections}
+          legal={legal}
+        />
+        {!legal && <PhotoCredits data={data} />}
+      </SystemContext.Provider>
       {/* „Mit ♥ erstellt mit ⚡ Pageblitz" (Dashboard-Schalter, default an):
           der Backlink-Hebel jedes Baukastens — bewusst ohne nofollow. Der
-          siteEnhancer hängt das Badge beim Laden in den Pack-Footer. */}
+          siteEnhancer hängt das Badge beim Laden in den Footer. */}
       {site?.showBranding === true && (
         <a className="pb-made-with" href="https://pageblitz.de">
           Mit{" "}
@@ -624,7 +343,7 @@ export const SiteRenderer: React.FC<{
         </a>
       )}
       <SiteIslands
-        data={effectiveData}
+        data={data}
         slug={slug}
         basePath={basePath}
         site={site}

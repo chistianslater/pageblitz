@@ -1,19 +1,10 @@
-import { describe, expect, test, beforeEach } from "vitest";
+import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
-import { PACK_MODULES } from "./packRegistry";
 import { SiteRenderer, SYSTEM_MOTION } from "./SiteRenderer";
 import { SYSTEMS_WITH_MOTION } from "../../../../shared/designSystems/registry";
-// Import-Nebenwirkung: registriert alle Pack-Module (u.a. kanzlei) in
-// PACK_MODULES — für die packOverride-Tests unten benötigt.
-import "./packs/index";
-
-// Referenz auf das echte werkbank-Modul sichern, BEVOR die Tests unten es
-// überschreiben/löschen (vgl. "wirft verständlich bei nicht registriertem
-// Pack-Modul") — damit der packOverride-Block es unabhängig von der
-// Ausführungsreihenfolge der vorherigen Tests wiederherstellen kann.
-const REAL_WERKBANK_MODULE = PACK_MODULES.werkbank;
+import { SYSTEM_MODULES } from "./systems/registry";
 
 const data: WebsiteDataV2 = {
   version: 2,
@@ -24,39 +15,46 @@ const data: WebsiteDataV2 = {
 };
 
 describe("SiteRenderer", () => {
-  describe("packOverride (Variant-Picker-Preview)", () => {
-    beforeEach(() => {
-      // Unabhängig davon, was die Tests oben mit PACK_MODULES.werkbank
-      // gemacht haben (überschrieben/gelöscht) — hier auf das echte Modul
-      // zurücksetzen, damit "gespeicherter Pack bleibt aktiv" unten
-      // tatsächlich rendert statt zu werfen.
-      PACK_MODULES.werkbank = REAL_WERKBANK_MODULE;
-    });
-
-    test("Inhalte bleiben beim Override erhalten", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={data} packOverride="kanzlei" />
-      );
-      expect(html).toContain("Probe");
-      // kanzlei-Modul zerlegt die Headline in <h1>Hallo <span>Welt</span></h1>
-      // (letztes Wort akzentuiert) — daher getrennt statt als ein String.
-      expect(html).toContain("Hallo");
-      expect(html).toContain("Welt");
-    });
-
-    test("explizite Revision 1 ohne Profil nutzt handgestaltete Pack-Defaults", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={{ ...data, designRevision: 1 }} />
-      );
+  describe("nur Designsysteme", () => {
+    test("ein Dokument ohne Revision rendert als System, ohne Pack-Layout-Attribute", () => {
+      const html = renderToStaticMarkup(<SiteRenderer data={data} />);
       const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
-      expect(root).not.toContain("data-pb-hero=");
-      expect(root).not.toContain("data-pb-services=");
-      expect(root).not.toContain("data-pb-density=");
+      expect(root).toContain('data-pb-revision="3"');
+      expect(root).toMatch(/data-pb-system="[a-z]+"/);
+      expect(root).toMatch(/data-pb-palette="[a-z-]+"/);
+      for (const attr of [
+        "data-pb-texture",
+        "data-pb-hero",
+        "data-pb-services",
+        "data-pb-density",
+        "data-pb-deco",
+        "data-pb-he",
+      ]) {
+        expect(root).not.toContain(`${attr}=`);
+      }
+      expect(html).toContain("Hallo Welt");
+      expect(html).not.toContain("pb-entry-dock");
+      expect(html).not.toContain("pb-art-");
     });
 
+    test("ein nicht registriertes System-Modul wirft verständlich", () => {
+      const real = SYSTEM_MODULES.raster;
+      delete SYSTEM_MODULES.raster;
+      try {
+        expect(() =>
+          renderToStaticMarkup(
+            <SiteRenderer
+              data={{ ...data, designRevision: 3, system: "raster" }}
+            />
+          )
+        ).toThrow("System-Modul nicht registriert: raster");
+      } finally {
+        SYSTEM_MODULES.raster = real;
+      }
+    });
   });
 
-  describe("pathname / Unterseiten (Plan B6, Task 3 + Task 4: pageHeader im Pack)", () => {
+  describe("pathname / Unterseiten (Plan B6, Task 3)", () => {
     const dataWithPage: WebsiteDataV2 = {
       ...data,
       sections: [
@@ -87,10 +85,6 @@ describe("SiteRenderer", () => {
       ],
     };
 
-    beforeEach(() => {
-      PACK_MODULES.werkbank = REAL_WERKBANK_MODULE;
-    });
-
     test("ohne pathname (Default) rendert weiterhin die Startseite", () => {
       const html = renderToStaticMarkup(<SiteRenderer data={dataWithPage} />);
       expect(html).toContain("Hallo Welt");
@@ -113,7 +107,7 @@ describe("SiteRenderer", () => {
         <SiteRenderer data={ungated} pathname="/leistungen-im-detail" />
       );
       expect(html).toContain("Hallo Welt");
-      expect(html).not.toContain('<header class="pb-wb-page-header">');
+      expect(html).not.toContain("Ein genauerer Blick.");
       expect(html).not.toContain('href="/leistungen-im-detail"');
     });
 
@@ -122,7 +116,7 @@ describe("SiteRenderer", () => {
         <SiteRenderer data={dataWithPage} pathname="/nicht-vorhanden" />
       );
       expect(html).toContain("Hallo Welt");
-      expect(html).not.toContain('<header class="pb-wb-page-header">');
+      expect(html).not.toContain("Ein genauerer Blick.");
     });
 
     test("Page ohne eigene pageHeader-Sektion → kein Page-Header", () => {
@@ -144,7 +138,8 @@ describe("SiteRenderer", () => {
       const html = renderToStaticMarkup(
         <SiteRenderer data={withoutHeader} pathname="/leistungen-im-detail" />
       );
-      expect(html).not.toContain('<header class="pb-wb-page-header">');
+      expect(html).toContain(">B<");
+      expect(html).not.toContain("Ein genauerer Blick.");
     });
   });
 });

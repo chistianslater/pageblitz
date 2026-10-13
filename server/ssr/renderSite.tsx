@@ -1,13 +1,9 @@
 import { asSystemDoc } from "../../shared/designSystems/apply";
-import { artPalette } from "../../shared/stylePacks/artDirection";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { openExternalLinksInNewTab } from "./externalLinks";
 import { previewCtaTag, type PreviewCta } from "./previewCta";
 import { SiteRenderer } from "../../client/src/components/site/SiteRenderer";
-import "../../client/src/components/site/packs/index";
-import { getConstitution, getFontPair } from "../../shared/stylePacks";
-import type { FontSpec } from "../../shared/stylePacks";
 import type {
   Page,
   SectionOf,
@@ -34,14 +30,14 @@ export interface RenderSiteOptions {
   previewCta?: PreviewCta | null;
   pathname?: string;
   /**
-   * Präfix für interne Pack-Links (Impressum/Datenschutz, Legal-Zurück-Link).
+   * Präfix für interne Links der Seite (Impressum/Datenschutz, Navigation).
    * "" für Subdomain-Sites (kunde.pageblitz.de/...), "/site/<slug>" für die
    * Pfadform (pageblitz.de/site/<slug>/...) — sonst führen die Links dort in
    * die Pageblitz-SPA statt zur Kundenseite.
    */
   basePath?: string;
   /**
-   * Fester Zeitpunkt für datumsabhängige Pack-Elemente (z. B. "Heute
+   * Fester Zeitpunkt für datumsabhängige Elemente (z. B. "Heute
    * geöffnet"-Karten). Nur die Dev-Preview-Route übergibt hier ein fixes
    * Datum für deterministische Visual-Baselines — Kundenseiten-SSR bleibt
    * bei Echtzeit (Default `new Date()` in SiteRenderer).
@@ -69,7 +65,7 @@ export interface RenderSiteOptions {
    * Reicht den Vorschau-Modus 1:1 an `SiteRenderer`/`SiteIslands` durch.
    * `undefined` (Default) lässt Inseln im Live-Modus rendern — so bleibt das
    * bisherige Verhalten von Kundenseiten-SSR und `/preview-ssr/:token`
-   * unverändert. Nur die öffentliche Pack-Demo (`/demo/:pack`) übergibt
+   * unverändert. Nur die öffentliche System-Demo (`/demo/system/…`) übergibt
    * "preview", damit ein eventuell aktives Kontaktformular/Chat/Buchung dort
    * nichts absenden kann (siehe `SiteIslands` für die Preview-Semantik).
    */
@@ -108,31 +104,6 @@ export function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Baut die einzige Google-Fonts-css2-URL aus den Fonts der Pack-Verfassung. */
-function buildFontsUrl(fonts: (FontSpec | undefined)[]): string {
-  const families = fonts
-    .filter((f): f is FontSpec => Boolean(f))
-    .map(f => `family=${f.googleCss}`)
-    .join("&");
-  return `https://fonts.googleapis.com/css2?${families}&display=swap`;
-}
-
-/**
- * Fonts eines Dokuments: Pack-Verfassung, wobei eine gewählte Schriftpaarung
- * (WebsiteDataV2.fontPairId, Studio-Theme-Editor) display/body ersetzt —
- * dieselbe Ersetzung wie in `toCssVars`, damit Head-Link und gerenderte
- * CSS-Variablen nie auseinanderlaufen. CSR-Pendant: packFontHrefs.
- */
-function fontsForDoc(data: WebsiteDataV2): (FontSpec | undefined)[] {
-  const constitution = getConstitution(data.stylePackId);
-  const pair = getFontPair(data.fontPairId);
-  return [
-    pair?.display ?? constitution.type.display,
-    pair?.body ?? constitution.type.body,
-    constitution.type.utility,
-  ];
-}
-
 /**
  * Vorlade-Links der selbst gehosteten Systemschriften (rev 3). Die
  * @font-face-Regeln bringt das Modul-CSS mit (siehe systems/journal/css.ts).
@@ -163,37 +134,26 @@ export function systemSchemeHead(
   ];
 }
 
-/** Systemdefinition eines rev-3-Dokuments, sonst undefined. */
-function systemOf(data: WebsiteDataV2): DesignSystemDef | undefined {
-  return data.designRevision === 3 && data.system
-    ? getSystem(data.system)
-    : undefined;
-}
-
 /**
- * Das Motion-Bundle gehört zur rev-2-Art-Direction (siteEntrance) und zu
- * den Designsystemen mit Bewegung (rev 3, `SYSTEMS_WITH_MOTION`); rev 1 und
- * Systeme ohne Bewegung brauchen es nicht. Unversionierte Dokumente gelten
- * wie bisher als rev 2.
+ * Systemdefinition eines Dokuments. Nach `asSystemDoc` trägt jedes Dokument
+ * rev 3 und ein System; ein nicht registriertes System wirft (wie das
+ * fehlende Modul in SiteRenderer).
  */
-function usesMotionBundle(data: WebsiteDataV2): boolean {
-  if (data.designRevision === 3) {
-    const def = systemOf(data);
-    return def ? systemHasMotion(def.id) : false;
-  }
-  return data.designRevision !== 1;
+function systemOf(data: WebsiteDataV2): DesignSystemDef {
+  const def = data.system ? getSystem(data.system) : undefined;
+  if (!def) throw new Error(`Designsystem nicht registriert: ${data.system}`);
+  return def;
 }
 
-/** Schrift-Kopfzeilen: rev 3 selbst gehostet, sonst Google Fonts (unverändert). */
+/** Nur Designsysteme mit eigener Bewegung (`SYSTEMS_WITH_MOTION`) laden das Motion-Bundle. */
+function usesMotionBundle(data: WebsiteDataV2): boolean {
+  return systemHasMotion(systemOf(data).id);
+}
+
+/** Schrift-Kopfzeilen: selbst gehostete Systemschriften plus Farbschema. */
 function fontHeadTags(data: WebsiteDataV2): string[] {
   const def = systemOf(data);
-  if (def) return [systemFontHead(def), ...systemSchemeHead(def, data.palette)];
-  const fontsUrl = buildFontsUrl(fontsForDoc(data));
-  return [
-    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
-    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
-    `<link rel="stylesheet" href="${esc(fontsUrl)}" />`,
-  ];
+  return [systemFontHead(def), ...systemSchemeHead(def, data.palette)];
 }
 
 function findContact(data: WebsiteDataV2): SectionOf<"contact"> | undefined {
@@ -250,7 +210,7 @@ function buildLocalBusinessJsonLd(data: WebsiteDataV2): string {
 }
 
 /**
- * Meta/Canonical/OG + LocalBusiness-JSON-LD + Pack-Fonts-Link für die
+ * Meta/Canonical/OG + LocalBusiness-JSON-LD + System-Schriften für die
  * Haupt-Site. Das Inseln-CSS gehört NICHT hierher — `SiteIslands` bringt es
  * selbst als `<style>`-Kind mit (analog zu `mod.css` in `SiteRenderer`),
  * damit CSR-Vorschauen (Dashboard/Editor über `WebsiteRenderer`, die nie
@@ -402,8 +362,8 @@ function siteEnhancerTag(): string {
 /**
  * Einblendungs-CSS für die Zeitmaschinen-Vorschau (RenderSiteOptions.
  * sectionReveal): jede Sektion fadet mit kleinem Versatz nacheinander ein.
- * Alle 14 Pack-Module rendern ihre Inhalte als `<section>`-Elemente —
- * der generische Selektor greift daher packübergreifend. Nur opacity/
+ * Alle System-Module rendern ihre Inhalte als `<section>`-Elemente —
+ * der generische Selektor greift daher systemübergreifend. Nur opacity/
  * transform (kompositor-freundlich); `prefers-reduced-motion` bekommt den
  * statischen Endzustand (kein `from`-Frame ohne Animation, da `both` nur
  * innerhalb der Animation wirkt).
@@ -423,44 +383,14 @@ function sectionRevealTag(opts: RenderSiteOptions): string {
   return opts.sectionReveal ? SECTION_REVEAL_STYLE : "";
 }
 
-/**
- * Canvas-Farbe (Body-Hintergrund hinter der Site): Farbwelt-Override
- * gewinnt vor der Verfassung — sonst blitzt bei dunklen Welten der helle
- * Pack-Standard als Streifen über der Navigation/beim Overscroll durch.
- */
+/** Canvas-Farbe (Body-Hintergrund hinter der Site): Papier der Palette. */
 function getCanvasColor(data: WebsiteDataV2): string {
-  return getRoleColor(data, "canvas", "#ffffff");
+  return getPalette(systemOf(data), data.palette).paper;
 }
 
-/** Textfarbe der Rechtsseiten — folgt der Farbwelt wie die Canvas. */
+/** Textfarbe der Rechtsseiten: Tinte der Palette. */
 function getInkColor(data: WebsiteDataV2): string {
-  return getRoleColor(data, "ink", "#111111");
-}
-
-function getRoleColor(
-  data: WebsiteDataV2,
-  role: "canvas" | "ink",
-  fallback: string
-): string {
-  // Designsystem (rev 3): Papier/Tinte der gewählten Palette.
-  const def = systemOf(data);
-  if (def) {
-    const palette = getPalette(def, data.palette);
-    return role === "canvas" ? palette.paper : palette.ink;
-  }
-  const override =
-    data.colorOverrides?.[role] ??
-    (data.designRevision !== 1
-      ? artPalette(data.stylePackId)[role]
-      : undefined);
-  if (override && /^#[0-9a-fA-F]{6}$/.test(override)) return override;
-  try {
-    const constitution = getConstitution(data.stylePackId as any);
-    const entry = constitution.palette.find(c => c.role === role);
-    return entry?.hex ?? fallback;
-  } catch {
-    return fallback;
-  }
+  return getPalette(systemOf(data), data.palette).ink;
 }
 
 /** Schlichte Meta-Hülle (Titel, Canonical) für Impressum/Datenschutz. */
@@ -478,13 +408,13 @@ function renderLegalHead(
 }
 
 /**
- * Rendert eine schlichte Rechtsseite (Impressum/Datenschutz) statt der vollen
- * Site. Fehlt der Inhalt, liefert der `status` 404 — der HTML-Fallback-Text
+ * Rendert eine Rechtsseite (Impressum/Datenschutz) im Rahmen des
+ * Designsystems (Kopf, Fuß, Schrift, Palette). Fehlt der Inhalt, liefert der `status` 404 — der HTML-Fallback-Text
  * bleibt trotzdem menschenlesbar (Crawler sehen Status + Text konsistent).
  *
  * SICHERHEITS-INVARIANTE: `bodyHtml` (impressumHtml/datenschutzHtml, siehe
  * WebsiteDataV2Schema["legal"]) wird unten als `content` bewusst UNESCAPED
- * in `html` interpoliert — same-origin mit dem Admin-Panel. In dieses Feld
+ * ins Markup interpoliert — same-origin mit dem Admin-Panel. In dieses Feld
  * darf ausschließlich systemgenerierter Output des legalGenerator gelangen,
  * niemals rohe Nutzereingabe.
  */
@@ -513,27 +443,25 @@ function renderLegalPage(
       ? `<h1>${esc(title)}</h1><p><strong>Keine Sorge — hier steht noch nichts.</strong></p><p>Das ${esc(title)} entsteht aus deinen Angaben, sobald du die Seite freischaltest. Dann ist hier alles fertig, und du musst dich um nichts kümmern.</p>`
       : "<p>Diese Seite wurde nicht gefunden.</p>";
   const status = hasContent || isPreview ? 200 : 404;
-  // Designsystem (rev 3): Rechtsseite im Rahmen der Seite (Kopf, Fuß,
-  // Schrift, Palette) statt der schlichten Hülle.
+  // Rechtsseite im Rahmen der Seite (Kopf, Fuß, Schrift, Palette).
   const system = systemOf(data);
-  if (system) {
-    const body = renderToStaticMarkup(
-      <SiteRenderer
-        data={data}
-        basePath={basePath}
-        now={opts.now}
-        legal={{ title, html: content ?? "" }}
-      />
-    );
-    const head = [
-      renderLegalHead(data, canonicalUrl, title),
-      systemFontHead(system),
-      ...systemSchemeHead(system, data.palette),
-      analyticsTag(opts),
-    ]
-      .filter(Boolean)
-      .join("\n");
-    const html = `<!doctype html>
+  const body = renderToStaticMarkup(
+    <SiteRenderer
+      data={data}
+      basePath={basePath}
+      now={opts.now}
+      legal={{ title, html: content ?? "" }}
+    />
+  );
+  const head = [
+    renderLegalHead(data, canonicalUrl, title),
+    systemFontHead(system),
+    ...systemSchemeHead(system, data.palette),
+    analyticsTag(opts),
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const html = `<!doctype html>
 <html lang="de">
 <head>
 ${head}
@@ -541,23 +469,6 @@ ${head}
 </head>
 <body>
 ${openExternalLinksInNewTab(body)}
-</body>
-</html>`;
-    return { html, status };
-  }
-  const backHref = basePath || "/";
-  const canvasColor = getCanvasColor(data);
-  const html = `<!doctype html>
-<html lang="de">
-<head>
-${[renderLegalHead(data, canonicalUrl, title), analyticsTag(opts)].filter(Boolean).join("\n")}
-<style>html,body{margin:0;padding:0}body{background:${canvasColor};color:${getInkColor(data)}}.pb-legal a{color:inherit}</style>
-</head>
-<body>
-<div class="pb-legal">
-<a href="${esc(backHref)}">&larr; Zurück zur Startseite</a>
-${content}
-</div>
 </body>
 </html>`;
   return { html, status };

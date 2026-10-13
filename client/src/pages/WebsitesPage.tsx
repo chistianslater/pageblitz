@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { stadtAusAnschrift } from "@shared/stadtAusAnschrift";
 import { trpc } from "@/lib/trpc";
-import { packNameFor, studioHrefFor } from "./admin/websitesPageLogic";
+import { designNameFor, studioHrefFor } from "./admin/websitesPageLogic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -638,7 +638,7 @@ function AdminWebsitesTab({
                       {stadtAusAnschrift(w.business?.address) || "–"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {packNameFor(w.websiteData)}
+                      {designNameFor(w.websiteData)}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -954,7 +954,7 @@ function ExternalWebsitesTab({
                       {stadtAusAnschrift(w.business?.address) || "–"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {packNameFor(w.websiteData)}
+                      {designNameFor(w.websiteData)}
                     </TableCell>
                     <TableCell>
                       {(() => {

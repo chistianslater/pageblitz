@@ -112,7 +112,7 @@ export function JournalGallery({ section, sections }: P<"gallery">) {
   const numbers = figureNumbers(sections, hidden);
   const first = numbers.gallery ?? 1;
   const last = numbers.galleryLast ?? first;
-  // Stockfotos nicht als eigene Arbeiten ausgeben (wie entrySections).
+  // Stockfotos nicht als eigene Arbeiten ausgeben.
   const title = galleryIsStock(data) ? label : (section.headline ?? label);
   const many = section.images.length > 1;
   return (

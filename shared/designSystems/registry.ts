@@ -20,7 +20,18 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   nacht: NACHT,
 };
 
-/** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */
+/**
+ * Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6).
+ *
+ * Vorsicht beim Zurücknehmen einer Freischaltung: Jedes gelesene Dokument
+ * ohne rev 3 (alte Verlaufsstände, Fixtures, Altbestand) bekommt beim Lesen
+ * über `asSystemDoc` → `withPrimarySystem` das erste FREIGESCHALTETE System
+ * seines Tripels. Ist für eine Branche keins mehr frei, wirft
+ * `withPrimarySystem` — Rendern, Wiederherstellen und Studio-Laden solcher
+ * Seiten schlagen dann fehl. Vorher prüfen, dass jedes Tripel ein
+ * freigeschaltetes System behält (Test „withPrimarySystem ist total“ in
+ * apply.test.ts).
+ */
 export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
 
 export function getSystem(id: DesignSystemId): DesignSystemDef | undefined {

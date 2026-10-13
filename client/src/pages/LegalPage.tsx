@@ -4,7 +4,7 @@ import { Loader2, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { pickLegalHtml } from "@/lib/legalHtml";
-import { getPackAccent, getPackAccentText } from "@/lib/packAccent";
+import { legalColors } from "@/lib/legalColors";
 
 export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const [location] = useLocation();
@@ -74,9 +74,12 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   }
 
   const websiteData = website.websiteData as any;
-  const primaryColor = getPackAccent(websiteData?.stylePackId);
-  // Link-Text auf Weiß braucht ≥ 4,5:1 — Flächen-Akzent reicht dafür nicht immer.
-  const linkColor = getPackAccentText(websiteData?.stylePackId);
+  // Akzent der Farbstimmung des Designsystems; Link-Text auf Weiß ≥ 4,5:1.
+  const {
+    primary: primaryColor,
+    link: linkColor,
+    onPrimary: textOnPrimary,
+  } = legalColors(websiteData);
   const businessName =
     websiteData?.businessName || (data as any)?.business?.name || "";
 
@@ -85,11 +88,6 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
     window.location.hostname
   );
   const backHref = isSubdomain ? "/" : `/site/${slug}`;
-
-  // Determine if text on primary is light or dark
-  const isLightPrimary =
-    parseInt(primaryColor.replace("#", "").slice(0, 2), 16) > 180;
-  const textOnPrimary = isLightPrimary ? "#1e293b" : "#ffffff";
 
   const html = isImpressum
     ? pickLegalHtml(websiteData, "impressum")
