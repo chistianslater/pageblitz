@@ -4,8 +4,11 @@ Diese Liste ist verbindlich. Nicht „aus Kulanz“ umgehen.
 
 ## Produkt
 
-- **Genau 20 Style-Packs.** Kein 15. Pack erfinden, keine Pack-ID umbenennen.
-  Quelle: `shared/siteContract/packIds.ts`.
+- **Sechs Designsysteme** (`journal`, `raster`, `werkstoff`, `plakat`, `klar`,
+  `nacht`), nur rev 3; kein Pack-Renderer mehr. Quelle:
+  `shared/designSystems/types.ts`. Die 20 **Textstimmen**
+  (`shared/siteContract/packIds.ts`, `shared/textVoices/`) steuern nur Texte;
+  keine Stimmen-ID umbenennen, das Feld `stylePackId` bleibt (Rollback).
 - **Preise und Add-on-Namen** nur aus `shared/pricing.ts`. Landing, Checkout,
   SEO-Prerender und Copy müssen dieselbe Zahl zeigen.
 - **Keine erfundenen Testimonials**, Kundenzahlen oder Bewertungen
@@ -14,39 +17,46 @@ Diese Liste ist verbindlich. Nicht „aus Kulanz“ umgehen.
 - FAQ-Texte aus `shared/faq.ts` (auch JSON-LD). Nicht an einer Stelle
   umschreiben und an der anderen vergessen.
 
-## Pack-Änderungen einstufen
+## Änderungen an Systemen einstufen
 
 Das Design liegt im Code, nicht im Dokument: Eine geänderte Zeile in
-`client/src/components/site/packs/<id>/css.ts` verändert **jede** Kundenseite
-auf diesem Pack beim nächsten Aufruf. Deshalb bekommt jede Pack-Änderung im
-Commit eine von zwei Einstufungen:
+`client/src/components/site/systems/<id>/` oder `shared/designSystems/<id>.ts`
+verändert **jede** Kundenseite dieses Systems beim nächsten Aufruf. Jede
+Änderung bekommt im Commit eine von zwei Einstufungen:
 
 - **Korrektur** — Kontrast, Umbruch, Klickbarkeit, Sicherheit, Performance.
-  Gilt sofort für alle. Niemand wird gefragt, ob er einen Fehler behalten
-  will.
+  Gilt sofort für alle.
 - **Gestaltung** — Hero-Komposition, Typo-Skala, Sektionsreihenfolge,
-  Farbwelten. Gehört in den nächsten Design-Stand, nicht in den laufenden.
+  Farbstimmungen. Gehört in einen neuen Design-Stand, nicht in den laufenden.
 
-Im Zweifel **Gestaltung**. Die Versuchung geht in die andere Richtung: Wer
-alles als Korrektur einstuft, macht den Mechanismus wertlos und ändert
-Kundenseiten ohne deren Zutun.
+Im Zweifel **Gestaltung**.
 
-Aktueller Stand: `AKTUELLER_DESIGN_STAND` in
-`shared/siteContract/designStand.ts`. Hintergrund und Umschaltung:
-`docs/superpowers/specs/2026-09-12-design-staende-design.md`.
+**Byte-Gleichheit als Regel:** Ein Aufräum- oder Umbau-Commit ändert das
+SSR-HTML der Systeme nicht. Nachweis: `scripts/seiten-fingerabdruck.ts` —
+Basis vor dem Umbau erzeugen (`--beispiele --fixtures --aus basis`, bei
+Live-Dokumenten `--datei export.json`), danach mit `--aus nach` erzeugen und
+mit `--vergleich` prüfen; erlaubt ist nur, was im Commit ausdrücklich als
+Abweichung gelistet ist. Als String ins HTML inlinete CSS/JS-Konstanten
+(`SITE_ENHANCER_JS`, `RICH_TEXT_CSS` …) sind eingefroren.
+
+**Rollback-Sicherheit:** Der vorherige Prod-Commit muss jedes Dokument lesen
+können, das der neue Code schreibt — Schema nicht erweitern, Felder nicht
+umbenennen.
+
+Hintergrund: `docs/superpowers/specs/2026-10-10-designsysteme-design.md`.
 
 ## Studio vs. Landing
 
 - Studio-Tokens (`:root` `--lp-canvas` Papier/Grün, `studio.css`) **nicht**
   auf den Dayos-/Marketing-Look ziehen.
 - Landing-Tokens nur auf **`.lp`** überschreiben (`client/src/index.css`).
-- Layout-Chrome (Rahmen, „Preview“, Pack-Umschalter) nur im Studio
+- Layout-Chrome (Rahmen, „Preview“, System-Umschalter) nur im Studio
   `PreviewFrame` und auf `/design-review`. **Nie** auf live Kunden-Sites.
 
 ## Landing-Technik
 
 - Hero-Film: `@remotion/player` in `hero-film/`, **lazy**, nicht im ersten
-  Paint. LCP bleibt `/pack-previews/werkbank.webp`.
+  Paint. LCP: siehe `Klarstart` (kein Pack-Vorschaubild mehr).
 - `prefers-reduced-motion: reduce` → statisches Poster, kein Player.
 - Remotion-`translate`-Interpolation: **eine Einheit pro Achse**
   (nicht `["48% 0%", "0% 0px"]` — das knallt zur Laufzeit).
@@ -56,14 +66,14 @@ Aktueller Stand: `AKTUELLER_DESIGN_STAND` in
 - Headlines: Sentence Case. Kein `text-transform: uppercase` auf `h1`/`h2`.
   Kickers bleiben Versalien mit Tracking.
 - Barlow / zweite Display-Schrift **nicht** zurückholen. Nur Space Grotesk
-  (self-hosted). Innerer Hero-Film darf Arial Black behalten (Werkbank-Stimme).
+  (self-hosted). Innerer Hero-Film darf Arial Black behalten (Hero-Film-Stimme).
 - Chat-Widget auf `/` bleibt lazy (`DeferredChatWidget` in `LandingPage.tsx`).
 
 ## Git / Build
 
 - `.agents/` und `skills-lock.json` nicht committen (gitignored).
 - Untracked Playwright-Snapshots unter `tests/visual/islands.spec.ts-snapshots/`
-  und eine lokal erzeugte `pack-showcase-linux.png` nicht ungefragt committen.
+  nicht ungefragt committen.
 - Deploy nutzt `npm ci --legacy-peer-deps`. Neue Deps: **beide** Lockfiles
   (`pnpm-lock.yaml` und `package-lock.json`).
 - SQL-Migrationen von Hand (`drizzle/NNNN_….sql`). Kein

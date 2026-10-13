@@ -8,10 +8,15 @@ ersetzt keine davon.
 
 Das Produkt läuft vollständig auf v2 — es gibt keinen Flag-Zweig mehr:
 
-- **Style Packs (14)**: `shared/stylePacks/` (`werkbank`, `patina`, `kanzlei`,
-  `salon-noir`, `morgenlicht`, `marktplatz`, `gusto`, `landgut`, `atelier`,
-  `klarwerk`, `verve`, `zunft`, `schimmer`, `fundament` — Liste in
-  `shared/siteContract/schema.ts`, `PACK_IDS`).
+- **Designsysteme (6)**: `shared/designSystems/` (`journal`, `raster`,
+  `werkstoff`, `plakat`, `klar`, `nacht`; IDs in `types.ts`, Zuordnung
+  Branche → Systeme in `assignment.ts`), Renderer unter
+  `client/src/components/site/systems/<id>/`. Jede Kundenseite ist rev 3
+  (`designRevision: 3`, `system`, `palette`). Das frühere Style-Pack-System
+  ist seit „Packs entfernen“ (2026-10-13) weg; geblieben sind die 20
+  **Textstimmen** (`shared/textVoices/`, IDs `PACK_IDS` in
+  `shared/siteContract/packIds.ts`, Feld `stylePackId`), die nur die
+  Texterzeugung steuern. Ein siebtes System („freundlich“) ist in Arbeit.
 - **Site-Contract (strict)**: `shared/siteContract/schema.ts`
   (`WebsiteDataV2Schema`, Zod, `.strict()`).
 - **SSR**: `server/ssr/` (`renderSite.tsx`, `routes.ts`, `islandsBundle.ts`).
@@ -69,20 +74,6 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
   Server auf 3005).
 - `npm run test:prod` — Playwright-Smoke gegen den echten Produktions-Build
   (Projekt `prod`, Server auf 3012) — Details §8.
-- `npm run build:previews` (`scripts/build-pack-previews.mjs`) — rendert
-  `/demo/<pack>` für alle 14 Style Packs zu je einem statischen WebP unter
-  `client/public/pack-previews/<pack>.webp` (~800×500, ≤ 80 KB), das
-  `PackShowcase.tsx` auf der Landingpage statt eines sofort geladenen iframes
-  zeigt (Live-Demo öffnet sich per Klick in einem Modal). Braucht einen
-  laufenden Server unter `PREVIEW_BASE_URL` (Default `http://localhost:3005`)
-  — startet selbst keinen, analog zu `build:islands`:
-  ```bash
-  PORT=3005 npm run dev   # Terminal 1
-  npm run build:previews  # Terminal 2
-  ```
-  Nach jeder Änderung an einer Pack-Verfassung (Palette, Fixture-Daten) neu
-  laufen lassen und die erzeugten WebPs mitcommitten — sonst zeigt die
-  Landingpage veraltete Vorschaubilder.
 - Lokaler Dev-Server baut das Inseln-Bundle **nicht** automatisch — vor
   Playwright-Läufen oder manuellem Testen der Kundenseiten-Vorschau einmal
   `npm run build:islands` ausführen.
@@ -250,50 +241,65 @@ brauchbare Anschrift aus der Kampagne, ohne dass die Zeile verschwindet —
 die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 `./scripts/migration-einspielen.sh drizzle/0035_postkarten_zurueckstellen.sql`.
 
-### Rollback bei Designsystemen (rev 3)
+### Rollback nach „Packs entfernen“ (2026-10-13)
 
-Seit `feat/designsystem-journal` können Dokumente `designRevision: 3` mit
-`system`/`palette` tragen (Journal, danach Raster, Werkstoff, Plakat, Klar und Nacht). Code vor Journal kennt nur
-Revision 1 und 2 — rev-3-Seiten bestehen dort die Schema-Prüfung nicht. Code mit rev 3, dem aber das
-jüngere System fehlt, liefert **kein** 404: die System-ID steht schon in der Schema-Liste, die
-Systemdefinition fehlt, und die Seite rendert still den Pack-Rückfall — falscher Look, kein Fehler im Log.
-Deshalb muss das Rollback-Skript **vor** dem Zurücksetzen laufen.
-**Bevor Prod auf einen älteren Commit zurückgesetzt wird**, auf dem VPS (noch
-mit dem neuen Code) zuerst sichern, dann zurücksetzen. Welche Seiten:
+Seit `chore/packs-entfernen` kennt der Code nur noch rev 3. Das Skript
+`scripts/systeme-zuruecksetzen.ts` (rev 3 → rev 2 je System) ist **entfernt**:
+Es gibt kein Pack-Layout mehr, auf das eine Seite zurückfallen könnte.
 
-| Ziel-Commit | Aufruf |
-|---|---|
-| vor Nacht, aber mit Klar (Commit direkt vor dem Nacht-Release oder älter, nicht vor `d017b0c7`, dem Klar-Release) | `--system nacht` — nur Nacht-Seiten, Journal, Raster, Werkstoff, Plakat und Klar bleiben |
-| vor Klar, aber mit Plakat (`a535970c` oder älter, nicht vor `623159d7`, dem Plakat-Release) | `--system klar` — nur Klar-Seiten, Journal, Raster, Werkstoff und Plakat bleiben |
-| vor Plakat, aber mit Werkstoff (`7ab2e05d` oder älter, nicht vor `1f67e1de`) | `--system plakat` — nur Plakat-Seiten, Journal, Raster und Werkstoff bleiben |
-| vor Werkstoff, aber mit Raster (`32a69284` oder älter, nicht vor `f1fafe55`) | `--system werkstoff` — nur Werkstoff-Seiten, Journal und Raster bleiben |
-| vor Raster, aber mit Journal (`f1fafe55` oder älter, nicht vor `fed41e1`) | `--system raster` — nur Raster-Seiten, Journal bleibt |
-| vor Journal (`fed41e1` oder älter) | ohne `--system` — alle rev-3-Seiten |
+**Code-Rollback** (Prod auf einen älteren Commit setzen):
 
-```bash
-cd /root/pageblitz
-# 1) Backup
-mysqldump -u<user> -p<pw> pageblitz generated_websites \
-  > /root/backups/vor-systeme-rollback-$(date +%F).sql
-# 2) Trockenlauf: listet die betroffenen rev-3-Seiten (Zeile 1 nennt den Filter)
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system nacht
-# 3) Schreiben: system/palette entfallen, Revision 2, Seite zeigt ihr Pack
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system nacht --schreiben
-# 4) Erst jetzt den alten Commit deployen (git reset --hard <commit> …)
+- Der Rückweg auf `f65d848d` (letzter Stand mit Pack-System) oder jünger
+  braucht **keine** Datenänderung: Der neue Code schreibt nur Dokumente, die
+  `f65d848d` lesen kann (Schema unverändert, `stylePackId` bleibt, jeder
+  Schreibvorgang ist rev 3 + `system`). Alter Code rendert rev 3 wie rev 2.
+- Ein Commit **älter als `f65d848d`** (vor dem Hauptsystem-Umbau) kennt je
+  nach Alter rev 3 nicht oder nicht alle Systeme. Dort muss vorher
+  `scripts/systeme-zuruecksetzen.ts` aus einem Checkout des damals
+  passenden Commits laufen (`git worktree add ../alt <commit>`, dort
+  `--system <id>` bzw. ohne für alle; Trockenlauf, dann `--schreiben`),
+  sonst rendern rev-3-Seiten still im Pack-Rückfall oder gar nicht.
+
+**Daten-Rollback** (falsche Daten, nicht falscher Code):
+
+- Einzelne Seite: im Studio-Verlauf „Rückgängig“ bzw. „Stand vor
+  Designsystem“ (nur bei den 35 umgestellten Seiten). Ein rev-2-Stand wird
+  beim Wiederherstellen in das **aktuelle** System der Seite gewandelt
+  (`asSystemDoc`); Inhalte kommen zurück, Look bleibt. Ein altes Pack-Layout
+  ist damit nicht mehr herstellbar.
+- Ganze Tabelle: Backup zurückspielen (`/root/backups/…`, vor jeder
+  Umstellung per `mysqldump … generated_websites website_versions`).
+
+**Prüf-SQL „keine v2-Seite ohne rev 3“** (muss leer sein):
+
+```sql
+SELECT id FROM generated_websites
+WHERE JSON_EXTRACT(websiteData,'$.version') = 2
+  AND (JSON_EXTRACT(websiteData,'$.designRevision') IS NULL
+       OR JSON_EXTRACT(websiteData,'$.designRevision') <> 3
+       OR JSON_EXTRACT(websiteData,'$.system') IS NULL);
 ```
 
-Gültige IDs für `--system` stehen in `shared/designSystems/types.ts`
-(`DESIGN_SYSTEM_IDS`); eine unbekannte ID bricht ohne Änderung ab.
-
-Gespeicherte Stände in `website_versions` bleiben rev 3; im alten Code lässt
-sich ein solcher Stand nicht ansehen/wiederherstellen.
+**Fingerabdruck für Deploy-Vergleiche:** `scripts/seiten-fingerabdruck.ts`
+rendert Seiten deterministisch und schreibt je Seite einen SHA-256.
+Live-Dokumente exportieren (`SELECT id, websiteData FROM generated_websites
+WHERE JSON_EXTRACT(websiteData,'$.version')=2` → JSON), mit dem alten Code
+`--datei export.json --aus basis`, mit dem neuen `--aus nach`, dann
+`--vergleich basis-live.json nach-live.json` (Exit 1 bei Abweichung). Ohne
+`--datei` laufen `--beispiele` (alle Showcases × Systeme × Paletten) und
+`--fixtures`. Der Export enthält Kundendaten: lokal lassen, nicht committen.
 
 **Neu erzeugen ändert das Aussehen.** Jede Admin-Regenerierung — auch mit
 `keepLinks` bzw. `scripts/regenerate-keep-links.ts` — vergibt das System neu:
 Baupläne `advice`, `auto`, `urgent`, `industry` und `standard` bekommen
 Raster, `health` (Gesundheit) bekommt Klar, `gastro` mit Gastro-Art Restaurant (Restaurant, Bistro, Bar, Pub, Weinbar u. Ä.) bekommt Nacht, `beauty` (ohne Barbiere), `stay` und `creative` Journal, `trade`,
 `retail` sowie Café/Bäckerei Werkstoff (Imbiss: Plakat); Barbiere/Herrenfriseure, Imbiss und
-`courses` (Kurse) bekommen Plakat. Gedruckte Postkarten-
+`courses` (Kurse) bekommen Plakat. Die **Farbstimmung** einer neu erzeugten Seite wählt `defaultPalette`
+(`shared/designSystems/apply.ts`) deterministisch je Betrieb: ein vorhandener
+Akzent (`colorOverrides.accent`) ergibt wie bisher die nächstliegende
+Palette, sonst `palettes[designSeed(Name|Kategorie) % 3]`; bei einer
+Neuerzeugung bleiben System, Profil, Stand und Akzent des vorigen Stands.
+Gedruckte Postkarten-
 Vorschauen sehen danach anders aus als auf der Karte (Postkarten-Seiten von
 Barbieren ändern sich bei Neuerzeugung auf Plakat); Postkarten-Seiten nur
 bewusst neu erzeugen.
@@ -316,6 +322,11 @@ Leistungen) und das Schlagwort „praxis" (nur noch gezielt, kein nacktes
 Treffer-Wort).
 
 ### Designsysteme auf Bestand umstellen (rev 2 → rev 3)
+
+> Einmalwerkzeug, bleibt nur für die letzte rev-2-Seite (593) auf Prod
+> (laufender Code `f65d848d`). Nach der Umstellung und dem Deploy von
+> „Packs entfernen“ entfällt es (Plan Task 7); der neue Code wandelt rev 2 an
+> jeder Lesegrenze ohnehin selbst.
 
 `scripts/systeme-umstellen.ts` stellt bestehende rev-2-Seiten auf ihr
 Hauptsystem um (`withPrimarySystem`): kein LLM, keine neuen Texte, kein
@@ -358,15 +369,9 @@ Stände (`MAX_VERSIONS`) löscht immer die ältesten; das Skript selbst kappt
 nicht. **Nur laufen lassen, wenn niemand im Studio bearbeitet** — das
 Neu-Lesen verkleinert das Zeitfenster, ist aber keine Sperre.
 
-**Rollback**, je nach Umfang:
-
-- Einzelne Seite: im Studio-Verlauf „Rückgängig" bzw. „Stand vor Designsystem"
-  wiederherstellen (Add-on-Flags bleiben dabei auf dem aktuellen Stand).
-- Alle umgestellten Seiten eines Systems: `scripts/systeme-zuruecksetzen.ts
-  --system <id>` (Trockenlauf, dann `--schreiben`). Achtung: Das trifft **alle**
-  rev-3-Seiten dieses Systems, auch neu erzeugte. Das Schriftpaar (`fontPairId`)
-  stellt nur der Verlaufs-Stand bzw. das Backup wieder her.
-- Notfall: Backup aus Schritt 1 zurückspielen.
+**Rollback:** siehe „Rollback nach Packs entfernen“ oben — Einzelseite über
+den Studio-Verlauf („Stand vor Designsystem“), sonst Backup aus Schritt 1
+zurückspielen. `systeme-zuruecksetzen.ts` gibt es nicht mehr.
 
 ## 4. Umgebungsvariablen & Mock-Flags
 
@@ -422,14 +427,19 @@ ist aus `process.env.*`-Vorkommen in `server/` und `shared/` erhoben.
   - `/websites/:id/onboarding` → `LegacyWebsiteRedirect`-Komponente lädt
     `website.get({id})` und leitet auf `/onboarding/<previewToken>` um
     (Fehlerfall → `/my-website`).
-- **Demo-Route**: `/demo/:pack` (Regex `[a-z0-9-]+`, nur bekannte Pack-IDs),
-  rendert Fixture `"full"` des Packs, `X-Robots-Tag: noindex, nofollow`,
-  `Cache-Control: public, max-age=3600`; `/demo/:pack/impressum|datenschutz`
-  rendert dieselbe Fixture mit einem festen Platzhalter-Rechtstext
-  (`DEMO_LEGAL_NOTICE` in `server/ssr/routes.ts`, Fixtures haben kein
-  `legal`-Feld) — gleiches `noindex, nofollow`/`Cache-Control` wie `/demo/:pack`.
-- **Dev-Vorschau**: `/dev/site-preview?pack=&fixture=full|minimal|features` —
-  nur außerhalb `production` (404 sonst).
+- **Demo-Routen**: `/demo/system/:system/:id` rendert einen Beispielbetrieb
+  (`SHOWCASES`, `shared/showcases/`) im System (`?palette=<id>` wählt die
+  Farbstimmung), `X-Robots-Tag: noindex, nofollow`, `Cache-Control: public,
+  max-age=3600`; Rechtsseiten `…/impressum|datenschutz` mit festem
+  Platzhaltertext (`DEMO_LEGAL_NOTICE` in `server/ssr/routes.ts`). Die
+  alten Adressen `/demo/:pack` (+ Unter-/Rechtsseiten) und
+  `/demo/bauplan/:id/:entry` leiten per **301** auf die System-Demo um
+  (`legacyDemoTarget`: erstes Beispiel mit dieser Fixture, `raster` →
+  `raster/steuerberater`). Statische Dateien unter `client/public/demo/`
+  (z. B. `/demo/werkbank-hero.webp`) bleiben davon unberührt.
+- **Dev-Vorschau**: `/dev/site-preview?system=&palette=&pack=<fixture>&fixture=full|minimal|features&seite=<page-slug>` —
+  nur außerhalb `production` (404 sonst); ohne `?palette` gilt bewusst die
+  erste Farbstimmung des Systems.
 - **Dev-Seeds** (beide nur außerhalb `production`, 404 sonst — legen keine
   Zeilen in Prod an):
   - `/dev/studio-seed?pack=&fixture=full|minimal|features[&json=1]`
@@ -468,14 +478,13 @@ ist aus `process.env.*`-Vorkommen in `server/` und `shared/` erhoben.
   ist** (`websiteData.addOns.subpages`, siehe §6 „Add-on-Konsistenz");
   sonst SSR-404. Engine: `client/src/components/site/engine.ts`
   (`visiblePages`, `pageForPathname`, `buildNavItems` + `applyNavLabels` —
-  jedes Pack behält seine eigene Nav-Wortwahl —, `linkPageSections`:
+  jedes System behält seine eigene Nav-Wortwahl —, `linkPageSections`:
   Kontakt/Galerie auf Unterseiten werden beim Rendern aus der Startseite
   gelesen). Cache: `siteHtmlCache` je Pfad, `sitePagesCache` (Liste der
   sichtbaren Page-Slugs je Site, damit der geteilte 404-Eintrag nie eine
   echte, noch nicht gerenderte Unterseite abfängt), `invalidateSsrCache(slug)`
   löscht per Prefix alle Pfade. Vorschau/Demo: `/preview-ssr/:token/:page`,
-  `/demo/:pack/:page` (Fixture „full" hat je Pack eine Beispielseite
-  `leistungen-im-detail`). CSR-Notbremse: `/site/:slug/:page` → `SitePage`
+  `/demo/system/:system/:id/:page`. CSR-Notbremse: `/site/:slug/:page` → `SitePage`
   mit `pageSlug`.
 - **Inseln-Endpunkte**:
   - Kontakt: `POST /api/site/:slug/contact` (`server/contactSubmit.ts`).
@@ -545,7 +554,7 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   in `engine.ts` — SSR, CSR, Vorschau, Demo, Nav). Das frühere aktive
   Löschen der Team-Sektion beim Abschalten (B5, siehe oben) entfällt damit.
   `PhotosPanel` pflegt die Galerie nur bei gebuchtem Add-on (sonst Hinweis +
-  Schalter); Gastro-Packs (`prefersMenu`) bekommen die Speisekarte als
+  Schalter); Gastro-Textstimmen (`prefersMenu`) bekommen die Speisekarte als
   vorausgewähltes Add-on (Preis sichtbar, abwählbar).
 - **Stripe-Sync nach Checkout:** Studio-Toggle (`onboardingV2.updateAddons`,
   `updateTeam`/`updatePages` setzen ihr Flag mit) → `commitAddOnFlags`
@@ -647,7 +656,7 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   Unterseiten, Impressum/Datenschutz — `renderSiteHtml({ umamiWebsiteId })`,
   Gate in `server/ssr/routes.ts`) und CSR (`website.get` liefert `umami:
   { websiteId, scriptUrl } | null`, `SitePage.tsx` hängt das Script an).
-  Demo (`/demo/:pack`), Preview (`/preview-ssr`) und nicht aktive Sites
+  Demo (`/demo/system/…`), Preview (`/preview-ssr`) und nicht aktive Sites
   bekommen kein Script.
 - **Statistik im Dashboard:** `customer.getAnalytics` → `getUmamiStats(id)`
   (30 Tage: Seitenaufrufe, Besucher, Absprungrate, Verweildauer);
@@ -751,20 +760,11 @@ meldet das Backend das im Klartext, der Serverstart bleibt unberührt.
   Editor-Kontext ist (kein LCP-kritischer erster Eindruck wie die
   Landingpage) und die Alternative (blockierend) die gemessene Regression
   oben verursacht.
-- **CSR-Fallback (`client/src/pages/SitePage.tsx`):** lädt die Pack-Fonts
-  der jeweiligen Website zur Laufzeit aus der Pack-Verfassung
-  (`packFontHrefs(packId)` in `client/src/lib/packFonts.ts`, Pendant zu
-  `buildFontsUrl` im SSR-Head `server/ssr/renderSite.tsx` — zwei
-  unabhängige kleine Implementierungen statt eines Server-Imports im
-  Client-Bundle). Betrifft nur den reinen CSR-Pfad (`WebsiteRenderer` ohne
-  SSR); `/preview-ssr/:token` und `/demo/:pack` bringen ihre Pack-Fonts
-  bereits über den SSR-Head mit.
-  - **Bekannter Doppel-Request:** Bei einer Client-Navigation zwischen zwei
-    Websites mit teils überlappenden Pack-Fonts (z. B. klarwerk → patina
-    über `AccountPage`) fordert der CSR-Fallback dieselbe Google-Fonts-
-    Familie zweimal an (kein Abgleich mit bereits im Head vorhandenen
-    `<link>`s). Kein Regressionsrisiko (Browser-Cache greift), aber
-    unnötiger Request — offen für B6 (siehe §9).
+- **CSR-Fallback (`client/src/pages/SitePage.tsx`):** Die Systeme bringen
+  ihre `@font-face`-Regeln und Schriftdateien selbst mit (System-CSS bzw.
+  SSR-Kopf `systemFontHead`); der frühere Laufzeit-Nachlader für Pack-Fonts
+  (`packFonts.ts`) und der damit verbundene Doppel-Request sind mit „Packs
+  entfernen“ entfallen.
 - **Chunking (B5 Task 6):** `LandingPage` bleibt **eager** in
   `client/src/App.tsx` (ein `lazy()`-Versuch zeigte eine LCP-Regression von
   3,2 s auf 5,6 s — die zusätzliche Netzwerk-Rundreise für den
@@ -776,7 +776,7 @@ meldet das Backend das im Klartext, der Serverstart bleibt unberührt.
   `TooltipProvider` mitbringt; der App-Root-Provider war vollständig
   redundant. `vite.config.ts` trennt `vendor-tanstack` von `vendor-radix`
   (`manualChunks`); framer-motion läuft über `LazyMotion`/`m` statt
-  `motion.*` in Landing/PackShowcase (Feature-Set wird noch synchron
+  `motion.*` in Landing (Feature-Set wird noch synchron
   importiert, kein Async-Loader — nächster möglicher Hebel, siehe §9).
 - **Lighthouse mobil `/` (Produktions-Build, Port 3011, `throttlingMethod:
   simulate`) — Gesamtverlauf über B5:**
@@ -826,8 +826,7 @@ Was umgesetzt wurde (Details in den Kommentaren der jeweiligen Dateien):
   `client/index.html`, `preconnect`s entfernt; `server/_core/static.ts`
   liefert `/fonts` mit 1 Jahr `immutable` (Datei bei Update umbenennen).
   Studio/Dashboard/Admin referenzieren die Familie per Name → automatisch
-  mit versorgt. Pack-Fonts der Kundenseiten bleiben Google Fonts (SSR-Head /
-  `packFonts.ts`). Eine Abweichung vom Plan (3 statische Schnitte): die eine
+  mit versorgt. Die Schriften der Kundenseiten liefern die Systeme (SSR-Kopf). Eine Abweichung vom Plan (3 statische Schnitte): die eine
   Variable-Datei ist kleiner als 3 statische und braucht nur einen Preload.
 - **Prerender ist der LCP:** `server/seo/homePage.ts` rendert den Hero-H1 jetzt
   in exakt der Typografie von `.lp-h1--hero` (Container wie `.lp-container`),
@@ -859,7 +858,7 @@ Was umgesetzt wurde (Details in den Kommentaren der jeweiligen Dateien):
   App-Root, obwohl `/` keinen tRPC-Call macht; sonner lädt auf jeder Route
   lazy-sofort (10 kB) — Toasts, die vor dem Mount des Toasters abgesetzt
   werden, gingen verloren (sonner queued nicht), deshalb nicht idle-verzögert.
-  Doppel-Request Pack-Fonts im CSR-Fallback (siehe oben) unverändert.
+  (Der frühere Pack-Font-Doppel-Request im CSR-Fallback ist entfallen, siehe oben.)
 
 ## 8. Tests & Gates
 
@@ -880,7 +879,7 @@ Was umgesetzt wurde (Details in den Kommentaren der jeweiligen Dateien):
   21, vor B4a 73). Gate bleibt trotzdem "keine neuen Fehler" statt eines
   festen Sollwerts — vor jedem Merge gegen den Stand auf `main` vergleichen.
 - `npm run build` — grün (Stand dieses Dokuments).
-- Playwright-Specs unter `tests/visual/`: `packs.spec.ts` (98/98),
+- Playwright-Specs unter `tests/visual/`: `systems.spec.ts` (Systeme × Paletten),
   `studio.spec.ts` (9/9, +1 seit B5 Task 2 — Team-Add-on-Szenario),
   `islands.spec.ts` (4/4), `landing.spec.ts` (4/4), `startpage-to-studio.spec.ts`
   (1/1), `a11y.spec.ts` (27/27 seit dem Landing-Redesign — Dashboard ja, Dark-Mode
@@ -890,15 +889,13 @@ Was umgesetzt wurde (Details in den Kommentaren der jeweiligen Dateien):
   - `a11y.spec.ts` prüft mit `@axe-core/playwright` gegen `/`
     (Desktop/Mobile/Cookie-Banner-Variante; die Dark-Mode-Varianten aus B5
     Task 4 entfielen mit dem Landing-Redesign 2026-08-23 — „/" ist seither
-    nur noch hell, kein `lp-theme` mehr), `/demo/:pack` für alle 14 Style Packs, die Studio-Checkliste
+    nur noch hell, kein `lp-theme` mehr), `/demo/system/…` für alle Systeme, die Studio-Checkliste
     und alle 6 Panels, **sowie seit B5 Task 4 das eingeloggte Dashboard**
     (Übersicht, Add-ons-Tab, Anfragen-Tab, Login über
     `/dev/dashboard-seed`, §5) — **0 `critical`/`serious`**-Funde
     (Spec §2.7/§4), **keine Skips mehr**.
-  - `packs.spec.ts` — Toleranz/Farbassertion siehe `packs.spec.ts` selbst
-    (der pauschale Pixel-Diff-Schwellenwert bildet nicht jede
-    Palette-Änderung zuverlässig ab; Details im Testfile-Kommentar statt
-    hier dupliziert).
+  - `systems.spec.ts` — Screenshots der Systeme (Toleranz/Farbassertion
+    siehe Testfile-Kommentar).
 - **Prod-Smoke-Gate (seit Plan B6 Task 1)** — `npm run test:prod`
   (= `PW_PROJECT=prod playwright test --project=prod`), Spec:
   `tests/prod/smoke.spec.ts`. Warum: Hotfix 9875dd9 (eigene
@@ -989,22 +986,11 @@ weiter unter `vorschau_layout_gewechselt`.
 
 **Offen nach B6 (Backlog):**
 - Lost-Update-Fenster auf `subscriptions.addOns` (§6, dokumentiert, selbstheilend).
-- Doppel-Request Pack-Fonts im CSR-Fallback bei Website-Wechsel ohne Reload (§7).
 - Perf-Restursachen (§7.1: vendor-react, Haupt-CSS, tRPC-Bootstrap am Root).
 - Umami: Slug-Änderung aktualisiert die Umami-Domain nicht; Doppel-Registrierung
   bei zwei gleichzeitigen Aktivierungen möglich (harmlos).
 - `StartPage.tsx` (kein Studio-Look, liest evtl. noch `lp-theme`), Dashboard-Optik,
   GMB-Kategorien/Stadt-Autocomplete, Blog/SEO-Inhalte (Memory-Backlog).
-- `client/src/pages/admin/websitesPageLogic.ts` (`packNameFor`) schlägt
-  aktuell direkt in `STYLE_PACKS` nach (volles Verfassungs-Modul) statt in
-  der schlanken `shared/stylePacks/summary.ts` (`PACK_SUMMARY`, seit B5
-  Task 6 für den Landing-Pfad eingeführt) — für die Admin-Seite unkritisch
-  (kein Bundle-Budget dort), aber inkonsistent mit dem neuen Muster; bei
-  Gelegenheit angleichen.
-- `packs/zunft/css.ts` `.pb-zf-price` nutzt die Rolle "Siegelgold" entgegen
-  dem eigenen Verfassungskommentar ("nie als Textfläche") als Textfarbe
-  (Kontrast seit B4c Task 7 behoben, Rollen-Doku/Verwendung laufen aber
-  auseinander).
 - `server/contrast.test.ts` existiert nicht mehr (Farbkette komplett entfernt
   in B4c Task 2) — der ursprüngliche Punkt "Testerwartungen korrigieren" ist
   damit gegenstandslos.

@@ -13,7 +13,7 @@ Antworten an den Betreiber: **Deutsch, informell (du)**.
 ## Produkt in einem Satz
 
 Pageblitz erzeugt aus Firmenname oder Google-Profil in ~3 Minuten eine fertige
-Website-Vorschau. 20 kuratierte Style-Packs, Studio unter `/onboarding/:token`,
+Website-Vorschau. 6 Designsysteme mit je 3 Farbstimmungen, Studio unter `/onboarding/:token`,
 Live-Vorschau same-origin `/preview-ssr/<token>`.
 
 ## Preise (einzige Quelle)
@@ -21,13 +21,24 @@ Live-Vorschau same-origin `/preview-ssr/<token>`.
 Nur `shared/pricing.ts`: Basis **19,90 €**/Monat jährlich bzw. **24,90 €**
 monatlich. Keine erfundenen Preise, keine erfundenen Testimonials.
 
-## 20 Packs — kein 21.
+## 6 Designsysteme — kein 7. (außer „freundlich“, in Arbeit)
 
-`werkbank`, `patina`, `kanzlei`, `salon-noir`, `morgenlicht`, `marktplatz`,
-`gusto`, `landgut`, `atelier`, `klarwerk`, `verve`, `zunft`, `schimmer`,
-`fundament`, `karat`, `plakat`, `raster`, `strom`, `riviera`, `ernte` — IDs in
-`shared/siteContract/packIds.ts`. (Erweitert 2026-08-30 auf Betreiber-
-Wunsch um sechs Richtungen im refero-Standard.)
+`journal`, `raster`, `werkstoff`, `plakat`, `klar`, `nacht` — je System drei
+Farbstimmungen. IDs in `shared/designSystems/types.ts`, Definitionen in
+`shared/designSystems/<id>.ts`, Zuordnung Branche → Systeme in
+`shared/designSystems/assignment.ts`. Renderer: `client/src/components/site/systems/<id>/`.
+Ein siebtes System („freundlich“) ist in Arbeit, aber nicht freigeschaltet.
+
+- **Nur rev 3.** Jede Kundenseite trägt `designRevision: 3` + `system` +
+  `palette`. Das alte Pack-System (Renderer, Bühne/Farbfläche, Fassungen,
+  Schriftpaare, Farbwelten) ist entfernt; alte Stände (rev 1/2) werden an
+  jeder Lesegrenze per `asSystemDoc` in ein System-Dokument gewandelt.
+- **Textstimmen** (`shared/textVoices/`, 20 Stück, IDs in
+  `shared/siteContract/packIds.ts`) steuern nur noch die Texterzeugung — keine
+  Farben, Schriften oder Formen. Das Feld heißt aus Rollback-Gründen weiter
+  `stylePackId`. Keine neue Stimme/Pack-ID ohne Auftrag.
+- **Byte-Gleichheit:** Das SSR-HTML der Systeme ändert sich nur bewusst.
+  Nachweis mit `scripts/seiten-fingerabdruck.ts` (Basis vorher, Vergleich nachher).
 
 ## Landing vs. Studio
 

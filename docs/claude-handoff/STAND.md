@@ -1,4 +1,12 @@
-# Projektstand (2026-08-29)
+# Projektstand (2026-08-29, Nachtrag 2026-10-13)
+
+> **Nachtrag 2026-10-13 („Packs entfernen“):** Das alte Style-Pack-System ist
+> weg. Kundenseiten rendern ausschließlich über eines von sechs Designsystemen
+> (rev 3: `journal`, `raster`, `werkstoff`, `plakat`, `klar`, `nacht`; ein
+> siebtes, „freundlich“, ist in Arbeit). Die 20 früheren Pack-Verfassungen
+> leben nur als **Textstimmen** (`shared/textVoices/`) weiter. Rollback nur
+> per Commit-Deploy, siehe `docs/BETRIEB-V2.md` §3. Die Landing-Tabellen unten
+> sind Stand 2026-08-29 (Landing selbst: `LANDING.md`, inzwischen `Klarstart`).
 
 ## Live auf `main`
 
@@ -25,14 +33,14 @@ Der Betreiber fand die **einzelnen Sektionen** dort cool — nicht einen
 | Marketing `/` | `client/src/pages/LandingPage.tsx` + `client/src/components/landing/` |
 | Landing-Tokens | `client/src/index.css` → Block `.lp { … }` |
 | Studio | `client/src/pages/onboarding-v2/`, Server `server/onboardingV2/` |
-| 14 Pack-Renderer | `client/src/components/site/packs/<id>/` |
+| 6 System-Renderer | `client/src/components/site/systems/<id>/` (Definitionen `shared/designSystems/`) |
 | Vertrag | `shared/siteContract/` (Zod `.strict()`) |
 | Generierung | `server/generationV2/runJob.ts` |
 | SSR Kundenseiten | `server/ssr/` |
 | Preise | `shared/pricing.ts` |
 | FAQ | `shared/faq.ts` |
-| Pack-Liste | `shared/siteContract/packIds.ts` |
-| Pack-Essenzen (Karussell) | `shared/stylePacks/summary.ts` |
+| Systeme (IDs) | `shared/designSystems/types.ts` |
+| Textstimmen (nur Texterzeugung) | `shared/textVoices/` (IDs `shared/siteContract/packIds.ts`) |
 
 v1-Onboarding/Layouts/Chat sind gelöscht (B4b). Kein `PB_LAYOUT_V2`-Flag mehr.
 Details: `docs/BETRIEB-V2.md`.
@@ -46,8 +54,7 @@ Details: `docs/BETRIEB-V2.md`.
   restyled.
 - **Hero-Film-Stimme** (Arial Black, Werkbank „Maßarbeit / aus Holz. / Punkt.")
   — nur ändern, wenn ausdrücklich gewünscht.
-- Lokale untracked Snapshots (`islands-werkbank-features-*.png`,
-  `pack-showcase-linux.png`) gehören nicht ins Repo, solange niemand einen
+- Lokale untracked Snapshots (`islands-werkbank-features-*.png`) gehören nicht ins Repo, solange niemand einen
   Visual-Test dafür committet.
 
 ## Sinnvolle nächste Schritte (nicht beauftragt)
@@ -57,7 +64,7 @@ Nur falls der Betreiber danach fragt — nicht von allein anfangen:
 1. Production-Deploy nach `main` (VPS-Reset auf `origin/main`).
 2. Echte Kundenstimmen → `Testimonials.tsx`.
 3. Chat-Mailto `hello@pageblitz.de` vs. JSON-LD `hallo@pageblitz.de` angleichen.
-4. Landing weiter feilen: Echo-Stärke, Manifesto-Länge, Pack-Karussell — nur
+4. Landing weiter feilen: Echo-Stärke, Manifesto-Länge, Showroom — nur
    nach sichtbarem Feedback, kein dritter Token-Reset.
 
 ## Lokaler Start
@@ -66,7 +73,7 @@ Nur falls der Betreiber danach fragt — nicht von allein anfangen:
 npm run dev
 # http://localhost:3000/   Landing
 # /onboarding/:token       Studio
-# /demo/<packId>           Pack-Demo
+# /demo/system/<system>/<beispiel>   System-Demo (/demo/<alte Pack-ID> leitet per 301 dorthin)
 ```
 
 Inseln-Bundle wird im Dev **nicht** automatisch gebaut:

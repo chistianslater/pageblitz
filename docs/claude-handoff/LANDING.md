@@ -1,5 +1,16 @@
 # Landing `/` — Designstand
 
+> **Stand 2026-10-13:** `/` rendert den Klarstart-Relaunch
+> (`client/src/pages/landing-concepts/Klarstart.tsx`); die Seitenordnung
+> unten stammt aus der Dayos-Runde (2026-08-29) und gilt nur noch für die
+> Token-/Typo-Regeln. Der Showroom („Was machst du?“) steht in
+> `shared/landingShowroom.ts` und verlinkt auf die System-Demos
+> `/demo/system/<System>/<Beispiel>`; seine drei Bilder sind noch die alten
+> `client/public/landing/*.webp` (neue Bilder aus den System-Beispielen und
+> die Copy „Drei Farbstimmungen je Design, deine Inhalte“ erst nach
+> Freigabe, E4). `PackShowcase`, `pack-previews/` und `HowItWorks.tsx` gibt es
+> nicht mehr.
+
 Die Showroom-Seite ist **nicht** das Studio. Tokens nur auf `.lp`.
 Schrift überall Space Grotesk (Variable, self-hosted,
 `client/public/fonts/`).
@@ -65,12 +76,12 @@ die Klasse in den Devtools nicht ankommt.
 3. `ProofBar` — weiße Zahlenleiste, Volt-Punkte, Count-up
 4. `ProblemSection` — Billboard + Echo + 3 Verlustkarten
 5. `ManifestoBand` — Mint: „Wir ersetzen die Agentur nicht durch ein Tool.“
-6. `HowItWorks` (`#ablauf`) — vier Schritte, „Immer dabei“-Karten
-7. `ForWhom` — 4 Branchen (zunft, kanzlei, gusto, morgenlicht; kein Werkbank)
-8. `StudioProof` — drei CSS-Schemata, keine Pack-Screenshots
+6. Ablauf (`#ablauf`) — vier Schritte (heute in `Klarstart`/`BuildStory`)
+7. `ForWhom` — 4 Branchen (entfallen, siehe Stand oben)
+8. `StudioProof` — drei CSS-Schemata
 9. `FeatureShowcase` — dunkel, Pillars **Antworten / Zeigen / Buchen**
 10. `Pricing` (`#pricing`) — eine Karte, dann Vergleichstabelle (Mint-Spalte)
-11. `PackShowcase` (`#showcase`) — 20 Packs, Modal → `/demo/<id>`
+11. Showroom (`#showcase`) — 3 Beispiele, Links → `/demo/system/…`
 12. `TrustSection` — Tags Recht / Hosting / Inhalte / Vertrag
 13. `Testimonials` — no-op solange leer
 14. `IndustryLinks` (`#branchen`)
@@ -89,7 +100,7 @@ Einstieg Hero/Final: Firmenname → `/start?billing=…&name=…`.
 - 1280×800, 30 fps, 390 Frames (~13 s), Loop.
 - Verlauf: Werkbank-Poster → Glitch → SiteBuild (Brandt-Nav, Maßarbeit /
   aus Holz. / Punkt., Foto, Marquee, Chips LAYOUT/COPY/PHOTO/LIVE) → Wipe.
-- Innerer Film: Arial Black (Pack-Stimme), nicht Space Grotesk.
+- Innerer Film: Arial Black (Hero-Film-Stimme), nicht Space Grotesk.
 - Studio: `npm run remotion`.
 
 ## Dateien
@@ -101,8 +112,7 @@ client/src/components/landing/
   primitives.tsx                     # Kicker, SectionHead, Pillen, Preise
   LandingNav.tsx / LandingHero.tsx / HeroBuild.tsx
   ProofBar.tsx / ProblemSection.tsx / ManifestoBand.tsx
-  HowItWorks.tsx / ForWhom.tsx / StudioProof.tsx
-  FeatureShowcase.tsx / Pricing.tsx / PackShowcase.tsx
+  FeatureShowcase.tsx / Pricing.tsx
   TrustSection.tsx / Testimonials.tsx / Faq.tsx
   LandingFooter.tsx / StickyCta.tsx
   hero-film/                         # Remotion
@@ -116,13 +126,12 @@ SEO-Prerender `/`: `server/seo/homePage.ts` (FAQPage-Schema). Meta in
 ## Tests zur Landing
 
 - `ProofBar.test.ts` — Counter-Easing
-- `LandingNav.test.tsx`, `PackShowcase.test.tsx`
+- `LandingNav.test.tsx`
 - `tests/visual/landing.spec.ts` — Modal, Fokusfalle, Mobile-Menü, Sticky-CTA
-- Showcase-Screenshot-Test erwartet 14 geladene `/pack-previews/*.webp`
 
 ## Was nicht tun
 
 - Keinen vierten „kompletten Look“ (neues Font-Paar, neues Canvas).
 - Remotion nicht in den kritischen `/`-Chunk ziehen.
-- Pack-IDs und Preiscopy nicht „fürs Design“ ändern.
+- System-/Stimmen-IDs und Preiscopy nicht „fürs Design“ ändern.
 - `studio.css` / `:root`-Papierwerte nicht anfassen, um die Landing zu matchen.
