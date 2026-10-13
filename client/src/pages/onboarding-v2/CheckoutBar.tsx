@@ -43,7 +43,7 @@ interface CheckoutSummaryProps {
 
 /**
  * Preis, Testwoche und offene Punkte (Audit 2026-09-19): Der Preis steht
- * einmal und groß — vorher „19,90 €/Monat + Extras — 19,90 €/Monat", auch
+ * einmal und groß — vorher „<Basis>/Monat + Extras — <Basis>/Monat", auch
  * ganz ohne Extras. Extras erscheinen nur, wenn welche gebucht sind.
  */
 export function CheckoutSummary({
