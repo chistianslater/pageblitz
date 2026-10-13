@@ -383,7 +383,8 @@ const devText = (v: unknown, max: number) =>
 
 /**
  * Dev-only (Bildvergleich Umbruch): `?headline=` große Zeile des Einstiegs,
- * `?kapitel=` Titel der Leistungen, `?ohnefoto=1` Einstieg ohne Foto.
+ * `?kapitel=` Titel der Leistungen, `?leistung=` Name der ersten Leistung,
+ * `?stimme=` Text aller Bewertungen, `?ohnefoto=1` Einstieg ohne Foto.
  */
 export function withDevTexts(
   doc: WebsiteDataV2,
@@ -392,7 +393,9 @@ export function withDevTexts(
   const headline = devText(query.headline, 90);
   const kapitel = devText(query.kapitel, 60);
   const noPhoto = query.ohnefoto === "1";
-  if (!headline && !kapitel && !noPhoto) return doc;
+  const leistung = devText(query.leistung, 60);
+  const stimme = devText(query.stimme, 200);
+  if (!headline && !kapitel && !noPhoto && !leistung && !stimme) return doc;
   return {
     ...doc,
     sections: doc.sections.map(s => {
@@ -402,7 +405,20 @@ export function withDevTexts(
           ...(headline ? { headline } : {}),
           ...(noPhoto ? { imageUrl: undefined } : {}),
         };
-      if (s.type === "services" && kapitel) return { ...s, headline: kapitel };
+      if (s.type === "services" && (kapitel || leistung))
+        return {
+          ...s,
+          ...(kapitel ? { headline: kapitel } : {}),
+          ...(leistung
+            ? {
+                items: s.items.map((item, i) =>
+                  i === 0 ? { ...item, title: leistung } : item
+                ),
+              }
+            : {}),
+        };
+      if (s.type === "testimonials" && stimme)
+        return { ...s, items: s.items.map(item => ({ ...item, text: stimme })) };
       return s;
     }),
   };
@@ -414,7 +430,8 @@ export function withDevTexts(
  * = Textstimme, Standard `salon-noir`); ohne `?system=` rendert das
  * Hauptsystem der Fixture. `?seite=` rendert eine Unterseite der Fixture
  * (nur bekannte, sonst 404). Parameter werden nie in die Antwort gespiegelt
- * (Ausnahme Dev-Texte `name`, `headline`, `kapitel` — escapt, Länge begrenzt).
+ * (Ausnahme Dev-Texte `name`, `headline`, `kapitel`, `leistung`, `stimme` —
+ * escapt, Länge begrenzt).
  */
 function handleDevPreview(req: Request, res: Response): void {
   if (process.env.NODE_ENV === "production") {

@@ -103,6 +103,13 @@ describe("SSR routes", () => {
     expect(res.text).toContain("pk-entry--type");
     expect(res.text).toContain("<span>Steuerberatungsgesellschaft</span>");
     expect(res.text).toMatch(/class="pk-title" id="leistungen-titel" style="--pk-word:[\d.]+">Öffnungszeiten/);
+    const rows = await request(app).get(
+      "/dev/site-preview?system=plakat&pack=werkbank&fixture=full" +
+        "&leistung=" + encodeURIComponent("Treppenrenovierung") +
+        "&stimme=" + encodeURIComponent("Steuerberatungsgesellschaft empfohlen")
+    );
+    expect(rows.text).toMatch(/<h3 class="pk-row-name">Treppenrenovierung<\/h3>/);
+    expect(rows.text).toContain("Steuerberatungsgesellschaft empfohlen");
     const long = await request(app).get(
       "/dev/site-preview?system=plakat&pack=werkbank&headline=" + "x".repeat(91)
     );

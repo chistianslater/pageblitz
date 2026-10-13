@@ -12,13 +12,37 @@ const PREVIEW = "/dev/site-preview?system=plakat&pack=werkbank&fixture=full";
 const PAGES: { name: string; url: string; even: boolean }[] = [
   // Fixture des Betreibers: „Massarbeit aus Holz. Punkt." (Schreinerei).
   { name: "Schreinerei-Fixture", url: PREVIEW, even: true },
-  { name: "Maßarbeit", url: `${PREVIEW}&headline=${encodeURIComponent("Maßarbeit aus Holz. Punkt.")}`, even: true },
+  {
+    name: "Maßarbeit",
+    url: `${PREVIEW}&headline=${encodeURIComponent("Maßarbeit aus Holz. Punkt.")}`,
+    even: true,
+  },
   // Wie die Barbier-Seiten live: letzte Zeile läuft kurz aus, das ist erlaubt.
-  { name: "Barbier live", url: `${PREVIEW}&headline=${encodeURIComponent("Herrenfriseur in der Remigiusstraße, Borken.")}`, even: true },
-  { name: "Showcase Zahnarzt", url: "/demo/system/plakat/zahnarzt?live=1", even: true },
-  { name: "Showcase Restaurant", url: "/demo/system/plakat/restaurant?live=1", even: true },
-  { name: "Showcase Barbier", url: "/demo/system/plakat/barbier?live=1", even: true },
-  { name: "Showcase Hersteller", url: "/demo/system/plakat/hersteller?live=1", even: true },
+  {
+    name: "Barbier live",
+    url: `${PREVIEW}&headline=${encodeURIComponent("Herrenfriseur in der Remigiusstraße, Borken.")}`,
+    even: true,
+  },
+  {
+    name: "Showcase Zahnarzt",
+    url: "/demo/system/plakat/zahnarzt?live=1",
+    even: true,
+  },
+  {
+    name: "Showcase Restaurant",
+    url: "/demo/system/plakat/restaurant?live=1",
+    even: true,
+  },
+  {
+    name: "Showcase Barbier",
+    url: "/demo/system/plakat/barbier?live=1",
+    even: true,
+  },
+  {
+    name: "Showcase Hersteller",
+    url: "/demo/system/plakat/hersteller?live=1",
+    even: true,
+  },
   // Lange Wörter: Schrift wird kleiner, bricht aber nie im Wort.
   {
     name: "Langes Wort ohne Foto",
@@ -27,12 +51,26 @@ const PAGES: { name: string; url: string; even: boolean }[] = [
       `&kapitel=${encodeURIComponent("Steuerberatungsgesellschaft")}`,
     even: false,
   },
+  // Riesenliste und große Stimme mit langen Wörtern.
+  {
+    name: "Lange Leistung und Stimme",
+    url:
+      `${PREVIEW}&leistung=${encodeURIComponent("Treppenrenovierung")}` +
+      `&stimme=${encodeURIComponent("Steuerberatungsgesellschaft und Schreinerei: absolut empfehlenswert.")}`,
+    even: false,
+  },
+  {
+    name: "Lange Stimme",
+    url: `${PREVIEW}&stimme=${encodeURIComponent(
+      "Unsere Wohnzimmerschrankwand wurde millimetergenau eingepasst, termingerecht geliefert und sauber montiert. Jederzeit wieder, absolut empfehlenswert für jeden Innenausbau."
+    )}`,
+    even: false,
+  },
   {
     name: "Fließsatz",
-    url:
-      `${PREVIEW}&headline=${encodeURIComponent(
-        "Ihre Schreinerei für Einbauschränke, Treppen und Haustüren in Dortmund und Umgebung"
-      )}&kapitel=${encodeURIComponent("Öffnungszeiten und Anfahrt")}`,
+    url: `${PREVIEW}&headline=${encodeURIComponent(
+      "Ihre Schreinerei für Einbauschränke, Treppen und Haustüren in Dortmund und Umgebung"
+    )}&kapitel=${encodeURIComponent("Öffnungszeiten und Anfahrt")}`,
     even: false,
   },
 ];
@@ -46,9 +84,12 @@ type Measure = {
   staffel: boolean;
 };
 
-async function measure(page: Page): Promise<{ items: Measure[]; pageOverflow: number }> {
+async function measure(
+  page: Page
+): Promise<{ items: Measure[]; pageOverflow: number }> {
   return page.evaluate(() => {
-    const SEL = ".pk-display, .pk-title, .pk-page-title";
+    const SEL =
+      ".pk-display, .pk-title, .pk-page-title, .pk-row-name, .pk-voice-text p";
     const items = [...document.querySelectorAll<HTMLElement>(SEL)].map(el => {
       const brokenWords: string[] = [];
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -58,7 +99,9 @@ async function measure(page: Page): Promise<{ items: Measure[]; pageOverflow: nu
           const r = document.createRange();
           r.setStart(n, m.index!);
           r.setEnd(n, m.index! + m[0].length);
-          const tops = new Set([...r.getClientRects()].map(q => Math.round(q.top)));
+          const tops = new Set(
+            [...r.getClientRects()].map(q => Math.round(q.top))
+          );
           if (tops.size > 1) brokenWords.push(m[0]);
         }
       }
@@ -75,7 +118,10 @@ async function measure(page: Page): Promise<{ items: Measure[]; pageOverflow: nu
             const q = document.createRange();
             q.selectNodeContents(s);
             const rects = [...q.getClientRects()];
-            return Math.max(...rects.map(x => x.right)) - Math.min(...rects.map(x => x.left));
+            return (
+              Math.max(...rects.map(x => x.right)) -
+              Math.min(...rects.map(x => x.left))
+            );
           })
         : [];
       return {
@@ -87,8 +133,23 @@ async function measure(page: Page): Promise<{ items: Measure[]; pageOverflow: nu
         staffel,
       };
     });
+    // Riesenliste: Preis liegt neben dem Namen (ohne Überdeckung) oder darunter.
+    const rowClash = [...document.querySelectorAll<HTMLElement>(".pk-row")].flatMap(row => {
+      const name = row.querySelector(".pk-row-name")!.getBoundingClientRect();
+      const priceEl = row.querySelector(".pk-row-price");
+      const box = row.getBoundingClientRect();
+      if (!priceEl) return [];
+      const price = priceEl.getBoundingClientRect();
+      const beside = price.left >= name.right - 0.5;
+      const below = price.top >= name.bottom - 0.5;
+      const inside = price.right <= box.right + 0.5;
+      return beside || below ? (inside ? [] : [`${row.textContent} läuft rechts über`]) : [`${row.textContent} überdeckt den Namen`];
+    });
     return {
       items,
+      rowClash,
+      rows: document.querySelectorAll(".pk-row-name").length,
+      voice: document.querySelectorAll(".pk-voice-text p").length,
       pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
     };
   });
@@ -101,8 +162,13 @@ for (const p of PAGES) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(p.url);
       await page.evaluate(() => document.fonts.ready);
-      const { items, pageOverflow } = await measure(page);
+      const { items, rowClash, rows, voice, pageOverflow } = await measure(page);
       expect(pageOverflow).toBeLessThanOrEqual(0);
+      expect(rowClash).toEqual([]);
+      if (p.url.startsWith(PREVIEW)) {
+        expect(rows, "Riesenliste gemessen").toBeGreaterThan(0);
+        expect(voice, "Stimme gemessen").toBeGreaterThan(0);
+      }
       expect(items.length).toBeGreaterThan(1);
       for (const it of items) {
         expect(it.brokenWords, `${it.sel} „${it.text}“`).toEqual([]);
@@ -115,7 +181,9 @@ for (const p of PAGES) {
           const msg = `${it.text}: ${it.inks.map(Math.round).join(" / ")}`;
           for (const w of it.inks.slice(0, -1))
             expect(w, msg).toBeGreaterThanOrEqual(0.45 * max);
-          expect(it.inks[it.inks.length - 1], msg).toBeGreaterThanOrEqual(0.27 * max);
+          expect(it.inks[it.inks.length - 1], msg).toBeGreaterThanOrEqual(
+            0.27 * max
+          );
         }
       }
     });
