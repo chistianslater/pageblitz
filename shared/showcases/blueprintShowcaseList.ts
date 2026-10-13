@@ -217,6 +217,8 @@ export const SHOWCASES: readonly Showcase[] = [
     group: "Sport & Kurse",
     label: "Musikschule",
     fixture: "marktplatz",
+    // Hauptsystem seit F1 Freundlich; bleibt auch unter Plakat sichtbar.
+    alsoIn: ["plakat"],
   },
   {
     id: "training",
@@ -314,6 +316,41 @@ export const SHOWCASES: readonly Showcase[] = [
     businessCategory: "Pension",
     photos: "none",
     alsoIn: ["nacht"],
+  },
+  // Freundlich (2026-10-13): die drei Betriebe aus Systemblatt 10, frei
+  // erfunden — Kita ohne Foto, Hundesalon mit gutem, Eiscafé mit schwachem.
+  {
+    id: "pusteblume",
+    sample: "Kita Pusteblume",
+    group: "Kinder & Familie",
+    label: "Kita",
+    fixture: "marktplatz",
+    businessName: "Kita Pusteblume",
+    businessCategory: "Kita",
+    photos: "none",
+  },
+  {
+    id: "fellfreunde",
+    sample: "Fellfreunde",
+    group: "Tiere",
+    label: "Hundesalon",
+    fixture: "salon-noir",
+    businessName: "Fellfreunde",
+    businessCategory: "Hundesalon",
+    amenities: { wheelchair: true },
+    photos: "hundesalon:0:3",
+  },
+  {
+    id: "gelato",
+    sample: "Gelato Mio",
+    group: "Gastro",
+    label: "Eiscafé",
+    fixture: "gusto",
+    businessName: "Gelato Mio",
+    businessCategory: "Eiscafé",
+    amenities: { takeout: true, vegetarian: true },
+    photos: "eisdiele:0:3",
+    systemEntry: "colorfield",
   },
   {
     id: "gaertnerei",

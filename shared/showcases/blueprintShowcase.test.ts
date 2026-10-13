@@ -425,3 +425,80 @@ describe("Systemübersicht: Abendmotive nur für dunkles Papier (Nacht N2+N3)", 
     }
   });
 });
+
+describe("Freundlich-Beispiele: Kita Pusteblume, Fellfreunde, Gelato Mio (F4)", () => {
+  const IDS = ["pusteblume", "fellfreunde", "gelato"];
+  const sys = (id: string) => systemShowcaseDoc(findShowcase(id)!, "freundlich");
+  const section = (d: ReturnType<typeof sys>, type: string) =>
+    d.sections.find(s => s.type === type) as Record<string, unknown> | undefined;
+  const types = (id: string) => sys(id).sections.map(s => s.type);
+  const urls = (id: string) =>
+    JSON.stringify(sys(id).sections).match(/https:\/\/images\.unsplash\.com[^"]+/g) ?? [];
+
+  it("stehen unter Freundlich in der Design-Übersicht (Hauptsystem), Musikschule auch unter Plakat", () => {
+    for (const id of [...IDS, "musikschule"]) {
+      const s = findShowcase(id)!;
+      const main = systemsForDoc({
+        businessCategory: s.businessCategory ?? s.label,
+        businessName: s.businessName ?? s.sample,
+      })[0];
+      expect(main, id).toBe("freundlich");
+    }
+    expect(findShowcase("musikschule")!.alsoIn).toEqual(["plakat"]);
+    for (const id of IDS) expect(findShowcase(id)!.alsoIn).toBeUndefined();
+  });
+
+  it("Paletten wie im Systemblatt: Wald, Himmel, Beere; Musikschule Himmel", () => {
+    expect(IDS.map(id => sys(id).palette)).toEqual(["wald", "himmel", "beere"]);
+    expect(sys("musikschule").palette).toBe("himmel");
+  });
+
+  it("frei erfunden: 555-Nummern, .example, keine Daten der Fixture", () => {
+    for (const id of IDS) {
+      const contact = section(sys(id), "contact")!;
+      expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
+      expect(contact.email).toMatch(/\.example$/);
+      expect(JSON.stringify(sys(id))).not.toMatch(
+        /Tonleiter|Trattoria|Lucia|NOIR|Maxvorstadt|\bBerlin\b|München|\.de"/
+      );
+    }
+  });
+
+  it("Fotolage: Kita ohne Foto, Fellfreunde gutes Foto (Bühne), Gelato schwaches (Farbfläche); jedes Foto einmal", () => {
+    expect(urls("pusteblume")).toEqual([]);
+    expect(types("pusteblume")).not.toContain("gallery");
+    expect(sys("fellfreunde").designProfile?.composition).toBe("stage");
+    expect(sys("gelato").designProfile?.composition).toBe("colorfield");
+    for (const [id, set] of [
+      ["fellfreunde", "hundesalon"],
+      ["gelato", "eisdiele"],
+    ] as const) {
+      const pool = [...INDUSTRY_IMAGES[set].hero, ...(INDUSTRY_IMAGES[set].gallery ?? [])];
+      expect(urls(id).length).toBeGreaterThan(3);
+      for (const u of urls(id)) expect(pool).toContain(u);
+      expect(new Set(urls(id)).size).toBe(urls(id).length);
+    }
+  });
+
+  it("Aufbau wie Blatt 11–14: Zahlen nach den Leistungen, Team bei der Kita, Karte nach dem Einstieg, Abschluss-Band am Ende", () => {
+    const kita = types("pusteblume");
+    expect(kita.indexOf("stats")).toBe(kita.indexOf("services") + 1);
+    expect(kita).toContain("team");
+    expect(sys("pusteblume").addOns?.team).toBe(true);
+    expect(types("gelato").indexOf("menu")).toBe(1);
+    expect(sys("gelato").addOns?.menu).toBe(true);
+    for (const id of IDS) expect(types(id).at(-1), id).toBe("cta");
+    expect(types("pusteblume")).toContain("process");
+    expect(types("fellfreunde")).toContain("process");
+    // Preise nur bei Fellfreunde (aus den Beispieldaten), keine doppelte Preisliste.
+    expect(JSON.stringify(section(sys("fellfreunde"), "services"))).toContain('"price":"ab 35 €"');
+    expect(section(sys("fellfreunde"), "pricelist")).toBeUndefined();
+    expect(JSON.stringify(section(sys("pusteblume"), "services"))).not.toContain('"price"');
+  });
+
+  it("Google-Zahlen nur, wo das Beispiel eigene hat", () => {
+    expect(sys("pusteblume").google).toBeUndefined();
+    expect(sys("fellfreunde").google).toEqual({ rating: 4.9, reviewCount: 86 });
+    expect(sys("gelato").google).toEqual({ rating: 4.7, reviewCount: 312 });
+  });
+});

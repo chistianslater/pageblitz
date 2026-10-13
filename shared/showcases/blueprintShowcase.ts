@@ -99,6 +99,13 @@ type SampleText = {
   menu?: Omit<SectionOf<"menu">, "type">;
   /** Aufruf mit eigenem Ziel (Reservierungs-Band in Nacht), vor den Stimmen. */
   cta?: Omit<SectionOf<"cta">, "type">;
+  /**
+   * `"end"`: der Aufruf schließt die Seite ab (Abschluss-Band in
+   * Freundlich, Systemblatt 13/14) statt vor den Stimmen zu stehen.
+   */
+  ctaAt?: "end";
+  /** Eigene Zahlen (ergänzt, wenn die Fixture keine hat), vor den Stimmen. */
+  stats?: Omit<SectionOf<"stats">, "type">;
   /** Abschnitte der Fixture, die nicht zum Beispiel passen (z. B. doppelte Preise). */
   drop?: readonly WebsiteDataV2["sections"][number]["type"][];
 };
@@ -821,6 +828,175 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       },
     ],
   },
+  // Freundlich (2026-10-13): Kita Pusteblume, Fellfreunde, Gelato Mio —
+  // Systemblatt 10–18 (docs/designsysteme/freundlich), frei erfunden:
+  // Rufnummern mit 555, Domains auf .example, keine echten Betriebe.
+  pusteblume: {
+    contact: {
+      street: "Hemmstraße 12",
+      zip: "28215",
+      city: "Bremen-Findorff",
+      phone: "0421 555 3102",
+      email: "hallo@pusteblume.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "7:30 – 16:30" },
+      { day: "Sa", hours: "geschlossen" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Klein, warm, mitten im Viertel.",
+      subheadline:
+        "Zwölf Kinder, vier Erzieherinnen und ein Garten mit Apfelbaum. Wir nehmen uns Zeit fürs Ankommen.",
+    },
+    services: [
+      { title: "Eingewöhnung", description: "Nach dem Berliner Modell, zwei bis drei Wochen, immer mit Mama oder Papa." },
+      { title: "Tagesablauf", description: "Frühstück um 8:30, Morgenkreis, Spielen, Mittag um 11:30, Schlafen." },
+      { title: "Essen", description: "Bio-Mittagessen aus der Küche nebenan, vegetarisch an drei Tagen." },
+      { title: "Draußen", description: "Jeden Tag in den Garten, bei jedem Wetter. Matschhosen haben wir." },
+    ],
+    about:
+      "Seit 2011 betreuen wir in Findorff zwölf Kinder zwischen einem und drei Jahren, in einer Altbauwohnung mit Garten.\n\nWir sind klein, damit jedes Kind gesehen wird — und damit ihr als Eltern immer wisst, wen ihr morgens anruft.",
+    stats: {
+      headline: "Wir sind klein, damit jedes Kind gesehen wird.",
+      items: [
+        { value: "12", label: "Plätze, nie mehr" },
+        { value: "1:3", label: "Betreuung im Alltag" },
+        { value: "2011", label: "eröffnet in Findorff" },
+      ],
+    },
+    process: {
+      headline: "So läuft es ab",
+      steps: [
+        { title: "Kennenlernen", text: "Ihr schaut euch um, wir erzählen vom Alltag. Kinder dürfen mit." },
+        { title: "Anmeldung", text: "Ihr bekommt Bescheid, ob ein Platz frei wird, und den Vertrag." },
+        { title: "Eingewöhnung", text: "Mit euch, in kleinen Schritten, bis euer Kind sich wohlfühlt." },
+      ],
+    },
+    team: {
+      headline: "Wer bei uns ist",
+      members: [
+        { name: "Anke Bremer", role: "Leitung, Erzieherin" },
+        { name: "Tomás Reyes", role: "Erzieher" },
+        { name: "Lea Wichmann", role: "Kinderpflegerin" },
+      ],
+    },
+    faq: [
+      { question: "Wie läuft die Eingewöhnung?", answer: "Nach dem Berliner Modell: die ersten Tage eine Stunde mit euch, dann werden die Zeiten länger. Rechnet mit zwei bis drei Wochen." },
+      { question: "Was kostet ein Platz?", answer: "Das richtet sich nach dem Einkommen und der Betreuungszeit. Wir rechnen es euch gern aus." },
+      { question: "Was muss mitgebracht werden?", answer: "Wechselkleidung, Hausschuhe, Matschhose und ein Kuscheltier." },
+    ],
+    addFaq: true,
+    google: false,
+    reviews: [
+      { author: "Jana K.", text: "Nach drei Wochen wollte unsere Tochter am liebsten dort übernachten." },
+      { author: "Mehmet und Sara", text: "Klein, herzlich und immer ehrlich zu uns Eltern." },
+      { author: "Familie Ott", text: "Die Eingewöhnung war entspannter als gedacht." },
+    ],
+    cta: { headline: "Ein Platz für euer Kind?", ctaText: "Kennenlernen anfragen" },
+    ctaAt: "end",
+  },
+  fellfreunde: {
+    contact: {
+      street: "Georg-Schumann-Straße 140",
+      zip: "04159",
+      city: "Leipzig-Gohlis",
+      phone: "0341 555 7781",
+      email: "wuff@fellfreunde.example",
+    },
+    hours: [
+      { day: "Mo", hours: "geschlossen" },
+      { day: "Di–Fr", hours: "9:00 – 18:00" },
+      { day: "Sa", hours: "9:00 – 14:00" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Frisch gebürstet, ganz entspannt.",
+      subheadline:
+        "Waschen, schneiden, Krallen kürzen. In Ruhe, ohne Käfig, mit Zeit zum Schnuppern.",
+    },
+    services: [
+      { title: "Waschen und Föhnen", description: "Mildes Shampoo, warm geföhnt, Ohren sauber.", price: "ab 35 €" },
+      { title: "Schneiden", description: "Rassetypisch oder pflegeleicht, ganz wie ihr wollt.", price: "ab 55 €" },
+      { title: "Krallen und Pfoten", description: "Kürzen, Fell zwischen den Ballen, Pfotenbalsam.", price: "12 €" },
+      { title: "Welpen-Kennenlernen", description: "Zwanzig Minuten Salon schnuppern, ohne Schere.", price: "20 €" },
+    ],
+    about:
+      "Ein kleiner Salon in Gohlis mit zwei Tischen, einer Wanne und viel Zeit. Wir arbeiten ohne Boxen und ohne Zeitdruck — jeder Hund darf erst ankommen.\n\nÄngstliche Hunde planen wir mit mehr Pausen ein. Wenn es nicht geht, hören wir auf.",
+    process: {
+      headline: "So läuft es ab",
+      steps: [
+        { title: "Ankommen und schnuppern", text: "Euer Hund lernt uns kennen, bevor irgendwas passiert." },
+        { title: "Pflege in Ruhe", text: "Pausen, wenn er sie braucht. Keine Box, kein Zeitdruck." },
+        { title: "Abholen mit Foto", text: "Ihr bekommt ein Foto, sobald er fertig und trocken ist." },
+      ],
+    },
+    faq: [
+      { question: "Mein Hund ist ängstlich. Geht das?", answer: "Ja. Wir planen mehr Zeit ein, machen Pausen und brechen ab, wenn es nicht geht. Das Kennenlernen kostet nichts extra." },
+      { question: "Wie lange dauert es?", answer: "Je nach Fell eine bis drei Stunden. Wir rufen an, wenn er fertig ist." },
+      { question: "Muss ich dableiben?", answer: "Nein. Ihr könnt ihn bringen und später abholen." },
+    ],
+    addFaq: true,
+    drop: ["pricelist"],
+    google: { rating: 4.9, reviewCount: 86 },
+    reviews: [
+      { author: "Katrin L.", text: "Unser ängstlicher Balu geht inzwischen freiwillig rein. Das sagt alles." },
+      { author: "Thomas R.", text: "Pudelschnitt wie gewünscht, und sie haben sich Zeit genommen." },
+      { author: "Anja B.", text: "Endlich ein Salon ohne Käfige." },
+    ],
+    cta: { headline: "Termin für euren Hund?", ctaText: "Termin anfragen" },
+    ctaAt: "end",
+  },
+  gelato: {
+    contact: {
+      street: "Rudolf-von-Bennigsen-Ufer 22",
+      zip: "30173",
+      city: "Hannover",
+      phone: "0511 555 9024",
+      email: "ciao@gelato-mio.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "12:00 – 21:00" },
+      { day: "Sa", hours: "11:00 – 22:00" },
+      { day: "So", hours: "11:00 – 21:00" },
+    ],
+    hero: {
+      headline: "Hausgemachtes Eis am Wasser.",
+      subheadline:
+        "Jeden Morgen frisch gerührt, mit Milch vom Hof Lindemann. Zum Mitnehmen oder auf der Terrasse.",
+    },
+    services: [],
+    menu: {
+      headline: "Was es bei uns gibt",
+      categories: [
+        {
+          name: "Eis und mehr",
+          items: [
+            { name: "Eis in der Waffel", description: "Zwanzig Sorten, mindestens drei vegan.", price: "1,90 € je Kugel" },
+            { name: "Becher", description: "Erdbeer, Spaghetti-Eis, Joghurt-Mango.", price: "ab 6,50 €" },
+            { name: "Eistorten", description: "Auf Bestellung, drei Tage vorher.", price: "ab 32 €" },
+            { name: "Kaffee", description: "Siebträger, Affogato mit einer Kugel.", price: "ab 2,40 €" },
+          ],
+        },
+      ],
+    },
+    about:
+      "Seit 2014 rühren wir jeden Morgen am Maschsee-Ufer frisch, mit Milch vom Hof Lindemann und Früchten der Saison.\n\nDrinnen sind zwanzig Plätze, draußen die Terrasse am Wasser. Mindestens drei Sorten sind immer vegan.",
+    faq: [
+      { question: "Habt ihr bei Regen geöffnet?", answer: "Ja, drinnen sind zwanzig Plätze. Nur bei Sturm schließen wir die Terrasse." },
+      { question: "Gibt es laktosefreie Sorten?", answer: "Ja, alle Sorbets und drei Sorten auf Hafermilch." },
+      { question: "Kann ich Eistorten bestellen?", answer: "Ja, drei Tage vorher per Telefon oder im Laden." },
+    ],
+    addFaq: true,
+    google: { rating: 4.7, reviewCount: 312 },
+    reviews: [
+      { author: "Lukas F.", text: "Das Pistazieneis schmeckt wie in Bologna, ehrlich." },
+      { author: "Selin Y.", text: "Netter Service, auch wenn die Schlange lang ist." },
+      { author: "Maren und Ole", text: "Die vegane Schoko ist besser als die normale." },
+    ],
+    cta: { headline: "Bis gleich am Ufer.", ctaText: "Route planen" },
+    ctaAt: "end",
+  },
   // Plakat (2026-10-12): Barbier, Imbiss, Kurse — Systemblatt 8–11,
   // Bildsätze barbier/imbiss, Kontaktdaten fiktiv.
   barbier: {
@@ -1325,6 +1501,8 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
         return text.pricelist ? { ...section, ...text.pricelist } : section;
       case "team":
         return text.team ? { ...section, ...text.team } : section;
+      case "stats":
+        return text.stats ? { ...section, ...text.stats } : section;
       case "usp":
         return text.usp ? { ...section, items: text.usp.map(title => ({ title })) } : section;
       case "testimonials":
@@ -1347,6 +1525,9 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
       : []),
     ...(text.pricelist && !has("pricelist")
       ? [{ type: "pricelist" as const, ...text.pricelist }]
+      : []),
+    ...(text.stats && !has("stats")
+      ? [{ type: "stats" as const, ...text.stats }]
       : []),
     ...(text.team && !has("team")
       ? [{ type: "team" as const, ...text.team }]
@@ -1484,24 +1665,38 @@ function withSampleAction(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
  * (`stripSections`) — eine Karte trägt der Betrieb im Studio selbst ein.
  * Beispiele mit eigener Karte (Nacht-Weinberg) bekommen sie danach wie eine
  * im Studio eingetragene: direkt nach dem Einstieg, Extra gebucht. Ein
- * eigener Aufruf (Reservierungs-Band) steht vor den Stimmen.
+ * eigener Aufruf (Reservierungs-Band) steht vor den Stimmen, mit
+ * `ctaAt: "end"` am Schluss (Abschluss-Band); eigene Zahlen folgen den
+ * Leistungen.
  */
 function withStudioMenu(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
   const text = SAMPLE_TEXT[id];
-  if (!text?.menu && !text?.cta) return doc;
+  if (!text?.menu && !text?.cta && !text?.stats) return doc;
+  const stats: WebsiteDataV2["sections"][number][] = text.stats
+    ? doc.sections.filter(s => s.type === "stats")
+    : [];
   const rest = doc.sections.filter(
-    s => !(text.menu && s.type === "menu") && !(text.cta && s.type === "cta")
+    s =>
+      !(text.menu && s.type === "menu") &&
+      !(text.cta && s.type === "cta") &&
+      !stats.includes(s)
   );
   const out: WebsiteDataV2["sections"][number][] = [];
   const cta = text.cta ? [{ type: "cta" as const, ...text.cta }] : [];
-  const before = rest.findIndex(
-    s => s.type === "testimonials" || s.type === "faq" || s.type === "contact"
-  );
+  const before =
+    text.ctaAt === "end"
+      ? -1
+      : rest.findIndex(
+          s =>
+            s.type === "testimonials" || s.type === "faq" || s.type === "contact"
+        );
   rest.forEach((s, i) => {
     if (i === before) out.push(...cta);
     out.push(s);
     if (s.type === "hero" && text.menu)
       out.push({ type: "menu", ...text.menu });
+    // Eigene Zahlen direkt nach den Leistungen (Systemblatt Freundlich 12).
+    if (s.type === "services") out.push(...stats);
   });
   if (before === -1) out.push(...cta);
   return {

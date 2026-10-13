@@ -30,7 +30,7 @@ export const SHOWCASE_PALETTES: Readonly<
   laden: { journal: "salbei", raster: "papier", werkstoff: "leinen", plakat: "puls", klar: "wasser", nacht: "petrol" },
   goldschmiede: { journal: "salbei", raster: "papier", werkstoff: "leinen", plakat: "puls", klar: "wasser", nacht: "petrol" },
   werkstatt: { journal: "ton", raster: "werk", werkstoff: "ton", plakat: "senf", klar: "sand", nacht: "petrol" },
-  musikschule: { journal: "ton", raster: "kohle", werkstoff: "kiefer", plakat: "kante", klar: "sand", nacht: "petrol" },
+  musikschule: { journal: "ton", raster: "kohle", werkstoff: "kiefer", plakat: "kante", klar: "sand", nacht: "petrol", freundlich: "himmel" },
   training: { journal: "ton", raster: "kohle", werkstoff: "kiefer", plakat: "kante", klar: "sand", nacht: "pflaume" },
   ferienwohnung: { journal: "ton", raster: "werk", werkstoff: "kiefer", plakat: "senf", klar: "sand", nacht: "petrol" },
   fotografie: { journal: "ton", raster: "werk", werkstoff: "kiefer", plakat: "kante", klar: "sand", nacht: "petrol" },
@@ -41,5 +41,10 @@ export const SHOWCASE_PALETTES: Readonly<
   weinberg: { journal: "papier", raster: "kohle", werkstoff: "kiefer", plakat: "kante", klar: "sand", nacht: "nachtblau" },
   noir: { journal: "papier", raster: "werk", werkstoff: "leinen", plakat: "senf", klar: "sand", nacht: "petrol" },
   pension: { journal: "salbei", raster: "papier", werkstoff: "leinen", plakat: "puls", klar: "wasser", nacht: "petrol" },
+  // Freundlich (2026-10-13): Paletten wie im Systemblatt 10; bis zur
+  // Freischaltung zeigt das erste freigeschaltete System die Regel-Palette.
+  pusteblume: { klar: "sand", freundlich: "wald" },
+  fellfreunde: { journal: "salbei", freundlich: "himmel" },
+  gelato: { werkstoff: "leinen", freundlich: "beere" },
   gaertnerei: { journal: "papier", raster: "werk", werkstoff: "leinen", plakat: "puls", klar: "lind", nacht: "petrol" },
 };
