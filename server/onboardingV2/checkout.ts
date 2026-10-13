@@ -2,17 +2,25 @@ import Stripe from "stripe";
 import {
   ADDON_KEYS,
   ADDON_NAMES,
-  PRICING,
+  PLANS,
+  TRIAL_DAYS,
   addonPrice,
   calcTotalCents,
   type AddOnFlags,
   type AddOnKey,
   type BillingInterval,
 } from "@shared/pricing";
+import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 import { resolveAddOnPriceIds } from "../stripeAddons";
+import { subscriptionMetadataFor } from "../subscriptionTerm";
 
 /**
- * Stripe-Checkout für das Studio (Spec B2 Task 7). Die Metadaten müssen
+ * Stripe-Checkout für das Studio (Spec B2 Task 7) — seit 2026-10-13 der
+ * EINZIGE Checkout-Pfad (der alte `checkout.createSession` in routers.ts ist
+ * entfernt). Tarif: Basis-Position monatlich wiederkehrend zum Tarifpreis
+ * (Jahrestarif 12 Monate Laufzeit, durchgesetzt über `cancel_at`, siehe
+ * server/subscriptionTerm.ts), Subscription-Metadaten `tariff`/`termMonths`.
+ * Die Metadaten der Session müssen
  * exakt zum Format passen, das `stripeWebhook.ts` beim Abschluss der
  * Checkout-Session liest (websiteId, userId, billingInterval, addOns als
  * JSON, totalAmount) — sonst aktiviert der Webhook die Website nicht oder
@@ -31,19 +39,6 @@ export interface CheckoutArgs {
   addOns: AddOnFlags;
 }
 
-/**
- * Beschreibung der Basis-Position: Basispreis inkl. Abrechnungsart. Die
- * Add-ons stehen seit Plan B6 Task 6 als eigene Positionen daneben
- * (`buildAddOnLineItems`) und werden hier nicht mehr aufgezählt.
- */
-function buildDescription(billingInterval: BillingInterval): string {
-  const basePriceStr = (PRICING.base[billingInterval] / 100)
-    .toFixed(2)
-    .replace(".", ",");
-  const intervalLabel =
-    billingInterval === "yearly" ? "Jahresabo" : "monatlich";
-  return `${basePriceStr} €/Mo Basis (${intervalLabel})`;
-}
 
 /**
  * Eine Checkout-Position je aktivem Add-on (Plan B6 Task 6): mit
@@ -84,7 +79,7 @@ export async function createStudioCheckoutSession(
   env: NodeJS.ProcessEnv = process.env
 ): Promise<{ url: string; sessionId: string; totalCents: number }> {
   const totalCents = calcTotalCents(args.billingInterval, args.addOns);
-  const description = buildDescription(args.billingInterval);
+  const description = stripeBaseDescription(args.billingInterval);
   const addOns = ADDON_KEYS.reduce<Record<string, boolean>>((acc, key) => {
     acc[key] = !!args.addOns[key];
     return acc;
@@ -108,11 +103,12 @@ export async function createStudioCheckoutSession(
           product_data: {
             name: `Pageblitz – ${args.websiteName}`,
             description,
+            metadata: { pageblitzBase: args.billingInterval },
           },
           // Seit Plan B6 Task 6 nur noch der Basispreis — Add-ons sind
           // eigene Positionen (buildAddOnLineItems), damit sie nach dem
           // Checkout einzeln zu-/abbuchbar sind.
-          unit_amount: PRICING.base[args.billingInterval],
+          unit_amount: PLANS[args.billingInterval].centsPerMonth,
           recurring: { interval: "month" },
           // Alle Preise sind Bruttopreise inkl. MwSt. – Stripe rechnet KEINE Steuer drauf
           tax_behavior: "inclusive" as const,
@@ -122,7 +118,15 @@ export async function createStudioCheckoutSession(
       ...buildAddOnLineItems(args.addOns, priceIds),
     ],
     subscription_data: {
-      trial_period_days: 7,
+      trial_period_days: TRIAL_DAYS,
+      metadata: {
+        ...subscriptionMetadataFor(args.billingInterval),
+        websiteId: args.websiteId.toString(),
+      },
+    },
+    // Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Knopf (PAngV/§ 312j BGB).
+    custom_text: {
+      submit: { message: checkoutTermLine(args.billingInterval) },
     },
     success_url: `${args.origin}/my-website?checkout=success`,
     cancel_url: `${args.origin}/onboarding/${args.token}`,

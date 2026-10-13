@@ -18,10 +18,11 @@ import Stripe from "stripe";
 
 const WEBHOOK_SECRET = "whsec_test_b6_route";
 
-const { calls, retrieveMock } = vi.hoisted(() => ({
+const { calls, retrieveMock, updateMock } = vi.hoisted(() => ({
   /** Aufruf-Protokoll über alle gemockten Deps, um die Reihenfolge zu prüfen. */
   calls: [] as string[],
   retrieveMock: vi.fn(),
+  updateMock: vi.fn(),
 }));
 
 vi.mock("stripe", async importOriginal => {
@@ -32,7 +33,7 @@ vi.mock("stripe", async importOriginal => {
     /** Statisch (für generateTestHeaderString im Test) und je Instanz. */
     static webhooks = actual.default.webhooks;
     webhooks = actual.default.webhooks;
-    subscriptions = { retrieve: retrieveMock };
+    subscriptions = { retrieve: retrieveMock, update: updateMock };
   }
   return { default: FakeStripe };
 });
@@ -282,5 +283,90 @@ describe("POST /api/stripe/webhook — customer.subscription.updated (Route-Verd
     const res = await postSigned(buildApp(), subscriptionUpdatedEvent());
     expect(res.status).toBe(200);
     expect(calls).toEqual([]);
+  });
+});
+
+describe("POST /api/stripe/webhook — Laufzeit des Jahrestarifs (Preismodell 2026-10-13)", () => {
+  const TRIAL_END = Date.UTC(2027, 0, 31, 12) / 1000; // 31.01.2027 12:00 UTC
+  const YEARLY_ROW = {
+    id: 9,
+    websiteId: 42,
+    status: "active",
+    billingInterval: "yearly",
+    stripeSubscriptionId: "sub_1",
+    termStartedAt: null,
+    currentTermEnd: null,
+    cancelRequestedAt: null,
+    cancelEffectiveAt: null,
+    addOns: {},
+  };
+
+  test("invoice.paid nach dem Test startet die 12 Monate (clover-Rechnungsformat)", async () => {
+    mockedDb.getSubscriptionByStripeId.mockResolvedValue(YEARLY_ROW as any);
+    const res = await postSigned(buildApp(), {
+      id: "evt_inv",
+      object: "event",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_1",
+          object: "invoice",
+          amount_paid: 1990,
+          parent: { subscription_details: { subscription: "sub_1" } },
+          lines: {
+            data: [
+              {
+                period: { start: TRIAL_END, end: TRIAL_END + 28 * 86400 },
+              },
+            ],
+          },
+        },
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({
+        termStartedAt: TRIAL_END,
+        currentTermEnd: Date.UTC(2028, 0, 31, 12) / 1000,
+      })
+    );
+    expect(updateMock).toHaveBeenCalledWith("sub_1", {
+      metadata: { termStartedAt: String(TRIAL_END) },
+    });
+  });
+
+  test("Kündigung im Portal (cancel_at_period_end) wird auf das Laufzeitende zurückgesetzt", async () => {
+    mockedDb.getSubscriptionByStripeId.mockResolvedValue({
+      ...YEARLY_ROW,
+      termStartedAt: TRIAL_END,
+      currentTermEnd: Date.UTC(2028, 0, 31, 12) / 1000,
+    } as any);
+    const canceledAt = Date.UTC(2027, 4, 10) / 1000; // 10.05.2027
+    const res = await postSigned(
+      buildApp(),
+      subscriptionUpdatedEvent({
+        cancel_at_period_end: true,
+        cancel_at: Date.UTC(2027, 5, 30, 12) / 1000,
+        canceled_at: canceledAt,
+        current_period_end: Date.UTC(2027, 5, 30, 12) / 1000,
+      })
+    );
+    expect(res.status).toBe(200);
+    expect(updateMock).toHaveBeenCalledWith("sub_1", {
+      cancel_at: Date.UTC(2028, 0, 31, 12) / 1000,
+      proration_behavior: "none",
+    });
+    expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({
+        cancelRequestedAt: canceledAt,
+        cancelEffectiveAt: Date.UTC(2028, 0, 31, 12) / 1000,
+      })
+    );
+    expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ status: "canceling" })
+    );
   });
 });

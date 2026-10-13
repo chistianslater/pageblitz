@@ -5,7 +5,14 @@ vi.hoisted(() => {
 });
 
 import { createStudioCheckoutSession } from "./checkout";
-import { addonPrice, calcTotalCents, PRICING } from "@shared/pricing";
+import {
+  addonPrice,
+  calcTotalCents,
+  PLANS,
+  PRICING,
+  TRIAL_DAYS,
+} from "@shared/pricing";
+import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 
 function fakeStripe(
   overrides: Partial<{ url: string | null; id: string }> = {}
@@ -94,7 +101,7 @@ describe("createStudioCheckoutSession", () => {
     );
   });
 
-  test("Metadaten exakt wie checkout.createSession (Webhook-kompatibel)", async () => {
+  test("Session-Metadaten im Format, das stripeWebhookHandlers.handleCheckoutCompleted liest", async () => {
     const { stripe, create } = fakeStripe();
     await createStudioCheckoutSession(baseArgs, stripe, {});
 
@@ -136,7 +143,10 @@ describe("createStudioCheckoutSession", () => {
     );
     expect(call.cancel_url).toBe("https://pageblitz.de/onboarding/tok-abc");
     expect(call.mode).toBe("subscription");
-    expect(call.subscription_data).toEqual({ trial_period_days: 7 });
+    expect(call.subscription_data).toEqual({
+      trial_period_days: 7,
+      metadata: { tariff: "yearly", termMonths: "12", websiteId: "42" },
+    });
     expect(call.line_items[0].price_data.tax_behavior).toBe("inclusive");
     expect(call.customer_email).toBe("kunde@x.de");
   });
@@ -146,5 +156,41 @@ describe("createStudioCheckoutSession", () => {
     await expect(
       createStudioCheckoutSession(baseArgs, stripe)
     ).rejects.toThrow();
+  });
+
+  test("Jahrestarif: Basis 19,90 €/Monat, Metadaten tariff/termMonths, Laufzeit am Bezahl-Knopf", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession({ ...baseArgs, addOns: {} }, stripe, {});
+    const call = create.mock.calls[0][0];
+    const base = call.line_items[0].price_data;
+    expect(base.unit_amount).toBe(PLANS.yearly.centsPerMonth);
+    expect(base.recurring).toEqual({ interval: "month" });
+    expect(base.tax_behavior).toBe("inclusive");
+    expect(base.product_data.description).toBe(stripeBaseDescription("yearly"));
+    expect(base.product_data.metadata).toEqual({ pageblitzBase: "yearly" });
+    expect(call.subscription_data.metadata).toMatchObject({
+      tariff: "yearly",
+      termMonths: "12",
+    });
+    expect(call.custom_text.submit.message).toBe(checkoutTermLine("yearly"));
+  });
+
+  test("Monatstarif: 24,90 €/Monat, termMonths 0, monatlich kündbar am Knopf", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(
+      { ...baseArgs, addOns: {}, billingInterval: "monthly" },
+      stripe,
+      {}
+    );
+    const call = create.mock.calls[0][0];
+    expect(call.line_items[0].price_data.unit_amount).toBe(
+      PLANS.monthly.centsPerMonth
+    );
+    expect(call.subscription_data.metadata).toMatchObject({
+      tariff: "monthly",
+      termMonths: "0",
+    });
+    expect(call.subscription_data.trial_period_days).toBe(TRIAL_DAYS);
+    expect(call.custom_text.submit.message).toBe(checkoutTermLine("monthly"));
   });
 });

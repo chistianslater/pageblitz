@@ -20,6 +20,13 @@ import {
   handleWebsiteActivation,
 } from "./stripeWebhookHandlers";
 import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
+import {
+  handleInvoicePaid,
+  invoiceSubscriptionId,
+  mapStripeStatus,
+  subscriptionPeriodEnd,
+  syncCancellationFromStripe,
+} from "./subscriptionTerm";
 import { provisionUmamiForWebsite } from "./umamiProvisioning";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
@@ -99,37 +106,40 @@ export function registerStripeWebhook(app: Express) {
             const subscription = event.data.object as Stripe.Subscription;
             const sub = await getSubscriptionByStripeId(subscription.id);
             if (sub) {
-              // current_period_end not available in newer API — fetch via compat client
-              let periodEnd: number | undefined;
-              let cancelAtPeriodEnd = false;
-              try {
-                const freshSub = await stripeCompat.subscriptions.retrieve(
-                  subscription.id
-                );
-                periodEnd = (freshSub as any).current_period_end;
-                cancelAtPeriodEnd =
-                  (freshSub as any).cancel_at_period_end === true;
-              } catch (_) {}
-
-              // Map Stripe status to local status
-              // If cancel_at_period_end is set, the subscription is still running but scheduled to cancel
-              let newStatus: string;
-              if (subscription.status === "active" && cancelAtPeriodEnd) {
-                newStatus = "canceling"; // running until period end, then gets deleted
-              } else if (subscription.status === "active") {
-                newStatus = "active";
-              } else if (subscription.status === "trialing") {
-                newStatus = "trialing";
-              } else if (subscription.status === "past_due") {
-                newStatus = "past_due";
-              } else {
-                newStatus = "canceled";
+              // current_period_end liegt in der neuen API an den Items —
+              // subscriptionPeriodEnd liest beide Formen; fehlt es im Event,
+              // holt der Compat-Client (ältere API-Version) den Wert.
+              let periodEnd = subscriptionPeriodEnd(subscription);
+              if (periodEnd == null) {
+                try {
+                  const freshSub = await stripeCompat.subscriptions.retrieve(
+                    subscription.id
+                  );
+                  periodEnd = (freshSub as any).current_period_end ?? null;
+                } catch (_) {}
               }
+              const view: any =
+                periodEnd != null && subscriptionPeriodEnd(subscription) == null
+                  ? { ...subscription, current_period_end: periodEnd }
+                  : subscription;
+
+              // Status inkl. geplanter Beendigung (cancel_at für die
+              // Jahreslaufzeit, cancel_at_period_end für Monat/Test).
+              const newStatus = mapStripeStatus(view);
+              const cancelAtPeriodEnd = newStatus === "canceling";
 
               await updateSubscription(sub.id, {
-                status: newStatus as any,
+                status: newStatus,
                 ...(periodEnd ? { currentPeriodEnd: periodEnd } : {}),
                 updatedAt: Date.now(),
+              });
+
+              // Kündigung spiegeln und — falls von außen (Portal/Dashboard)
+              // vor dem Laufzeitende — auf das Laufzeitende zurücksetzen.
+              await syncCancellationFromStripe(view, {
+                getSubscriptionByStripeId,
+                updateSubscription,
+                stripe,
               });
 
               if (
@@ -163,12 +173,21 @@ export function registerStripeWebhook(app: Express) {
             break;
           }
 
+          case "invoice.paid": {
+            // Laufzeit des Jahrestarifs: erste Zahlung startet, jede
+            // Zahlung ab Laufzeitende rollt um 12 Monate.
+            const outcome = await handleInvoicePaid(event.data.object, {
+              getSubscriptionByStripeId,
+              updateSubscription,
+              stripe,
+            });
+            console.log(`[Webhook] invoice.paid: ${outcome}`);
+            break;
+          }
+
           case "invoice.payment_failed": {
             const invoice = event.data.object as any;
-            const subscriptionId =
-              typeof invoice.subscription === "string"
-                ? invoice.subscription
-                : null;
+            const subscriptionId = invoiceSubscriptionId(invoice);
             if (subscriptionId) {
               const sub = await getSubscriptionByStripeId(subscriptionId);
               if (sub) {

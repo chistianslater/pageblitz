@@ -169,6 +169,18 @@ export const subscriptions = mysqlTable("subscriptions", {
     .default("monthly"),
   addOns: json("addOns"), // { contactForm: bool, gallery: bool, menu: bool, pricelist: bool }
   currentPeriodEnd: bigint("currentPeriodEnd", { mode: "number" }),
+  // Laufzeit des Jahrestarifs (Preismodell 2026-10-13, Migration 0040) —
+  // alle vier in Unix-SEKUNDEN wie currentPeriodEnd/Stripe. `billingInterval`
+  // ist der Tarif (monthly/yearly). Logik: shared/pricingTerm.ts.
+  //   termStartedAt     erste Zahlung nach den Testtagen = Anker der
+  //                     12-Monats-Laufzeiten; NULL = noch nicht begonnen
+  //   currentTermEnd    Ende der laufenden 12 Monate (vom Webhook gerollt)
+  //   cancelRequestedAt Zeitpunkt der Kündigung (Konto oder Portal)
+  //   cancelEffectiveAt Zeitpunkt, zu dem das Abo endet (= Stripe cancel_at)
+  termStartedAt: bigint("termStartedAt", { mode: "number" }),
+  currentTermEnd: bigint("currentTermEnd", { mode: "number" }),
+  cancelRequestedAt: bigint("cancelRequestedAt", { mode: "number" }),
+  cancelEffectiveAt: bigint("cancelEffectiveAt", { mode: "number" }),
   // Finding I1: die Checkout-E-Mail (session.customer_details?.email ??
   // session.customer_email), lowercase/getrimmt, EINMALIG vom Webhook
   // gesetzt und danach nie mehr verändert — im Gegensatz zu
