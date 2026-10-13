@@ -14,6 +14,7 @@ import {
   TEXT_VARIANTEN,
 } from "./heymail";
 import { WELLE_2_BATCHES } from "../../shared/postkartenWelle";
+import { formatEuro, PRICING } from "../../shared/pricing";
 
 describe("anschriftZerlegen (Google-Anschrift → HeyMail-Empfänger)", () => {
   test("ein Zusatz vor der Strasse landet nicht in der Strasse", () => {
@@ -492,3 +493,30 @@ describe("betriebOrt — höchstens 38 Zeichen, lieber kürzer als abgeschnitten
   });
 });
 
+
+describe("Preisangabe stimmt mit shared/pricing.ts überein (2026-10-13)", () => {
+  // 19,90 € gilt nur bei jährlicher Abrechnung, monatlich sind es 24,90 €.
+  // Ohne „ab" verspricht die Karte einen Preis, den der Monatskunde nicht
+  // bekommt.
+  const basis = {
+    name: "Haar Galerie",
+    stadt: "Bocholt",
+    vorschauUrl: "https://pageblitz.de/preview-ssr/abc123",
+    bildUrl: "https://pub-x.r2.dev/postkarten/haar-galerie.png",
+  };
+  const PREIS = formatEuro(PRICING.base.yearly);
+
+  test("jede Preisnennung jeder Variante ist „ab <Jahrespreis>“", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      for (const feld of ["headline", "copy", "abbinder", "anschreiben"] as const) {
+        const nennungen = [...v[feld].matchAll(/(\S+)\s+(\d+,\d{2}\s?€)/g)];
+        for (const [, davor, preis] of nennungen) {
+          expect(preis.replace(/\s/g, " "), `${name}.${feld}`).toBe(PREIS);
+          expect(davor, `${name}.${feld}: „ab“ vor dem Preis`).toBe("ab");
+        }
+      }
+      expect(`${v.copy} ${v.abbinder}`, name).toContain(`ab ${PREIS}`);
+    }
+  });
+});

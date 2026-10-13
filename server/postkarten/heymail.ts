@@ -10,6 +10,7 @@
  *   bildUrl    Muss das Schema enthalten und über HTTPS öffentlich erreichbar
  *              sein. Der Bildserver ist bei HeyMail freigeschaltet.
  */
+import { formatEuro, PRICING } from "../../shared/pricing";
 
 /**
  * Kopfzeile der Karte; darüber bricht die Zeile im Layout um.
@@ -119,6 +120,15 @@ export interface PostkartenText {
 }
 
 /**
+ * Preis auf der Karte (2026-10-13): 19,90 € gibt es nur bei jährlicher
+ * Abrechnung, monatlich sind es 24,90 € — deshalb immer „ab" und die Zahl
+ * aus shared/pricing.ts statt von Hand. Die bereits versendeten Karten der
+ * ersten Welle trugen noch „Behalten 19,90 €"; die Zeilen speichern nur den
+ * Variantennamen, ihre Historie bleibt unberührt.
+ */
+export const PREIS_AB = `ab ${formatEuro(PRICING.base.yearly)}`;
+
+/**
  * Obergrenzen der Textfelder, gemessen am gedruckten PDF der ersten Welle:
  * Die Schlagzeile bricht ab ~46 Zeichen auf vier Zeilen um und läuft in die
  * Copy (2026-09-09); Copy und Abbinder sind auf die längste gedruckte
@@ -132,7 +142,7 @@ export const MAX_ANSCHREIBEN = 320;
 
 /** Anschreiben der ersten Welle — B und C behalten es, damit nur die Vorderseite variiert. */
 const ANSCHREIBEN_UNGEFRAGT =
-  "euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian";
+  `euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet ${PREIS_AB} im Monat.\n\nViele Grüße\nChristian`;
 
 export const TEXT_VARIANTEN = {
   /**
@@ -143,24 +153,24 @@ export const TEXT_VARIANTEN = {
   ungefragt: {
     headline: "Deine Website ist fertig.",
     copy: "Du wusstest nur nichts davon. Deine Fotos, Zeiten und Bewertungen sind drin.",
-    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
+    abbinder: `Anschauen kostet nichts. Behalten ${PREIS_AB} im Monat.`,
     anschreiben: ANSCHREIBEN_UNGEFRAGT,
   },
   /** Der Verlust: Was passiert, wenn nichts passiert. */
   gefunden: {
     headline: "Ein Google-Profil. Keine Website.",
     copy: "Die Seite, die dort fehlt, steht schon — mit euren Fotos und Bewertungen.",
-    abbinder: "Freischalten ab 19,90 € im Monat. Anschauen kostet nichts.",
+    abbinder: `Freischalten ${PREIS_AB} im Monat. Anschauen kostet nichts.`,
     anschreiben:
-      "wer dich sucht, landet auf deinem Google-Profil und dann im Nichts.\n\nIch führe selbst eine Agentur und kenne den Grund: zu teuer, zu langsam. Deine Seite steht trotzdem schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
+      `wer dich sucht, landet auf deinem Google-Profil und dann im Nichts.\n\nIch führe selbst eine Agentur und kenne den Grund: zu teuer, zu langsam. Deine Seite steht trotzdem schon.\n\nScannen, anschauen. Behalten kostet ${PREIS_AB} im Monat.\n\nViele Grüße\nChristian`,
   },
   /** Der Wettbewerb vor Ort — nah an der Welt des Salons. */
   nachbarschaft: {
     headline: "Zwei Straßen weiter gibt es eine Website.",
     copy: "Deine auch — seit heute. Mit euren Fotos, Zeiten und Bewertungen.",
-    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
+    abbinder: `Anschauen kostet nichts. Behalten ${PREIS_AB} im Monat.`,
     anschreiben:
-      "dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
+      `dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen, anschauen. Behalten kostet ${PREIS_AB} im Monat.\n\nViele Grüße\nChristian`,
   },
   /**
    * Welle 2, Batch B (2026-10-13): eigene Vorlage mit dem Screenshot der
@@ -171,7 +181,7 @@ export const TEXT_VARIANTEN = {
   screenshot: {
     headline: "Das ist deine neue Website.",
     copy: "Du wusstest nur nichts davon. Deine Fotos, Zeiten und Bewertungen sind drin.",
-    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
+    abbinder: `Anschauen kostet nichts. Behalten ${PREIS_AB} im Monat.`,
     anschreiben: ANSCHREIBEN_UNGEFRAGT,
   },
   /**
@@ -182,7 +192,7 @@ export const TEXT_VARIANTEN = {
   angebot: {
     headline: "Deine Website ist fertig.",
     copy: "Schau sie dir kostenlos an – freischalten nur, wenn sie dir gefällt.",
-    abbinder: "Erst dann kostet sie 19,90 € im Monat.",
+    abbinder: `Erst dann ${PREIS_AB} im Monat.`,
     anschreiben: ANSCHREIBEN_UNGEFRAGT,
   },
   /**
@@ -193,9 +203,9 @@ export const TEXT_VARIANTEN = {
   nachfass: {
     headline: "Deine Website wartet noch auf dich.",
     copy: "Wir haben dir vor ein paar Wochen geschrieben. Deine Seite steht noch.",
-    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
+    abbinder: `Anschauen kostet nichts. Behalten ${PREIS_AB} im Monat.`,
     anschreiben:
-      "vor ein paar Wochen kam schon eine Karte von mir. Vielleicht ist sie untergegangen.\n\nDeine Seite aus deinem Google-Profil steht noch. In meiner Agentur dauert so etwas sonst Wochen.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
+      `vor ein paar Wochen kam schon eine Karte von mir. Vielleicht ist sie untergegangen.\n\nDeine Seite aus deinem Google-Profil steht noch. In meiner Agentur dauert so etwas sonst Wochen.\n\nScannen, anschauen. Behalten kostet ${PREIS_AB} im Monat.\n\nViele Grüße\nChristian`,
   },
 } as const satisfies Record<string, PostkartenText>;
 
