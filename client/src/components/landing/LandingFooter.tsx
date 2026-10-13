@@ -46,7 +46,7 @@ export function FinalCta(props: FinalCtaProps) {
               />
             </div>
             <p className="mt-4 font-[family-name:var(--lp-mono)] text-[0.74rem] uppercase tracking-[0.02em] text-lp-volt-ink/65">
-              Kostenlos ansehen · keine Kreditkarte · monatlich kündbar
+              Kostenlos ansehen · keine Kreditkarte · keine Einrichtungsgebühr
             </p>
           </div>
         </div>

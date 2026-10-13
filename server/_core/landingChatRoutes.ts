@@ -2,6 +2,8 @@ import { Express, Request, Response } from "express";
 import { invokeLLM } from "./llm";
 import { sendEmail } from "./email";
 import { upsertChatTranscript } from "../db";
+import { addonPrice, formatEuro } from "../../shared/pricing";
+import { PRICE_PROMPT_FACTS } from "../../shared/pricingText";
 
 // ── IP-based rate limit: 30 messages per IP per 24 h ───────────────────────
 const ipUsage = new Map<string, { count: number; reset: number }>();
@@ -10,20 +12,19 @@ const SYSTEM_PROMPT = `Du bist Mika, die freundliche KI-Assistentin von Pageblit
 
 PAGEBLITZ IM ÜBERBLICK:
 - KI-generierte Website in 3 Minuten, vollständig fertig
-- Preis: 19,90 €/Monat (bei Jahreszahlung) oder 24,90 €/Monat (monatlich)
-- 7 Tage kostenlos testen – keine Kreditkarte nötig
-- Monatlich kündbar, keine Mindestlaufzeit
+${PRICE_PROMPT_FACTS}
+- Für die Vorschau ist keine Kreditkarte nötig
 - Inklusive: SSL-Zertifikat, Hosting, Impressum, Datenschutzerklärung, DSGVO-Cookie-Banner
 - Eigene Domain nutzbar, kostenlose .pageblitz.de-Subdomain inklusive
 - Änderungen jederzeit über das Kunden-Dashboard
 
 OPTIONALE ADD-ONS:
-1. 🤖 KI-Chat Assistent (+9,90 €/Mo): Ein KI-Chatbot direkt auf der Kunden-Website. Beantwortet Besucherfragen 24/7, benachrichtigt den Unternehmer bei Anfragen per E-Mail. Kein Personal nötig.
-2. 📅 Terminbuchung (+4,90 €/Mo): Pageblitz-eigenes Buchungs-Widget direkt auf der Website. Kunden buchen Termine online – 24/7, ohne Anrufe. Services und Verfügbarkeit werden einmalig im Kunden-Dashboard eingetragen.
-3. ✉️ Kontaktformular (+3,90 €/Mo): Individuell anpassbare Felder, DSGVO-konform, Anfragen kommen per E-Mail.
-4. 🖼️ Bildergalerie (+3,90 €/Mo): Bis zu 20 Fotos direkt hochladen.
-5. 🍽️ Speisekarte (+3,90 €/Mo): Kategorien, Gerichte, Preise – für Restaurants und Cafés.
-6. 💶 Preisliste (+3,90 €/Mo): Für Friseure, Kosmetiker, Handwerker etc.
+1. 🤖 KI-Chat Assistent (+${formatEuro(addonPrice("aiChat"))}/Mo): Ein KI-Chatbot direkt auf der Kunden-Website. Beantwortet Besucherfragen 24/7, benachrichtigt den Unternehmer bei Anfragen per E-Mail. Kein Personal nötig.
+2. 📅 Terminbuchung (+${formatEuro(addonPrice("booking"))}/Mo): Pageblitz-eigenes Buchungs-Widget direkt auf der Website. Kunden buchen Termine online – 24/7, ohne Anrufe. Services und Verfügbarkeit werden einmalig im Kunden-Dashboard eingetragen.
+3. ✉️ Kontaktformular (+${formatEuro(addonPrice("contactForm"))}/Mo): Individuell anpassbare Felder, DSGVO-konform, Anfragen kommen per E-Mail.
+4. 🖼️ Bildergalerie (+${formatEuro(addonPrice("gallery"))}/Mo): Bis zu 20 Fotos direkt hochladen.
+5. 🍽️ Speisekarte (+${formatEuro(addonPrice("menu"))}/Mo): Kategorien, Gerichte, Preise – für Restaurants und Cafés.
+6. 💶 Preisliste (+${formatEuro(addonPrice("pricelist"))}/Mo): Für Friseure, Kosmetiker, Handwerker etc.
 
 WIE DIE WEBSITE ERSTELLT WIRD:
 1. Google My Business Link eingeben (oder manuell starten)

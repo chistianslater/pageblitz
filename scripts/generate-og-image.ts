@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
+import { PRICE_FROM_INLINE } from "../shared/pricingText";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
@@ -62,7 +63,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
     <text x="121" y="34" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif"
           font-size="20" font-weight="600" fill="#0a0a0a">7 Tage gratis testen</text>
     <text x="273" y="34" font-family="Inter, Helvetica, Arial, sans-serif"
-          font-size="20" font-weight="400" fill="#71717a">Danach ab 19,90 €/Monat</text>
+          font-size="20" font-weight="400" fill="#71717a">Danach ${PRICE_FROM_INLINE}</text>
   </g>
 
   <rect x="0" y="${HEIGHT - 7}" width="${WIDTH}" height="7" fill="url(#accent)"/>

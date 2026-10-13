@@ -40,6 +40,7 @@ import {
   type AddOnKey,
   type BillingInterval,
 } from "@shared/pricing";
+import { ADDON_TERM_NOTE, VAT_NOTE_ALL } from "@shared/pricingText";
 import { PanelFrame } from "./PanelFrame";
 import { GoalPicker } from "../GoalStep";
 import { GOALS, type GoalKey } from "@shared/onboardingV2/goal";
@@ -289,6 +290,9 @@ export function AddonsList({
           Gesamt: <strong>{formatEuro(total)}</strong>/Monat
         </span>
       </div>
+      <p className="pb-studio-field-hint">
+        {ADDON_TERM_NOTE} {VAT_NOTE_ALL}
+      </p>
     </div>
   );
 }

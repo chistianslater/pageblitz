@@ -17,9 +17,16 @@ import {
   BOOKABLE_ADDON_KEYS,
   addonPrice,
   formatEuro,
-  PRICING,
   type AddOnKey,
 } from "@shared/pricing";
+import {
+  ADDON_TERM_NOTE,
+  PRICE_FOOTNOTE,
+  TARIFF_LABEL,
+  TARIFF_TERM_SHORT,
+  YEARLY_SAVINGS_TEXT,
+  trialThenText,
+} from "@shared/pricingText";
 import {
   Kicker,
   PRICE_MONTHLY,
@@ -63,7 +70,7 @@ const ANCHORS: Array<{ kicker: string; agency: string; us: string }> = [
   {
     kicker: "Monatlich",
     agency: "Agentur: 50–150 € Hosting & Wartung",
-    us: `Pageblitz: ab ${PRICE_YEARLY}`,
+    us: `Pageblitz: ab ${PRICE_YEARLY}*`,
   },
   {
     kicker: "Zeit",
@@ -86,9 +93,6 @@ interface PricingProps {
 export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
   const [, navigate] = useLocation();
   const price = billingYearly ? PRICE_YEARLY : PRICE_MONTHLY;
-  const savedPerYear = formatEuro(
-    (PRICING.base.monthly - PRICING.base.yearly) * 12
-  );
 
   return (
     <section
@@ -104,7 +108,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
           </h2>
           <p className="mt-5 max-w-[32rem] text-[1.05rem] leading-[1.55] text-lp-muted">
             Website, Hosting, SSL und rechtliche Seiten — ohne
-            Einrichtungsgebühr oder Mindestlaufzeit.
+            Einrichtungsgebühr.
           </p>
         </div>
 
@@ -125,8 +129,8 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                 </div>
                 <p className="mt-2 text-[0.85rem] text-lp-muted">
                   {billingYearly
-                    ? `Jährlich · spart ${savedPerYear} pro Jahr`
-                    : "Monatlich · jederzeit kündbar"}
+                    ? `${TARIFF_LABEL.yearly} · ${TARIFF_TERM_SHORT.yearly} · ${YEARLY_SAVINGS_TEXT}`
+                    : `${TARIFF_LABEL.monthly} · ${TARIFF_TERM_SHORT.monthly}`}
                 </p>
               </div>
 
@@ -145,7 +149,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                       : "text-lp-muted hover:text-lp-ink"
                   }`}
                 >
-                  Jährlich
+                  {TARIFF_LABEL.yearly}
                 </button>
                 <button
                   type="button"
@@ -157,7 +161,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                       : "text-lp-muted hover:text-lp-ink"
                   }`}
                 >
-                  Monatlich
+                  {TARIFF_LABEL.monthly}
                 </button>
               </div>
             </div>
@@ -187,7 +191,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                   </p>
                 </div>
                 <span className="text-[0.72rem] text-lp-faint">
-                  Jederzeit anpassbar
+                  {ADDON_TERM_NOTE}
                 </span>
               </div>
               <ul className="mt-4 grid gap-x-6 sm:grid-cols-2">
@@ -221,8 +225,8 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
               Website kostenlos erstellen
             </button>
             <p className="mt-3 text-center text-[0.82rem] text-lp-muted">
-              Vorschau ohne Kreditkarte · 7 Tage gratis · danach jederzeit
-              kündbar
+              Vorschau ohne Kreditkarte ·{" "}
+              {trialThenText(billingYearly ? "yearly" : "monthly")}
             </p>
           </div>
 
@@ -249,7 +253,10 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
             </ul>
             <p className="mt-5 text-[0.95rem] leading-[1.55] text-lp-muted">
               Änderungen inklusive statt Stundenabrechnung, DSGVO und Impressum
-              automatisch, keine Mindestlaufzeit.
+              automatisch.
+            </p>
+            <p className="mt-3 text-[0.8rem] leading-[1.5] text-lp-faint">
+              {PRICE_FOOTNOTE}
             </p>
             <p className="mt-3 text-[1.05rem] font-bold text-lp-ink">
               Ersparnis im ersten Jahr: bis zu 8.000&nbsp;€.

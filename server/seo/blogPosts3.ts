@@ -3,6 +3,11 @@
  * Autoren-HTML aus diesem Repo, NIEMALS Fremdinhalte.
  */
 import type { BlogPost } from "./blogPosts";
+import {
+  PRICE_SENTENCE,
+  PRICE_YEARLY,
+  YEARLY_CONDITION,
+} from "../../shared/pricingText";
 
 const RESTAURANT_KOSTEN_POST: BlogPost = {
   slug: "was-kostet-eine-website-fuer-restaurants",
@@ -31,7 +36,7 @@ const RESTAURANT_KOSTEN_POST: BlogPost = {
 <h2>Die Wege und ihre Gastro-Rechnung</h2>
 <p><strong>Agentur (2.500–6.000 €):</strong> Für gehobene Häuser mit Marken-Anspruch berechtigt. Der Haken im Alltag: Die Speisekarte ändert sich ständig – Saisonkarte, neue Preise, Mittagsangebot. Wenn jede Änderung über die Agentur läuft, veraltet die Karte oder das Budget wächst.</p>
 <p><strong>Klassischer Baukasten (10–40 €/Monat):</strong> Funktioniert, wenn jemand im Team die Abende für Aufbau und Pflege übrig hat – in der Gastronomie eine mutige Annahme.</p>
-<p><strong>KI-Baukasten:</strong> <a href="/website-erstellen/restaurant">Pageblitz</a> erstellt aus dem Restaurantnamen eine fertige Website zur Vorschau; die Speisekarte pflegst du selbst in einem einfachen Editor, Änderungen sind in Minuten online. 19,90 €/Monat (jährlich), Rechtstexte und Hosting in Deutschland inklusive.</p>
+<p><strong>KI-Baukasten:</strong> <a href="/website-erstellen/restaurant">Pageblitz</a> erstellt aus dem Restaurantnamen eine fertige Website zur Vorschau; die Speisekarte pflegst du selbst in einem einfachen Editor, Änderungen sind in Minuten online. Ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION}, Rechtstexte und Hosting in Deutschland inklusive.</p>
 
 <h2>Wo Restaurants online Gäste verlieren</h2>
 <p>Die Klassiker: eine Speisekarte von vor zwei Jahren („gibt es das Gericht noch?“), tote Reservierungs-Telefonnummern im Google-Profil, keine Preise („zu teuer für uns?“), keine Info zum Ruhetag (Anfahrt umsonst — der Gast kommt nicht wieder). All das kostet mehr Umsatz als jede Website-Gebühr: Ein einziger Vierertisch pro Woche, der woanders bucht, sind aufs Jahr gerechnet mehrere tausend Euro.</p>
@@ -58,7 +63,7 @@ const RESTAURANT_KOSTEN_POST: BlogPost = {
     {
       question: "Was kostet eine Restaurant-Website bei Pageblitz?",
       answer:
-        "19,90 € im Monat bei jährlicher Zahlung (24,90 € monatlich); die Speisekarten-Funktion ist als Extra zubuchbar. Vorschau kostenlos, 7 Tage gratis testen.",
+        `${PRICE_SENTENCE}; die Speisekarten-Funktion ist als Extra zubuchbar. Vorschau kostenlos, 7 Tage gratis testen.`,
     },
   ],
 };

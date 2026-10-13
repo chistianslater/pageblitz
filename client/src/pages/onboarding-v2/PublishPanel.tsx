@@ -1,7 +1,7 @@
 import React from "react";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { StudioState } from "../../../../server/onboardingV2/state";
-import { PRICING, formatEuro } from "@shared/pricing";
+import { PRICE_YEARLY, YEARLY_CONDITION } from "@shared/pricingText";
 import { PanelFrame } from "./panels/PanelFrame";
 import { CheckoutBar } from "./CheckoutBar";
 
@@ -29,9 +29,8 @@ export function PublishTeaser({ onOpen }: PublishTeaserProps) {
       <span>
         <span className="pb-studio-check-title">Website freischalten</span>
         <span className="pb-studio-check-hint">
-          Zum Schluss, wenn alles passt. Ab{" "}
-          {formatEuro(PRICING.base.yearly)}/Monat — bis dahin ist nichts
-          verbindlich.
+          Zum Schluss, wenn alles passt. Ab {PRICE_YEARLY}/Monat{" "}
+          {YEARLY_CONDITION} — bis dahin ist nichts verbindlich.
         </span>
       </span>
       <span className="pb-studio-check-flag">Zum Schluss</span>

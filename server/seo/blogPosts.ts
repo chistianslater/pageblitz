@@ -1,6 +1,12 @@
 import { BLOG_POSTS_BATCH2 } from "./blogPosts2";
 import { BLOG_POSTS_BATCH3 } from "./blogPosts3";
 import { BLOG_POSTS_BATCH4 } from "./blogPosts4";
+import {
+  PRICE_FROM_INLINE,
+  PRICE_SENTENCE,
+  PRICE_YEARLY,
+  YEARLY_CONDITION,
+} from "../../shared/pricingText";
 
 /**
  * Blog-Artikel als Daten (ausgelagert aus blog.ts, 2026-08-31, damit
@@ -147,7 +153,7 @@ const KOSTEN_POST: BlogPost = {
 
 <h2>Weg 3: Baukasten – klassisch oder mit KI (10 – 40 €/Monat)</h2>
 <p>Baukästen drehen die Rechnung um: keine Projektkosten, dafür ein Monatsbetrag, in dem Hosting, Domain-Anbindung und Technik-Pflege stecken. Üblich sind 10 bis 40 € im Monat. Der klassische Baukasten hat aber einen versteckten Preis: <strong>deine Zeit</strong>. Leere Vorlage, hundert Entscheidungen, eigene Texte – viele Betriebs-Websites bleiben deshalb monatelang „in Arbeit“.</p>
-<p>KI-Baukästen wie <a href="/">Pageblitz</a> setzen genau da an: Statt einer leeren Vorlage bekommst du aus Firmenname und Branche eine fertige Website zur Vorschau – Texte, Bilder, Impressum und Datenschutz inklusive – und passt dann nur noch an. Bei Pageblitz kostet das 19,90 € im Monat (jährlich) bzw. 24,90 € monatlich, mit 7 Tagen Gratis-Test. Auf drei Jahre gerechnet: rund 720 € – gegenüber 4.000 € Agenturprojekt plus Pflege.</p>
+<p>KI-Baukästen wie <a href="/">Pageblitz</a> setzen genau da an: Statt einer leeren Vorlage bekommst du aus Firmenname und Branche eine fertige Website zur Vorschau – Texte, Bilder, Impressum und Datenschutz inklusive – und passt dann nur noch an. Bei Pageblitz kostet das ${PRICE_SENTENCE}, mit 7 Tagen Gratis-Test. Auf drei Jahre gerechnet: rund 720 € – gegenüber 4.000 € Agenturprojekt plus Pflege.</p>
 
 <h2>Die laufenden Kosten, die jeder Weg hat</h2>
 <ul>
@@ -171,7 +177,7 @@ const KOSTEN_POST: BlogPost = {
     {
       question: "Was kostet eine einfache Firmen-Website im Monat?",
       answer:
-        "Bei Baukasten-Anbietern liegen die Gesamtkosten inklusive Hosting und Domain-Anbindung meist zwischen 10 und 40 € im Monat. Pageblitz kostet 19,90 € im Monat bei jährlicher Zahlung (24,90 € monatlich) – inklusive Hosting in Deutschland, Rechtstexten und Anpassungen per KI.",
+        `Bei Baukasten-Anbietern liegen die Gesamtkosten inklusive Hosting und Domain-Anbindung meist zwischen 10 und 40 € im Monat. Pageblitz kostet ${PRICE_SENTENCE} – inklusive Hosting in Deutschland, Rechtstexten und Anpassungen per KI.`,
     },
     {
       question: "Warum sind Agentur-Websites so teuer?",
@@ -216,7 +222,7 @@ const WIX_ALTERNATIVE_POST: BlogPost = {
 <p>Der klassische Baukasten – ob Wix, Jimdo oder Squarespace – gibt dir eine Vorlage und volle Freiheit. Das ist Stärke und Falle zugleich: Zwischen leerer Vorlage und fertiger Website liegen viele Abende mit Layout-Entscheidungen, Textschreiben und Bildersuche. Genau hier setzen KI-basierte Alternativen an: <a href="/">Pageblitz</a> erstellt aus Firmenname und Branche eine komplette Website zur Vorschau – Texte, passende Bilder, Struktur, Rechtsseiten – und du änderst anschließend nur, was dir nicht gefällt. Der Unterschied ist nicht „mehr Features“, sondern: Du startest bei 90 % statt bei 0 %.</p>
 
 <h2>Kriterium 4: Der ehrliche Preisvergleich</h2>
-<p>Vergleiche nie nur den Einstiegspreis, sondern das, was du wirklich brauchst: eigene Domain, keine Fremdwerbung, ausreichender Speicher und die Funktionen deines Betriebs (Kontaktformular, Galerie, Terminanfrage). Bei den meisten Anbietern landest du damit in Tarifen zwischen 15 und 40 € im Monat – die beworbenen Gratis- oder Mini-Tarife sind für geschäftliche Auftritte selten geeignet. Pageblitz liegt mit 19,90 €/Monat (jährlich) mitten in diesem Feld, inklusive Hosting in Deutschland und automatischen Rechtstexten.</p>
+<p>Vergleiche nie nur den Einstiegspreis, sondern das, was du wirklich brauchst: eigene Domain, keine Fremdwerbung, ausreichender Speicher und die Funktionen deines Betriebs (Kontaktformular, Galerie, Terminanfrage). Bei den meisten Anbietern landest du damit in Tarifen zwischen 15 und 40 € im Monat – die beworbenen Gratis- oder Mini-Tarife sind für geschäftliche Auftritte selten geeignet. Pageblitz liegt mit ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION} mitten in diesem Feld, inklusive Hosting in Deutschland und automatischen Rechtstexten.</p>
 
 <h2>Wann Wix trotzdem die richtige Wahl ist</h2>
 <p>Fairerweise: Wenn du gern selbst gestaltest, sehr spezielle Design-Vorstellungen hast oder Funktionen aus einem großen App-Markt brauchst, bist du bei einem großen internationalen Baukasten gut aufgehoben – die Gestaltungsfreiheit ist dort enorm. Die Alternative lohnt sich für alle, die das Gegenteil wollen: möglichst wenig Zeit an der Website verbringen, deutsches Recht ohne Eigenrecherche abgedeckt wissen und ein Ergebnis, das ohne Design-Kenntnisse professionell aussieht.</p>
@@ -424,7 +430,7 @@ const HANDWERK_POST: BlogPost = {
 <p>Vermittlungsportale liefern Anfragen – gegen Provision, im Preisvergleich mit fünf Konkurrenten und zu deren Regeln. Die eigene Website ist der einzige Online-Kanal, der komplett dir gehört: keine Provision, kein erzwungener Preiskampf, keine Änderung der Spielregeln über Nacht.</p>
 
 <h2>7. Der Aufwand ist heute lächerlich klein</h2>
-<p>Das stärkste Gegenargument war immer echt: keine Zeit. Eine Agentur beauftragen, Texte liefern, Wochen warten – das passt nicht neben ein volles Auftragsbuch. Genau dieses Argument ist gefallen: Bei <a href="/website-erstellen/handwerk">Pageblitz</a> gibst du Firmennamen und Gewerk ein und siehst in etwa drei Minuten eine fertige Website zur Vorschau – mit Texten, Bildern, Impressum und Datenschutz. Anpassen, freischalten, fertig. Ab 19,90 € im Monat, ohne Technikwissen, mit Hosting in Deutschland.</p>
+<p>Das stärkste Gegenargument war immer echt: keine Zeit. Eine Agentur beauftragen, Texte liefern, Wochen warten – das passt nicht neben ein volles Auftragsbuch. Genau dieses Argument ist gefallen: Bei <a href="/website-erstellen/handwerk">Pageblitz</a> gibst du Firmennamen und Gewerk ein und siehst in etwa drei Minuten eine fertige Website zur Vorschau – mit Texten, Bildern, Impressum und Datenschutz. Anpassen, freischalten, fertig. Ab ${PRICE_YEARLY} im Monat ${YEARLY_CONDITION}, ohne Technikwissen, mit Hosting in Deutschland.</p>
 
 <h2>Fazit</h2>
 <p>Eine Website ersetzt nicht die Empfehlung, den Ruf oder die Arbeit auf der Baustelle. Sie sorgt dafür, dass all das auch dort ankommt, wo heute jede Entscheidung beginnt: bei Google. Und sie kostet inzwischen weniger Zeit und Geld als ein einziger verlorener Auftrag.</p>
@@ -438,7 +444,7 @@ const HANDWERK_POST: BlogPost = {
     {
       question: "Was kostet eine Handwerker-Website?",
       answer:
-        "Agentur-Projekte beginnen meist bei 2.000 €. Mit einem KI-Baukasten wie Pageblitz kostet die komplette Website ab 19,90 € im Monat – inklusive Hosting, Rechtstexten und Anpassungen, ohne einmalige Projektkosten.",
+        `Agentur-Projekte beginnen meist bei 2.000 €. Mit einem KI-Baukasten wie Pageblitz kostet die komplette Website ${PRICE_FROM_INLINE} – inklusive Hosting, Rechtstexten und Anpassungen, ohne einmalige Projektkosten.`,
     },
     {
       question: "Ich habe keine Zeit für eine Website – wie viel Aufwand ist es wirklich?",

@@ -62,11 +62,14 @@ export const PRICE_FULL =
 /** Fußnote zu PRICE_FROM_SHORT bzw. jedem „*" hinter einem Preis. */
 export const PRICE_FOOTNOTE = `* ${PRICE_FULL}`;
 
+/** „bei 12 Monaten Laufzeit" — Bedingung des Jahrestarifs. */
+export const YEARLY_CONDITION = `bei ${Y.termMonths} Monaten Laufzeit`;
+
 /**
  * „ab 19,90 €/Monat bei 12 Monaten Laufzeit" — für Stellen ohne Fußnote
  * (Meta-Descriptions, FAQ-Antworten, Fließtext, Chat).
  */
-export const PRICE_FROM_INLINE = `ab ${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit`;
+export const PRICE_FROM_INLINE = `ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION}`;
 
 /** Ein Satz für Fließtext/FAQ: beide Tarife, MwSt., Test. */
 export const PRICE_SENTENCE =
@@ -91,6 +94,12 @@ export const TARIFF_SUMMARY: Record<Tariff, string> = {
     `abgebucht. Verlängert sich um ${Y.renewMonths} Monate, wenn du nicht ` +
     `spätestens ${Y.noticeMonths} Monat vor Laufzeitende kündigst.`,
   monthly: `${PRICE_MONTHLY}/Monat, monatlich kündbar zum Ende des Abrechnungsmonats.`,
+};
+
+/** Zeile unter dem Preis auf der Preiskarte (Landing + Prerender). */
+export const PRICE_CARD_NOTE: Record<Tariff, string> = {
+  yearly: `${TARIFF_LABEL.yearly} · ${TARIFF_TERM_SHORT.yearly} · ${YEARLY_SAVINGS_TEXT} · Keine Einrichtungsgebühr`,
+  monthly: `${TARIFF_LABEL.monthly} · ${TARIFF_TERM_SHORT.monthly} · Keine Einrichtungsgebühr`,
 };
 
 /** Hinweis zu den Extras (gilt in beiden Tarifen). */

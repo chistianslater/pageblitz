@@ -3,6 +3,11 @@
  * Autoren-HTML aus diesem Repo, NIEMALS Fremdinhalte.
  */
 import type { BlogPost } from "./blogPosts";
+import {
+  PRICE_FROM_INLINE,
+  PRICE_YEARLY,
+  YEARLY_CONDITION,
+} from "../../shared/pricingText";
 
 const HANDWERK_KOSTEN_POST: BlogPost = {
   slug: "was-kostet-eine-website-fuer-handwerker",
@@ -31,7 +36,7 @@ const HANDWERK_KOSTEN_POST: BlogPost = {
 <h2>Die Wege im Handwerks-Kontext</h2>
 <p><strong>Agentur (2.000–6.000 €):</strong> sinnvoll bei mehreren Standorten, starker Marke oder Spezialpositionierung. Für den typischen Betrieb gilt: Du bezahlst Projektwochen für eine Website, deren Inhalte sich kaum von der Standard-Struktur unterscheiden — und Änderungen laufen später über Tickets.</p>
 <p><strong>Klassischer Baukasten (10–40 €/Monat):</strong> günstig, aber die Abende für Aufbau und Texte muss jemand haben. Zwischen Baustelle und Büro ist genau das die knappste Ressource.</p>
-<p><strong>KI-Baukasten:</strong> <a href="/website-erstellen/handwerk">Pageblitz</a> baut aus Firmenname und Gewerk eine fertige Website zur Vorschau — Struktur, Texte, Rechtsseiten. Du ergänzt Referenzfotos und Details; realistisch ein Feierabend statt Projektwochen. 19,90 €/Monat (jährlich), Hosting in Deutschland inklusive.</p>
+<p><strong>KI-Baukasten:</strong> <a href="/website-erstellen/handwerk">Pageblitz</a> baut aus Firmenname und Gewerk eine fertige Website zur Vorschau — Struktur, Texte, Rechtsseiten. Du ergänzt Referenzfotos und Details; realistisch ein Feierabend statt Projektwochen. Ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION}, Hosting in Deutschland inklusive.</p>
 
 <h2>Die Handwerker-Rechnung</h2>
 <p>Rund 239 € kostet das Jahr bei Pageblitz. Dagegen steht: Ein durchschnittlicher Handwerksauftrag liegt je nach Gewerk im hohen drei- bis vierstelligen Bereich. <strong>Ein einziger Auftrag über die Website — in einem ganzen Jahr — und sie hat sich mehrfach bezahlt.</strong> Dazu kommt der Recruiting-Effekt: Eine einzige Bewerbung über die Website spart Vermittlungs- oder Anzeigenkosten, die ein Vielfaches betragen.</p>
@@ -58,7 +63,7 @@ const HANDWERK_KOSTEN_POST: BlogPost = {
     {
       question: "Wie schnell steht eine Handwerker-Website bei Pageblitz?",
       answer:
-        "Die Vorschau nach etwa drei Minuten (Firmenname und Gewerk eingeben), die angepasste Website realistisch nach einem Feierabend. 7 Tage kostenlos testen, ab 19,90 €/Monat.",
+        `Die Vorschau nach etwa drei Minuten (Firmenname und Gewerk eingeben), die angepasste Website realistisch nach einem Feierabend. 7 Tage kostenlos testen, ${PRICE_FROM_INLINE}.`,
     },
   ],
 };
@@ -317,7 +322,7 @@ const RELAUNCH_POST: BlogPost = {
     {
       question: "Was kostet ein Website-Relaunch?",
       answer:
-        "Dasselbe wie ein Neubau des jeweiligen Wegs: Agentur ab etwa 2.000 €, klassischer Baukasten Zeit plus 10–40 €/Monat, KI-Baukasten ab 19,90 €/Monat mit fertigem Erstentwurf.",
+        `Dasselbe wie ein Neubau des jeweiligen Wegs: Agentur ab etwa 2.000 €, klassischer Baukasten Zeit plus 10–40 €/Monat, KI-Baukasten ${PRICE_FROM_INLINE} mit fertigem Erstentwurf.`,
     },
     {
       question: "Kann ich die alte Website parallel behalten?",

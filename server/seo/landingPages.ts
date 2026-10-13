@@ -1,4 +1,18 @@
-import { PRICING, formatEuro } from "../../shared/pricing";
+import {
+  ADDON_TERM_NOTE,
+  PRICE_FAQ_ANSWER,
+  PRICE_FOOTNOTE,
+  PRICE_FROM_INLINE,
+  PRICE_FULL,
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  TARIFF_LABEL,
+  TARIFF_SUMMARY,
+  TERM_COMPARISON,
+  YEARLY_CONDITION,
+  YEARLY_SAVINGS_TEXT,
+  trialThenText,
+} from "../../shared/pricingText";
 import { escapeHtml } from "./metaInjection";
 import { getSystem } from "../../shared/designSystems/registry";
 import {
@@ -48,7 +62,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Friseursalon{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Friseure ab 19,90 €/Monat. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Friseure ${PRICE_FROM_INLINE}. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Friseur",
       "Friseursalon Website erstellen",
@@ -74,7 +88,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Friseur?",
-        a: "Mit Pageblitz startest du ab 19,90 €/Monat – ohne Einrichtungsgebühr. Die ersten 7 Tage sind gratis.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Friseur-Website online?",
@@ -97,7 +111,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Restaurant erstellen",
     h1Template: "KI-Website für dein Restaurant{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Restaurants ab 19,90 €/Monat. Speisekarte, Öffnungszeiten, Tisch-Reservierung – alles von der KI erstellt.",
+      `Professionelle Website für Restaurants ${PRICE_FROM_INLINE}. Speisekarte, Öffnungszeiten, Tisch-Reservierung – alles von der KI erstellt.`,
     keywords: [
       "Website Restaurant",
       "Restaurant Website erstellen",
@@ -123,7 +137,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Restaurant?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Kann ich die Speisekarte auf meiner Restaurant-Website selbst aktualisieren?",
@@ -147,7 +161,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Handwerksbetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Handwerker ab 19,90 €/Monat. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, als Vorschau in 3 Minuten.",
+      `Professionelle Website für Handwerker ${PRICE_FROM_INLINE}. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Handwerker",
       "Handwerksbetrieb Website erstellen",
@@ -173,7 +187,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Handwerksbetrieb?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – ohne Einrichtungsgebühr, 7 Tage gratis.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Welche Informationen brauche ich für meine Handwerker-Website?",
@@ -197,7 +211,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Zahnarztpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Zahnarztpraxen ab 19,90 €/Monat. Praxis, Team, Leistungen, Online-Terminanfrage – von der KI erstellt.",
+      `Professionelle Website für Zahnarztpraxen ${PRICE_FROM_INLINE}. Praxis, Team, Leistungen, Online-Terminanfrage – von der KI erstellt.`,
     keywords: [
       "Website Zahnarzt",
       "Zahnarztpraxis Website erstellen",
@@ -223,7 +237,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Zahnarztpraxis?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Mindestlaufzeit.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Ist die Zahnarzt-Website DSGVO-konform?",
@@ -247,7 +261,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für dein Kosmetikstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Kosmetikerinnen ab 19,90 €/Monat. Behandlungen, Preise, Galerie und Terminanfrage – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Kosmetikerinnen ${PRICE_FROM_INLINE}. Behandlungen, Preise, Galerie und Terminanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Kosmetikstudio",
       "Kosmetikerin Website erstellen",
@@ -273,7 +287,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Kosmetikstudio?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – ohne Einrichtungsgebühr, 7 Tage gratis.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Kann ich Behandlungspreise auf meiner Kosmetik-Website anzeigen?",
@@ -297,7 +311,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für dein Fitnessstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Fitnessstudios und Personal Trainer ab 19,90 €/Monat. Kurspläne, Mitgliedschaft, Fotos – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Fitnessstudios und Personal Trainer ${PRICE_FROM_INLINE}. Kurspläne, Mitgliedschaft, Fotos – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Fitnessstudio",
       "Personal Trainer Website erstellen",
@@ -323,7 +337,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Fitnessstudio?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Kann ich als Personal Trainer eine eigene Website erstellen?",
@@ -346,7 +360,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Arztpraxis erstellen",
     h1Template: "KI-Website für deine Arztpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Arztpraxen ab 19,90 €/Monat. Praxis, Team, Leistungen, Öffnungszeiten – DSGVO-konform und als Vorschau in 3 Minuten.",
+      `Professionelle Website für Arztpraxen ${PRICE_FROM_INLINE}. Praxis, Team, Leistungen, Öffnungszeiten – DSGVO-konform und als Vorschau in 3 Minuten.`,
     keywords: ["Website Arztpraxis", "Arzt Website erstellen", "Homepage Arzt"],
     features: [
       {
@@ -368,7 +382,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Arztpraxis?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Ist die Praxis-Website DSGVO-konform?",
@@ -392,7 +406,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Immobilienmakler-Betrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Immobilienmakler ab 19,90 €/Monat. Referenzobjekte, Kontaktformular, Über-Mich – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Immobilienmakler ${PRICE_FROM_INLINE}. Referenzobjekte, Kontaktformular, Über-Mich – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Immobilienmakler",
       "Makler Website erstellen",
@@ -418,7 +432,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Immobilienmakler?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Mindestvertragsdauer.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Makler-Website online?",
@@ -442,7 +456,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Anwaltskanzlei{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Rechtsanwälte ab 19,90 €/Monat. Fachgebiete, Kontaktformular, Kanzleivorstellung – DSGVO-konform.",
+      `Professionelle Website für Rechtsanwälte ${PRICE_FROM_INLINE}. Fachgebiete, Kontaktformular, Kanzleivorstellung – DSGVO-konform.`,
     keywords: [
       "Website Rechtsanwalt",
       "Anwaltskanzlei Website erstellen",
@@ -468,7 +482,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Rechtsanwalt?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Ist die Anwalts-Website DSGVO-konform?",
@@ -492,7 +506,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Steuerkanzlei{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Steuerberater ab 19,90 €/Monat. Leistungen, Team, Kontaktformular – DSGVO-konform und als Vorschau in 3 Minuten.",
+      `Professionelle Website für Steuerberater ${PRICE_FROM_INLINE}. Leistungen, Team, Kontaktformular – DSGVO-konform und als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Steuerberater",
       "Steuerkanzlei Website erstellen",
@@ -518,7 +532,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Steuerberater?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Mindestlaufzeit.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Ist die Steuerberater-Website DSGVO-konform?",
@@ -541,7 +555,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Fotografen erstellen",
     h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Portfolio-Website für Fotografen ab 19,90 €/Monat. Portfolio-Galerie, Preisliste, Buchungsanfrage – als Vorschau in 3 Minuten.",
+      `Professionelle Portfolio-Website für Fotografen ${PRICE_FROM_INLINE}. Portfolio-Galerie, Preisliste, Buchungsanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Fotograf",
       "Fotografen Website erstellen",
@@ -567,7 +581,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Fotografen?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Kann ich mein Portfolio auf der Website selbst pflegen?",
@@ -591,7 +605,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Physiopraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Physiotherapeuten ab 19,90 €/Monat. Behandlungen, Team, Online-Terminanfrage – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Physiotherapeuten ${PRICE_FROM_INLINE}. Behandlungen, Team, Online-Terminanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Physiotherapeut",
       "Physiopraxis Website erstellen",
@@ -617,7 +631,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Physiopraxis?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Mindestlaufzeit.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Ist die Physio-Website DSGVO-konform?",
@@ -640,7 +654,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Nagelstudio erstellen",
     h1Template: "KI-Website für dein Nagelstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Nagelstudios ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten und ohne Technik.",
+      `Professionelle Website für Nagelstudios ${PRICE_FROM_INLINE}. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten und ohne Technik.`,
     keywords: [
       "Website Nagelstudio",
       "Nagelstylistin Website erstellen",
@@ -666,7 +680,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Nagelstudio?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Nagelstudio-Website online?",
@@ -689,7 +703,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Bäckerei erstellen",
     h1Template: "KI-Website für deine Bäckerei{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Bäckereien und Konditoreien ab 19,90 €/Monat. Angebote, Öffnungszeiten, Sonderbestellungen – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Bäckereien und Konditoreien ${PRICE_FROM_INLINE}. Angebote, Öffnungszeiten, Sonderbestellungen – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Bäckerei",
       "Bäckerei Homepage erstellen",
@@ -715,7 +729,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Bäckerei?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Bäckerei-Website online?",
@@ -739,7 +753,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Reinigungsservice{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Reinigungsunternehmen ab 19,90 €/Monat. Leistungen, Angebote, Kontaktformular – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Reinigungsunternehmen ${PRICE_FROM_INLINE}. Leistungen, Angebote, Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Reinigungsservice",
       "Reinigungsunternehmen Website erstellen",
@@ -765,7 +779,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Reinigungsservice?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist die Reinigungsservice-Website online?",
@@ -789,7 +803,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Hundesalon{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Hundesalons und Tierpfleger ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Hundesalons und Tierpfleger ${PRICE_FROM_INLINE}. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Hundesalon",
       "Tierpfleger Website erstellen",
@@ -815,7 +829,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Hundesalon?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis testen, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Hundesalon-Website online?",
@@ -839,7 +853,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Musikschule{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Musikschulen und Musiklehrer ab 19,90 €/Monat. Kurse, Instrumente, Schnupperstunde – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Musikschulen und Musiklehrer ${PRICE_FROM_INLINE}. Kurse, Instrumente, Schnupperstunde – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Musikschule",
       "Musiklehrer Website erstellen",
@@ -865,7 +879,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Musikschule?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Musikschule-Website online?",
@@ -889,7 +903,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Elektrobetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Elektriker ab 19,90 €/Monat. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Elektriker ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Elektriker",
       "Elektriker Website erstellen",
@@ -915,7 +929,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Elektriker?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Elektriker-Website online?",
@@ -939,7 +953,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Malerbetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Malerbetriebe ab 19,90 €/Monat. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.",
+      `Professionelle Website für Malerbetriebe ${PRICE_FROM_INLINE}. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.`,
     keywords: [
       "Website Maler",
       "Malerbetrieb Website erstellen",
@@ -965,7 +979,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Malerbetrieb?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Maler-Website online?",
@@ -989,7 +1003,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Klempnerbetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Klempner ab 19,90 €/Monat. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Klempner ${PRICE_FROM_INLINE}. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Klempner",
       "Klempner Website erstellen",
@@ -1015,7 +1029,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Klempner?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Klempner-Website online?",
@@ -1039,7 +1053,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Gärtnereibetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Gärtner ab 19,90 €/Monat. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.",
+      `Professionelle Website für Gärtner ${PRICE_FROM_INLINE}. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.`,
     keywords: [
       "Website Gärtner",
       "Gärtnerei Website erstellen",
@@ -1065,7 +1079,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Gärtner?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Gärtner-Website online?",
@@ -1089,7 +1103,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Tierarztpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Tierarztpraxen ab 19,90 €/Monat. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Tierarztpraxen ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Tierarzt",
       "Tierarztpraxis Website erstellen",
@@ -1115,7 +1129,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Tierarztpraxis?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Tierarzt-Website online?",
@@ -1138,7 +1152,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Apotheke erstellen",
     h1Template: "KI-Website für deine Apotheke{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Apotheken ab 19,90 €/Monat. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.",
+      `Professionelle Website für Apotheken ${PRICE_FROM_INLINE}. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.`,
     keywords: [
       "Website Apotheke",
       "Apotheke Website erstellen",
@@ -1164,7 +1178,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Apotheke?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Apotheken-Website online?",
@@ -1187,7 +1201,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Yogastudio erstellen",
     h1Template: "KI-Website für dein Yogastudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Yogastudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Yogastudios ${PRICE_FROM_INLINE}. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Yogastudio",
       "Yogastudio Website erstellen",
@@ -1213,7 +1227,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Yogastudio?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Yogastudio-Website online?",
@@ -1236,7 +1250,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Fahrschule erstellen",
     h1Template: "KI-Website für deine Fahrschule{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Fahrschulen ab 19,90 €/Monat. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.",
+      `Professionelle Website für Fahrschulen ${PRICE_FROM_INLINE}. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.`,
     keywords: [
       "Website Fahrschule",
       "Fahrschule Website erstellen",
@@ -1262,7 +1276,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Fahrschule?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Fahrschul-Website online?",
@@ -1286,7 +1300,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Kfz-Werkstatt{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Kfz-Werkstätten ab 19,90 €/Monat. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Kfz-Werkstätten ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Kfz-Werkstatt",
       "Autowerkstatt Website erstellen",
@@ -1312,7 +1326,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Kfz-Werkstatt?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Werkstatt-Website online?",
@@ -1336,7 +1350,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Schlüsseldienst{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Schlüsseldienste ab 19,90 €/Monat. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Schlüsseldienste ${PRICE_FROM_INLINE}. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Schlüsseldienst",
       "Schlüsseldienst Website erstellen",
@@ -1362,7 +1376,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Schlüsseldienst?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Schlüsseldienst-Website online?",
@@ -1386,7 +1400,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für dein Architekturbüro{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Architekturbüros ab 19,90 €/Monat. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.",
+      `Professionelle Website für Architekturbüros ${PRICE_FROM_INLINE}. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.`,
     keywords: [
       "Website Architekt",
       "Architekturbüro Website erstellen",
@@ -1412,7 +1426,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Architekturbüro?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Architekten-Website online?",
@@ -1436,7 +1450,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für dein Innenarchitekturbüro{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Innenarchitekten ab 19,90 €/Monat. Mit Designportfolio, Leistungsübersicht und Kontaktformular – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Innenarchitekten ${PRICE_FROM_INLINE}. Mit Designportfolio, Leistungsübersicht und Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Innenarchitekt",
       "Innenarchitektur Website erstellen",
@@ -1462,7 +1476,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Innenarchitekten?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Innenarchitekten-Website online?",
@@ -1486,7 +1500,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für dein Buchhaltungsbüro{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Buchhaltungsbüros ab 19,90 €/Monat. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Buchhaltungsbüros ${PRICE_FROM_INLINE}. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Buchhaltung",
       "Buchhaltungsbüro Website erstellen",
@@ -1512,7 +1526,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Buchhaltungsbüro?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Buchhaltungs-Website online?",
@@ -1536,7 +1550,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Logopädiepraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Logopädiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Logopädiepraxen ${PRICE_FROM_INLINE}. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Logopädie",
       "Logopädie Praxis Website",
@@ -1562,7 +1576,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Logopädiepraxis?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Logopädie-Website online?",
@@ -1586,7 +1600,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Ergotherapiepraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Ergotherapiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Patienteninfos und Kontaktformular – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Ergotherapiepraxen ${PRICE_FROM_INLINE}. Mit Therapieangeboten, Patienteninfos und Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Ergotherapie",
       "Ergotherapie Praxis Website",
@@ -1612,7 +1626,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Ergotherapiepraxis?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Ergotherapie-Website online?",
@@ -1636,7 +1650,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deine Hebammenpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Hebammen ab 19,90 €/Monat. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Hebammen ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Hebamme",
       "Hebamme Website erstellen",
@@ -1662,7 +1676,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für eine Hebamme?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Hebammen-Website online?",
@@ -1686,7 +1700,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für dein Pilatesstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Pilatesstudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Pilatesstudios ${PRICE_FROM_INLINE}. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Pilatesstudio",
       "Pilates Studio Website erstellen",
@@ -1712,7 +1726,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Pilatesstudio?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Pilates-Website online?",
@@ -1735,7 +1749,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Reisebüro erstellen",
     h1Template: "KI-Website für dein Reisebüro{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Reisebüros ab 19,90 €/Monat. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.",
+      `Professionelle Website für Reisebüros ${PRICE_FROM_INLINE}. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.`,
     keywords: [
       "Website Reisebüro",
       "Reisebüro Website erstellen",
@@ -1761,7 +1775,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Reisebüro?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Reisebüro-Website online?",
@@ -1785,7 +1799,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template:
       "KI-Website für deinen Hausreinigungsservice{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Hausreinigungsservices ab 19,90 €/Monat. Mit Leistungsübersicht, Preisangaben und Kontaktformular – als Vorschau in 3 Minuten.",
+      `Professionelle Website für Hausreinigungsservices ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Preisangaben und Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Hausreinigung",
       "Reinigungsservice Website erstellen",
@@ -1811,7 +1825,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für einen Reinigungsservice?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Reinigungsservice-Website online?",
@@ -1834,7 +1848,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Fotostudio erstellen",
     h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Fotostudios ab 19,90 €/Monat. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.",
+      `Professionelle Website für Fotostudios ${PRICE_FROM_INLINE}. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.`,
     keywords: [
       "Website Fotostudio",
       "Fotograf Website erstellen",
@@ -1860,7 +1874,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     faqs: [
       {
         q: "Was kostet eine Website für ein Fotostudio?",
-        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+        a: PRICE_FAQ_ANSWER,
       },
       {
         q: "Wie schnell ist meine Fotostudio-Website online?",
@@ -2492,6 +2506,7 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .pricing-cta{display:block;text-align:center;background:#fff;color:#0a0a0a;padding:1rem;border-radius:999px;font-weight:700;font-size:.9375rem;transition:background-color .2s,transform .2s;margin-top:1.5rem}
 .pricing-cta:hover{background:rgba(255,255,255,.9);transform:translateY(-1px)}
 .pricing-note-bottom{text-align:center;font-size:.75rem;color:rgba(255,255,255,.25);margin-top:.875rem}
+.price-footnote{font-size:.75rem;line-height:1.5;opacity:.7;margin-top:1rem;max-width:60ch}
 /* Comparison */
 .comparison{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .comp-table{max-width:820px;margin:3.5rem auto 0;border:1px solid rgba(255,255,255,.08);border-radius:20px;overflow:hidden}
@@ -2860,7 +2875,7 @@ export function generateLandingPageHTML(
   // (Vollgrade-Fund 2026-08-31: Friseur lag mit Suffix bei 177c).
   const branchSuffix = " 7 Tage gratis testen.";
   const metaDesc = city
-    ? `Professionelle ${industry.displayName}-Website in ${city.name} ab 19,90 €/Monat – von der KI in 3 Minuten erstellt. Jetzt Vorschau ansehen und 7 Tage gratis testen.`
+    ? `Professionelle ${industry.displayName}-Website in ${city.name} ${PRICE_FROM_INLINE} – von der KI in 3 Minuten erstellt. Jetzt Vorschau ansehen und 7 Tage gratis testen.`
     : industry.description.length + branchSuffix.length <= 160
       ? `${industry.description}${branchSuffix}`
       : industry.description;
@@ -2955,7 +2970,7 @@ export function generateLandingPageHTML(
     ? [
         {
           q: `Lohnt sich eine eigene Website für ${industry.displayName} in ${city.name}?`,
-          a: `Ja – gerade dort. In ${city.name} entscheidet die lokale Google-Suche darüber, wer angerufen wird. Wer nur bei Google Maps oder auf Social Media auftaucht, verliert die Kundschaft, die vorher vergleicht. Eine eigene Website mit Adresse, Öffnungszeiten und Leistungen kostet bei Pageblitz ab 19,90 €/Monat.`,
+          a: `Ja – gerade dort. In ${city.name} entscheidet die lokale Google-Suche darüber, wer angerufen wird. Wer nur bei Google Maps oder auf Social Media auftaucht, verliert die Kundschaft, die vorher vergleicht. Eine eigene Website mit Adresse, Öffnungszeiten und Leistungen kostet bei Pageblitz ${PRICE_FROM_INLINE}.`,
         },
         {
           q: `Wird meine Website auch in meinem Stadtteil in ${city.name} gefunden?`,
@@ -3069,7 +3084,7 @@ export function generateLandingPageHTML(
     <div class="hero-trust">
       <span>✓ Keine Kreditkarte nötig</span>
       <span>✓ Keine Einrichtungsgebühr</span>
-      <span>✓ Jederzeit kündbar</span>
+      <span>✓ In den Testtagen kostenlos kündbar</span>
     </div>
   </div>
 </section>
@@ -3080,7 +3095,7 @@ export function generateLandingPageHTML(
       <div><div class="stat-value">3 Min.</div><div class="stat-label">Bis zur Vorschau</div></div>
       <div><div class="stat-value">Flexibel</div><div class="stat-label">Design &amp; Aufbau</div></div>
       <div><div class="stat-value">0 €</div><div class="stat-label">Einrichtungskosten</div></div>
-      <div><div class="stat-value">19,90 €</div><div class="stat-label">Pro Monat</div></div>
+      <div><div class="stat-value">${PRICE_YEARLY}*</div><div class="stat-label">Pro Monat im ${TARIFF_LABEL.yearly}</div></div>
     </div>
   </div>
 </div>
@@ -3123,7 +3138,7 @@ ${previewHtml}
   <div class="container">
     <p class="section-label">Funktionen</p>
     <h2 class="section-title">Was Pageblitz für deinen ${escapeHtml(industry.displayName)}${escapeHtml(cityFull)} bietet</h2>
-    <p class="section-sub">Alle Features, die du brauchst – ab 19,90 €/Monat, kein Technik-Know-how nötig</p>
+    <p class="section-sub">Alle Features, die du brauchst – ${PRICE_FROM_INLINE}, kein Technik-Know-how nötig</p>
     <div class="features-grid">
       ${featuresHtml}
     </div>
@@ -3155,17 +3170,17 @@ ${localSectionHtml}
         <div class="pricing-name">Pageblitz Pro</div>
 
         <div class="billing-toggle">
-          <button class="billing-btn" id="btn-monthly" onclick="setBilling('monthly')">Monatlich</button>
-          <button class="billing-btn active" id="btn-yearly" onclick="setBilling('yearly')">Jährlich <span class="billing-save">2 Monate gratis</span></button>
+          <button class="billing-btn" id="btn-monthly" onclick="setBilling('monthly')">${TARIFF_LABEL.monthly}</button>
+          <button class="billing-btn active" id="btn-yearly" onclick="setBilling('yearly')">${TARIFF_LABEL.yearly} <span class="billing-save">${escapeHtml(YEARLY_SAVINGS_TEXT)}</span></button>
         </div>
 
         <div id="price-monthly" style="display:none">
-          <div class="pricing-price">24,90 €<span>/Monat</span></div>
-          <div class="pricing-note">Monatliche Abrechnung · Jederzeit kündbar.</div>
+          <div class="pricing-price">${PRICE_MONTHLY}<span>/Monat</span></div>
+          <div class="pricing-note">${escapeHtml(TARIFF_SUMMARY.monthly)}</div>
         </div>
         <div id="price-yearly">
-          <div class="pricing-price">19,90 €<span>/Monat</span></div>
-          <div class="pricing-note">238,80 €/Jahr · 2 Monate gespart · Jederzeit kündbar.</div>
+          <div class="pricing-price">${PRICE_YEARLY}<span>/Monat</span></div>
+          <div class="pricing-note">${escapeHtml(TARIFF_SUMMARY.yearly)}</div>
         </div>
         <ul class="pricing-features">
           <li>KI-generierte ${escapeHtml(industry.displayName)}-Website</li>
@@ -3180,8 +3195,9 @@ ${localSectionHtml}
           ${pricingAddonsHtml}
         </div>
         <a class="pricing-cta" href="https://pageblitz.de/start" style="background:${style.accent};color:#fff">Website kostenlos erstellen</a>
-        <div class="pricing-note-bottom" id="note-bottom-monthly" style="display:none">7 Tage gratis · danach 24,90 €/Mo. · Jederzeit kündbar</div>
-        <div class="pricing-note-bottom" id="note-bottom-yearly">7 Tage gratis · danach 19,90 €/Mo. (238,80 €/Jahr) · Jederzeit kündbar</div>
+        <div class="pricing-note-bottom" id="note-bottom-monthly" style="display:none">${escapeHtml(trialThenText("monthly"))}</div>
+        <div class="pricing-note-bottom" id="note-bottom-yearly">${escapeHtml(trialThenText("yearly"))}</div>
+        <div class="pricing-note-bottom">${escapeHtml(ADDON_TERM_NOTE)}</div>
       </div>
     </div>
   </div>
@@ -3200,12 +3216,13 @@ ${localSectionHtml}
       </div>
       <div class="comp-row"><div>Einmalige Kosten</div><div>2.000 – 8.000 €</div><div>0 €</div></div>
       <div class="comp-row"><div>Zeit bis zur fertigen Website</div><div>4 – 12 Wochen</div><div>3 Minuten</div></div>
-      <div class="comp-row"><div>Monatliche Kosten</div><div>50 – 150 € Hosting &amp; Wartung</div><div>19,90 €*</div></div>
+      <div class="comp-row"><div>Monatliche Kosten</div><div>50 – 150 € Hosting &amp; Wartung</div><div>${PRICE_YEARLY}*</div></div>
       <div class="comp-row"><div>Änderungen &amp; Updates</div><div>Stundenabrechnung (~80 €/h)</div><div>Inklusive</div></div>
-      <div class="comp-row"><div>Vertragslaufzeit</div><div>Oft 12–24 Monate</div><div>1 Monat</div></div>
+      <div class="comp-row"><div>Vertragslaufzeit</div><div>Oft 12–24 Monate</div><div>${escapeHtml(TERM_COMPARISON)}</div></div>
       <div class="comp-row"><div>DSGVO &amp; Impressum</div><div>Meist kostenpflichtig extra</div><div>Automatisch inklusive</div></div>
       <div class="comp-row"><div>SSL &amp; Hosting</div><div>Oft extra berechnet</div><div>Inklusive</div></div>
     </div>
+    <p class="price-footnote">${escapeHtml(PRICE_FOOTNOTE)}</p>
   </div>
 </section>
 
@@ -3222,9 +3239,9 @@ ${localSectionHtml}
 <section class="cta-banner">
   <div class="container">
     <h2>Jetzt ${escapeHtml(industry.displayName)}-Website erstellen${escapeHtml(cityStr)}</h2>
-    <p>Vorschau in 3 Minuten. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage komplett gratis.</p>
+    <p>Vorschau in 3 Minuten. KI-generiert. Ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION} – die ersten 7 Tage komplett gratis.</p>
     <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">Website kostenlos erstellen</a>
-    <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
+    <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · In den Testtagen kostenlos kündbar</div>
   </div>
 </section>
 
@@ -3274,7 +3291,7 @@ export function generateOverviewHTML(): string {
   // Abgeleitet statt eingetippt: die Zahl stand auf 17, waehrend
   // SEO_INDUSTRIES laengst mehr Branchen fuehrte.
   const branchenZahl = Object.keys(SEO_INDUSTRIES).length;
-  const desc = `Mit Pageblitz erstellst du in 3 Minuten eine professionelle Website für dein Unternehmen. ${branchenZahl} Branchen – ab ${formatEuro(PRICING.base.yearly)}/Monat.`;
+  const desc = `Mit Pageblitz erstellst du in 3 Minuten eine professionelle Website für dein Unternehmen. ${branchenZahl} Branchen – ${PRICE_FROM_INLINE}.`;
 
   const overviewCss =
     SHARED_CSS +
@@ -3313,7 +3330,7 @@ export function generateOverviewHTML(): string {
         name: "Was kostet eine professionelle Website für Kleinunternehmen?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Mit Pageblitz ab 19,90 €/Monat – ohne Einrichtungsgebühr und mit 7 Tagen gratis testen.",
+          text: PRICE_FAQ_ANSWER,
         },
       },
       {
@@ -3362,12 +3379,12 @@ export function generateOverviewHTML(): string {
   <div class="container">
     <div class="hero-badge">Pageblitz · Vorschau in 3 Minuten</div>
     <h1>Website erstellen für dein Unternehmen – in 3 Minuten</h1>
-    <p>Die KI erstellt deine professionelle Website automatisch. Branche wählen, Daten eingeben – fertig. Ab 19,90 €/Monat.</p>
+    <p>Die KI erstellt deine professionelle Website automatisch. Branche wählen, Daten eingeben – fertig. Ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION}.</p>
     <a class="btn-primary" href="https://pageblitz.de/start">Website kostenlos erstellen</a>
     <div class="hero-trust">
       <span>✓ Keine Kreditkarte nötig</span>
       <span>✓ Keine Einrichtungsgebühr</span>
-      <span>✓ Jederzeit kündbar</span>
+      <span>✓ In den Testtagen kostenlos kündbar</span>
     </div>
   </div>
 </section>
@@ -3386,9 +3403,10 @@ export function generateOverviewHTML(): string {
 <section class="cta-banner">
   <div class="container">
     <h2>Jetzt Website erstellen – 7 Tage gratis</h2>
-    <p>Vorschau in 3 Minuten. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage gratis testen.</p>
+    <p>Vorschau in 3 Minuten. KI-generiert. Ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION} – die ersten 7 Tage gratis testen.</p>
+    <p class="price-footnote">${escapeHtml(PRICE_FULL)}</p>
     <a class="btn-primary" href="https://pageblitz.de/start">Website kostenlos erstellen</a>
-    <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
+    <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · In den Testtagen kostenlos kündbar</div>
   </div>
 </section>
 

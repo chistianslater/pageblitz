@@ -108,13 +108,15 @@ Je Karte erzeugt „Vorschau erzeugen" ein PDF bei HeyMail (Spalte „Karte" →
 PDF). Prüfen:
 
 - Kopfzeile „Für … in …" bricht nicht um (max. 38 Zeichen).
-- Preis steht überall als „ab 19,90 €" (gilt nur jährlich; Zahl kommt aus
-  `shared/pricing.ts`).
+- Preis steht überall mit Bedingung: Abbinder „… ab 19,90 €/Monat (12 Mon.
+  Laufzeit, inkl. MwSt.)", Rückseite „19,90 € im Monat bei 12 Monaten
+  Laufzeit (inkl. MwSt.)" (Texte aus `shared/pricingText.ts`, Stand
+  Preismodell 2026-10-13).
 - B: Screenshot sitzt rechts, QR/Preiszeile/Pfeil/Kurz-Link liegen frei auf
   Schwarz; Lime der Eyebrow passt zum Lime der Vorlage.
 - C: „Deine Website ist fertig." + „Schau sie dir kostenlos an –
-  freischalten nur, wenn sie dir gefällt." + „Erst dann ab 19,90 € im
-  Monat."
+  freischalten nur, wenn sie dir gefällt." + „Erst dann ab 19,90 €/Monat
+  (12 Mon. Laufzeit, inkl. MwSt.)"
 - D: „Deine Website wartet noch auf dich." + „Wir haben dir vor ein paar
   Wochen geschrieben. Deine Seite steht noch."
 - Anschrift, Kurzcode unter dem QR, QR führt auf `pageblitz.de/k/<code>`.

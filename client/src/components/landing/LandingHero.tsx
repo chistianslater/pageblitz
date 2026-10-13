@@ -83,12 +83,12 @@ export function RiskLine({ className = "" }: { className?: string }) {
       className={`font-[family-name:var(--lp-mono)] text-[0.74rem] uppercase tracking-[0.02em] text-lp-faint ${className}`}
     >
       <span className="text-lp-volt">Kostenlos ansehen</span> · keine
-      Kreditkarte · monatlich kündbar
+      Kreditkarte · keine Einrichtungsgebühr
     </p>
   );
 }
 
-const TRUST = ["7 Tage gratis", "Monatlich kündbar", "Keine Kreditkarte"];
+const TRUST = ["7 Tage gratis", "Keine Einrichtungsgebühr", "Keine Kreditkarte"];
 
 /** Punkt-Aufzählung für den Schluss-CTA (FinalCta im LandingFooter). */
 export function TrustLine({ className = "" }: { className?: string }) {

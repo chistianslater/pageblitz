@@ -2,12 +2,22 @@ import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   PRICING,
+  TRIAL_DAYS,
   calcTotalCents,
   formatEuro,
   sanitizeAddOns,
   type AddOnFlags,
   type BillingInterval,
 } from "@shared/pricing";
+import {
+  CHECKOUT_FOOTER,
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  TARIFF_LABEL,
+  YEARLY_SAVINGS_TEXT,
+  checkoutTermLine,
+  checkoutTotalLine,
+} from "@shared/pricingText";
 import type { StudioState } from "../../../../server/onboardingV2/state";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import { trackStudioEvent } from "@/lib/studioEvents";
@@ -19,12 +29,8 @@ export interface MissingItem {
   title: string;
 }
 
-/**
- * Kostenlose Testwoche — muss zu `trial_period_days` in
- * server/onboardingV2/checkout.ts passen, sonst verspricht der Knopf etwas,
- * das Stripe nicht einhält.
- */
-const TRIAL_DAYS = 7;
+// Testtage (TRIAL_DAYS) kommen aus shared/pricing.ts — dieselbe Konstante
+// setzt server/onboardingV2/checkout.ts als `trial_period_days`.
 
 interface CheckoutSummaryProps {
   interval: BillingInterval;
@@ -63,7 +69,10 @@ export function CheckoutSummary({
       )}
       <p className="pb-studio-checkout-hint">
         Die ersten {TRIAL_DAYS} Tage kostenlos
-        {interval === "yearly" ? " · jährlich: 2 Monate gratis" : ""}
+        {interval === "yearly" ? ` · ${YEARLY_SAVINGS_TEXT}` : ""}
+      </p>
+      <p className="pb-studio-checkout-hint" data-testid="checkout-term">
+        {checkoutTermLine(interval)}
       </p>
       {missing.length > 0 ? (
         <div className="pb-studio-checkout-missing">
@@ -253,14 +262,14 @@ export function CheckoutBar({
           aria-pressed={billingInterval === "monthly"}
           onClick={() => setBillingInterval("monthly")}
         >
-          Monatlich <span>{formatEuro(PRICING.base.monthly)}</span>
+          {TARIFF_LABEL.monthly} <span>{PRICE_MONTHLY}</span>
         </button>
         <button
           type="button"
           aria-pressed={billingInterval === "yearly"}
           onClick={() => setBillingInterval("yearly")}
         >
-          Jährlich <span>{formatEuro(PRICING.base.yearly)}</span>
+          {TARIFF_LABEL.yearly} <span>{PRICE_YEARLY}</span>
         </button>
       </div>
       <CheckoutSummary
@@ -331,14 +340,12 @@ export function CheckoutBar({
           ) : (
             <>
               Website freischalten
-              <small>
-                {TRIAL_DAYS} Tage gratis, dann {formatEuro(total)} / Monat
-              </small>
+              <small>{checkoutTotalLine(total)}</small>
             </>
           )}
         </button>
         <p className="pb-studio-checkout-trust">
-          Jederzeit kündbar · inkl. MwSt. · sichere Zahlung über Stripe
+          {CHECKOUT_FOOTER}
         </p>
         {checkout.error && (
           <p role="alert" style={{ color: "var(--st-warn)" }}>

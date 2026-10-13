@@ -2,6 +2,14 @@ import React, { useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Wordmark } from "@/components/landing/primitives";
 import { PRICING, formatEuro } from "@shared/pricing";
+import {
+  ADDON_TERM_NOTE,
+  PRICE_CARD_NOTE,
+  PRICE_FULL,
+  PRICE_MONTHLY,
+  PRICE_YEARLY,
+  TARIFF_LABEL,
+} from "@shared/pricingText";
 import { HOME_FAQ_VISIBLE } from "@shared/faq";
 import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
 
@@ -73,20 +81,17 @@ export function Price({ dark = false }: { dark?: boolean }) {
     <div className={`lc-price ${dark ? "lc-price-dark" : ""}`}>
       <div className="lc-billing" role="group" aria-label="Abrechnung">
         <button aria-pressed={yearly} onClick={() => setYearly(true)}>
-          Jahrestarif
+          {TARIFF_LABEL.yearly}
         </button>
         <button aria-pressed={!yearly} onClick={() => setYearly(false)}>
-          Monatlich
+          {TARIFF_LABEL.monthly}
         </button>
       </div>
       <p className="lc-price-value">
-        {formatEuro(yearly ? PRICING.base.yearly : PRICING.base.monthly)}
+        {yearly ? PRICE_YEARLY : PRICE_MONTHLY}
         <span>/ Monat</span>
       </p>
-      <p>
-        {yearly ? "Im Jahrestarif" : "Bei monatlicher Abrechnung"} · Keine
-        Einrichtungsgebühr
-      </p>
+      <p>{PRICE_CARD_NOTE[yearly ? "yearly" : "monthly"]}</p>
       <ul>
         <li>Deine Website mit individuellem Design</li>
         <li>Hosting und SSL inklusive</li>
@@ -103,8 +108,9 @@ export function Price({ dark = false }: { dark?: boolean }) {
       <p className="lc-extra">
         Optional: Galerie ab {formatEuro(PRICING.addon)}/Monat, Terminbuchung{" "}
         {formatEuro(PRICING.addonBooking)}/Monat, KI-Chat{" "}
-        {formatEuro(PRICING.addonAiChat)}/Monat.
+        {formatEuro(PRICING.addonAiChat)}/Monat. {ADDON_TERM_NOTE}
       </p>
+      <p className="lc-extra">{PRICE_FULL}</p>
     </div>
   );
 }

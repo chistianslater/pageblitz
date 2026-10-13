@@ -2,6 +2,8 @@ import { Express, Request, Response } from "express";
 import { invokeLLM } from "./llm";
 import { sendEmail } from "./email";
 import { upsertChatTranscript } from "../db";
+import { addonPrice, formatEuro } from "../../shared/pricing";
+import { PRICE_PROMPT_FACTS } from "../../shared/pricingText";
 
 const ipUsage = new Map<string, { count: number; reset: number }>();
 setInterval(() => {
@@ -14,8 +16,8 @@ const SYSTEM_PROMPT = `Du bist der Pageblitz Support-Assistent. Du hilfst Nutzer
 ÜBER PAGEBLITZ:
 - Website-Builder für deutsche Kleinunternehmen
 - KI-generierte Website in wenigen Minuten
-- Preis: 19,90 €/Monat (Jahreszahlung) oder 24,90 €/Monat (monatlich)
-- 7 Tage kostenlos testen, monatlich kündbar
+${PRICE_PROMPT_FACTS}
+- Kündigen: im Konto unter „Abonnement“; das Konto zeigt Laufzeitende und Kündigungsfrist
 
 ONBOARDING-ABLAUF:
 1. Firmenname eingeben oder Google-Unternehmensprofil übernehmen
@@ -37,12 +39,12 @@ HÄUFIGE FRAGEN:
 - "Logo hochladen?" → Ja, im Logo-Schritt. Alternativ wird der Firmenname als Text-Logo dargestellt.
 
 ADD-ONS:
-- KI-Chat (+9,90 €/Mo): Chatbot auf der Website, beantwortet Besucherfragen 24/7
-- Terminbuchung (+4,90 €/Mo): Online-Terminbuchung direkt auf der Website
-- Kontaktformular (+3,90 €/Mo): Anpassbare Felder, DSGVO-konform
-- Bildergalerie (+3,90 €/Mo): Bis zu 20 Fotos
-- Speisekarte (+3,90 €/Mo): Für Restaurants/Cafés
-- Preisliste (+3,90 €/Mo): Für Dienstleister
+- KI-Chat (+${formatEuro(addonPrice("aiChat"))}/Mo): Chatbot auf der Website, beantwortet Besucherfragen 24/7
+- Terminbuchung (+${formatEuro(addonPrice("booking"))}/Mo): Online-Terminbuchung direkt auf der Website
+- Kontaktformular (+${formatEuro(addonPrice("contactForm"))}/Mo): Anpassbare Felder, DSGVO-konform
+- Bildergalerie (+${formatEuro(addonPrice("gallery"))}/Mo): Bis zu 20 Fotos
+- Speisekarte (+${formatEuro(addonPrice("menu"))}/Mo): Für Restaurants/Cafés
+- Preisliste (+${formatEuro(addonPrice("pricelist"))}/Mo): Für Dienstleister
 
 GESPRÄCHSREGELN:
 - Deutsch, Du-Form, freundlich und hilfsbereit

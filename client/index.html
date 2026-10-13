@@ -37,12 +37,12 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>KI-Website erstellen für Kleinunternehmen | Pageblitz</title>
-    <meta name="description" content="Deine Website? Schon fast fertig. Individuelle Designs für deinen Betrieb. Kostenlosen Entwurf ansehen, ohne Kreditkarte. Live ab 19,90 €/Monat im Jahrestarif.">
+    <meta name="description" content="%PB_META_DESCRIPTION%">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://pageblitz.de/">
     <!-- Open Graph -->
     <meta property="og:title" content="Deine Website? Schon fast fertig. | Pageblitz">
-    <meta property="og:description" content="Individuelle Designs für deinen Betrieb. Entwurf kostenlos ansehen. Live ab 19,90 €/Monat im Jahrestarif.">
+    <meta property="og:description" content="%PB_OG_DESCRIPTION%">
     <meta property="og:image" content="https://pageblitz.de/og-image.jpg">
     <meta property="og:url" content="https://pageblitz.de">
     <meta property="og:type" content="website">
@@ -51,8 +51,12 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Deine Website? Schon fast fertig. | Pageblitz">
-    <meta name="twitter:description" content="Individuelle Designs für deinen Betrieb. Entwurf kostenlos ansehen. Live ab 19,90 €/Monat im Jahrestarif.">
+    <meta name="twitter:description" content="%PB_OG_DESCRIPTION%">
     <meta name="twitter:image" content="https://pageblitz.de/og-image.jpg">
+    <!--
+      Preis-Platzhalter (Prozent-PB-Namen) setzt das Vite-Plugin `pageblitz-pricing-html`
+      (vite.config.ts) aus shared/pricingText.ts ein — Preise nie hier eintragen.
+    -->
     <!-- Schema.org: SoftwareApplication -->
     <script type="application/ld+json">
     {
@@ -61,12 +65,7 @@
       "name": "Pageblitz",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "19.90",
-        "priceCurrency": "EUR",
-        "priceValidUntil": "2027-12-31"
-      },
+      "offers": %PB_OFFERS_JSON%,
       "description": "KI-Website-Generator für deutsche Kleinunternehmen – in 3 Minuten professionell online",
       "inLanguage": "de",
       "url": "https://pageblitz.de",

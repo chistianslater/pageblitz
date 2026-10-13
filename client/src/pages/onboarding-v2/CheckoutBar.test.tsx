@@ -69,8 +69,22 @@ describe("CheckoutSummary", () => {
         missing={[]}
       />
     );
-    expect(yearly).toContain("2 Monate gratis");
-    expect(monthly).not.toContain("2 Monate gratis");
+    expect(yearly).toContain("spare 60 € im Jahr");
+    expect(monthly).not.toContain("spare 60 € im Jahr");
+    expect(yearly).not.toContain("Monate gratis");
+  });
+
+  test("nennt die Laufzeitbedingungen je Tarif direkt am Preis", () => {
+    const yearly = renderToStaticMarkup(
+      <CheckoutSummary interval="yearly" addOns={{}} ready={false} hasEmail={false} missing={[]} />
+    );
+    const monthly = renderToStaticMarkup(
+      <CheckoutSummary interval="monthly" addOns={{}} ready={false} hasEmail={false} missing={[]} />
+    );
+    expect(yearly).toContain(
+      "12 Monate Laufzeit ab der ersten Zahlung, danach Verlängerung um 12 Monate; Kündigung bis 1 Monat vor Laufzeitende."
+    );
+    expect(monthly).toContain("Monatlich kündbar zum Ende des Abrechnungsmonats.");
   });
 
   test("Team zählt seit Plan B5 Task 2 in die Gesamtsumme mit", () => {
@@ -243,12 +257,14 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
     expect(html).toContain("19,90 €");
   });
 
-  test("Vertrauenszeile am Knopf: kündbar, inkl. MwSt., Stripe", () => {
+  test("Vertrauenszeile am Knopf: inkl. 19 % MwSt., Stripe — kein „jederzeit kündbar“", () => {
     const html = renderWithTrpc(
       <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
     );
-    expect(html).toContain("Jederzeit kündbar");
-    expect(html).toContain("inkl. MwSt.");
+    expect(html).not.toContain("Jederzeit kündbar");
+    expect(html).toContain("Jahrestarif");
+    expect(html).toContain("Monatstarif");
+    expect(html).toContain("inkl. 19 % MwSt.");
     expect(html).toContain("Stripe");
   });
 

@@ -1,3 +1,4 @@
+import { PRICE_LLMS_TXT } from "../../shared/pricingText";
 import "dotenv/config";
 import "@shared/zodLocale";
 import compression from "compression";
@@ -430,9 +431,9 @@ async function startServer() {
           "",
           "> Pageblitz erstellt per KI in ca. 3 Minuten eine fertige Website",
           "> für Kleinunternehmen in Deutschland (Friseure, Handwerker,",
-          "> Restaurants u. v. m.). Basis 19,90 €/Monat (jährlich) bzw.",
-          "> 24,90 €/Monat (monatlich), 7 Tage gratis testen, DSGVO-konform,",
-          "> Hosting in Deutschland inklusive.",
+          "> Restaurants u. v. m.).",
+          `> Preise: ${PRICE_LLMS_TXT}.`,
+          "> DSGVO-konform, Hosting in Deutschland inklusive.",
           "",
           "## Wichtige Seiten",
           "",

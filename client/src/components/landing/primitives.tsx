@@ -1,5 +1,4 @@
 import React, { type ReactNode } from "react";
-import { PRICING, formatEuro } from "@shared/pricing";
 
 /**
  * Gemeinsame Bausteine der Landingpage („Nachtschicht", 2026-08-29): Marke,
@@ -105,9 +104,8 @@ export const pillGhost = `${PILL} border border-lp-line bg-transparent text-lp-i
 export const textLink =
   "inline-flex items-center gap-1 font-medium text-lp-ink underline decoration-[var(--lp-volt)] decoration-2 underline-offset-[0.22em] transition-colors hover:text-lp-volt";
 
-/** Preise nur aus shared/pricing.ts. */
-export const PRICE_YEARLY = formatEuro(PRICING.base.yearly); // „19,90 €"
-export const PRICE_MONTHLY = formatEuro(PRICING.base.monthly); // „24,90 €"
+/** Preise nur aus shared/pricing.ts — Texte aus shared/pricingText.ts. */
+export { PRICE_YEARLY, PRICE_MONTHLY } from "@shared/pricingText";
 
 export function startHref(billingYearly: boolean): string {
   return `/start?billing=${billingYearly ? "yearly" : "monthly"}`;

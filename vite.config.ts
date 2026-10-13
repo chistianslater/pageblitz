@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { renderIndexHtmlPricing } from "./shared/pricingText";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -66,6 +67,21 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
 
   // Trim if exceeds max size
   trimLogFile(logPath, MAX_LOG_SIZE_BYTES);
+}
+
+/**
+ * Preise in client/index.html (Meta-Descriptions, JSON-LD-Offers) kommen aus
+ * shared/pricingText.ts — einzige Preisquelle. `order: "pre"`, damit die
+ * Platzhalter ersetzt sind, bevor Vite seine eigenen %ENV%-Platzhalter liest.
+ */
+function pageblitzPricingHtml(): Plugin {
+  return {
+    name: "pageblitz-pricing-html",
+    transformIndexHtml: {
+      order: "pre",
+      handler: html => renderIndexHtmlPricing(html),
+    },
+  };
 }
 
 /**
@@ -157,6 +173,7 @@ function vitePluginManusDebugCollector(): Plugin {
 // Dev-/Preview-Werkzeug – im Build hat es nichts zu suchen.
 export default defineConfig(({ command }) => ({
   plugins: [
+    pageblitzPricingHtml(),
     react(),
     tailwindcss(),
     jsxLocPlugin(),

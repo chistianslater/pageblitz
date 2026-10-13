@@ -10,6 +10,7 @@
  *
  * Client-Rendering, Server-Prerender und JSON-LD lesen jetzt alle hier.
  */
+import { PRICE_SENTENCE, TARIFF_SUMMARY } from "./pricingText";
 export interface FaqItem {
   q: string;
   a: string;
@@ -34,7 +35,7 @@ export const HOME_FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "Was passiert nach den 7 Tagen?",
-    a: "Danach kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert und kannst jederzeit direkt im Account kündigen – ohne Mindestlaufzeit oder Gebühren.",
+    a: `Danach kostet Pageblitz ${PRICE_SENTENCE}. ${TARIFF_SUMMARY.yearly} In den Testtagen kündigst du direkt im Konto – kostenlos.`,
   },
   {
     q: "Kann ich meine eigene Domain verwenden?",

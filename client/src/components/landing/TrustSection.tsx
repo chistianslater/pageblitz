@@ -1,3 +1,4 @@
+import { TARIFF_SUMMARY } from "@shared/pricingText";
 import {
   CalendarCheck,
   FileText,
@@ -45,8 +46,8 @@ const TRUST_ITEMS: ReadonlyArray<{
   {
     Icon: CalendarCheck,
     tag: "Vertrag",
-    title: "Monatlich kündbar",
-    text: "Keine Mindestlaufzeit, keine Kündigungsgebühr, kein Kleingedrucktes. Wenn Pageblitz nichts für dich ist, gehst du einfach.",
+    title: "Klare Laufzeit",
+    text: `${TARIFF_SUMMARY.yearly} Oder: ${TARIFF_SUMMARY.monthly} In den Testtagen kostet eine Kündigung nichts.`,
   },
 ] as const;
 

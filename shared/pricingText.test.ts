@@ -6,6 +6,7 @@ import {
   HOME_OG_DESCRIPTION,
   POSTCARD_LETTER_PRICE,
   POSTCARD_PRICE,
+  PRICE_CARD_NOTE,
   PRICE_FAQ_ANSWER,
   PRICE_FOOTNOTE,
   PRICE_FROM_INLINE,
@@ -80,6 +81,12 @@ describe("Grundtexte", () => {
     );
     expect(ADDON_TERM_NOTE).toBe(
       "Extras sind monatlich kündbar – auch im Jahrestarif – und enden spätestens mit deinem Abo."
+    );
+    expect(PRICE_CARD_NOTE.yearly).toBe(
+      "Jahrestarif · 12 Monate Laufzeit, monatlich abgebucht · spare 60 € im Jahr · Keine Einrichtungsgebühr"
+    );
+    expect(PRICE_CARD_NOTE.monthly).toBe(
+      "Monatstarif · monatlich kündbar · Keine Einrichtungsgebühr"
     );
     expect(TERM_COMPARISON).toBe(
       "12 Monate (19,90 €/Monat) oder monatlich kündbar (24,90 €/Monat)"

@@ -5,6 +5,12 @@
  * blogPosts.ts.
  */
 import type { BlogPost } from "./blogPosts";
+import {
+  PRICE_FROM_INLINE,
+  PRICE_SENTENCE,
+  PRICE_YEARLY,
+  YEARLY_CONDITION,
+} from "../../shared/pricingText";
 
 const GBP_POST: BlogPost = {
   slug: "google-unternehmensprofil-einrichten",
@@ -103,7 +109,7 @@ const FRISEUR_KOSTEN_POST: BlogPost = {
 <h2>Die drei Wege im Salon-Kontext</h2>
 <p><strong>Agentur (2.000–5.000 €):</strong> lohnt sich für Ketten und Premium-Salons mit starker Marke. Für den einzelnen Salon ist die Rechnung schwer: Bei einem durchschnittlichen Damenhaarschnitt musst du viele Termine schneiden, bevor 4.000 € Projektkosten wieder drin sind – und jede Preisänderung läuft über die Agentur.</p>
 <p><strong>Klassischer Baukasten (10–40 €/Monat):</strong> günstig, aber du baust selbst – und Salon-Websites brauchen viele Inhalte (Preisliste mit Dutzenden Positionen, Galerie, Team). Realistisch sind mehrere Abende Arbeit, und das Ergebnis sieht so professionell aus wie deine Design-Erfahrung es hergibt.</p>
-<p><strong>KI-Baukasten:</strong> Bei <a href="/website-erstellen/friseur">Pageblitz</a> gibst du den Salonnamen ein und bekommst eine fertige Friseur-Website zur Vorschau – mit branchentypischer Struktur, Galerie und Terminanfrage-Formular als Option, die Preisliste als buchbares Extra. 19,90 €/Monat (jährlich), inklusive Rechtstexten und Hosting in Deutschland; 7 Tage kostenlos testen.</p>
+<p><strong>KI-Baukasten:</strong> Bei <a href="/website-erstellen/friseur">Pageblitz</a> gibst du den Salonnamen ein und bekommst eine fertige Friseur-Website zur Vorschau – mit branchentypischer Struktur, Galerie und Terminanfrage-Formular als Option, die Preisliste als buchbares Extra. Ab ${PRICE_YEARLY}/Monat ${YEARLY_CONDITION}, inklusive Rechtstexten und Hosting in Deutschland; 7 Tage kostenlos testen.</p>
 
 <h2>Womit Salons wirklich Geld verlieren</h2>
 <p>Nicht mit dem Monatsbeitrag – sondern mit dem, was fehlt: Ein Salon ohne sichtbare Preise verliert Vergleicher, einer ohne Galerie verliert Farb-Kundschaft (die teuersten Termine!), einer ohne Online-Anfrage verliert alle, die um 21 Uhr nach „Balayage in der Nähe“ suchen. Die Website-Kosten sind gegen einen einzigen verlorenen Stammkunden pro Monat fast immer die kleinere Zahl.</p>
@@ -130,7 +136,7 @@ const FRISEUR_KOSTEN_POST: BlogPost = {
     {
       question: "Was kostet eine Friseur-Website bei Pageblitz?",
       answer:
-        "19,90 € im Monat bei jährlicher Zahlung (24,90 € monatlich), inklusive Hosting in Deutschland, Impressum und Datenschutzerklärung. Die Vorschau ist kostenlos, danach 7 Tage gratis testen.",
+        `${PRICE_SENTENCE} – inklusive Hosting in Deutschland, Impressum und Datenschutzerklärung. Die Vorschau ist kostenlos, danach 7 Tage gratis testen.`,
     },
   ],
 };
@@ -305,7 +311,7 @@ const BAUKASTEN_AGENTUR_POST: BlogPost = {
 <ul>
 <li><strong>Agentur</strong> – wenn dein Fall ein echter Sonderfall ist oder Website/Marke dein Kerngeschäft berühren. Budget ab 2.000 €, plus laufende Pflege.</li>
 <li><strong>Klassischer Baukasten</strong> – wenn du Freude am Selberbauen hast und die Abende dafür übrig sind. 10–40 €/Monat plus deine Zeit.</li>
-<li><strong>KI-Baukasten</strong> – wenn du das Standard-Ergebnis in professionell willst, ohne die Abende: fertiger Entwurf zum Anpassen, ab 19,90 €/Monat, Rechtstexte und Pflege inklusive. Bei Pageblitz siehst du die <a href="/start">fertige Vorschau</a>, bevor du dich entscheidest.</li>
+<li><strong>KI-Baukasten</strong> – wenn du das Standard-Ergebnis in professionell willst, ohne die Abende: fertiger Entwurf zum Anpassen, ${PRICE_FROM_INLINE}, Rechtstexte und Pflege inklusive. Bei Pageblitz siehst du die <a href="/start">fertige Vorschau</a>, bevor du dich entscheidest.</li>
 </ul>
 `,
   faq: [

@@ -37,14 +37,19 @@ import {
   addonPrice,
   formatEuro,
 } from "../../shared/pricing";
+import {
+  ADDON_TERM_NOTE,
+  PRICE_CARD_NOTE,
+  PRICE_FULL,
+  PRICE_YEARLY,
+} from "../../shared/pricingText";
 import { SEO_INDUSTRIES } from "./landingPages";
 import { escapeHtml } from "./metaInjection";
 
-// Einzige Preisquelle ist shared/pricing.ts (wie in shared.tsx `Price`) —
-// Prerender und React-Landing dürfen hier nicht auseinanderlaufen
-// (Cloaking-Risiko, siehe Kopfkommentar).
-const PRICE_YEARLY = formatEuro(PRICING.base.yearly); // „19,90 €"
-const PRICE_MONTHLY = formatEuro(PRICING.base.monthly); // „24,90 €"
+// Einzige Preisquelle ist shared/pricing.ts, alle Preistexte kommen aus
+// shared/pricingText.ts (wie in shared.tsx `Price`) — Prerender und
+// React-Landing dürfen hier nicht auseinanderlaufen (Cloaking-Risiko, siehe
+// Kopfkommentar). Der Prerender zeigt den Ausgangszustand (Jahrestarif).
 
 // Muss den `.klarstart-live`-Tokens in
 // client/src/pages/landing-concepts/clear-flow.css entsprechen, sonst blitzt
@@ -264,12 +269,13 @@ export function generateHomePrerender(): string {
       <p style="margin:1rem 0 2rem;color:${C.ink};max-width:60ch"><strong>Die Basis ist schon dabei.</strong> Kein separates Hosting suchen. Kein SSL einrichten. Kein Honorar für jede Textänderung.</p>
       <div style="max-width:32rem;border:1px solid ${C.line};border-radius:16px;padding:1.5rem">
         <p style="font-size:2.25rem;font-weight:700;letter-spacing:-.02em;margin:0;color:${C.ink}">${PRICE_YEARLY}/Monat</p>
-        <p style="font-size:.875rem;color:${C.muted};margin:.25rem 0 1.25rem">Im Jahrestarif · Keine Einrichtungsgebühr. Bei monatlicher Abrechnung ${PRICE_MONTHLY}/Monat.</p>
+        <p style="font-size:.875rem;color:${C.muted};margin:.25rem 0 1.25rem">${escapeHtml(PRICE_CARD_NOTE.yearly)}</p>
         <ul style="margin:0;padding-left:1.25rem;color:${C.ink};line-height:2">
           ${PLAN_FEATURES.map(f => `<li>${escapeHtml(f)}</li>`).join("\n          ")}
         </ul>
         <p style="margin:1.25rem 0 0"><a href="/start?billing=yearly" style="display:inline-block;padding:.85rem 1.5rem;border-radius:999px;background:${C.volt};color:${C.voltInk};font-weight:700;text-decoration:none">Erst kostenlos ansehen</a></p>
-        <p style="font-size:.8rem;color:${C.muted};margin:1rem 0 0">Optional: Galerie ab ${formatEuro(PRICING.addon)}/Monat, Terminbuchung ${formatEuro(PRICING.addonBooking)}/Monat, KI-Chat ${formatEuro(PRICING.addonAiChat)}/Monat.</p>
+        <p style="font-size:.8rem;color:${C.muted};margin:1rem 0 0">Optional: Galerie ab ${formatEuro(PRICING.addon)}/Monat, Terminbuchung ${formatEuro(PRICING.addonBooking)}/Monat, KI-Chat ${formatEuro(PRICING.addonAiChat)}/Monat. ${escapeHtml(ADDON_TERM_NOTE)}</p>
+        <p style="font-size:.8rem;color:${C.muted};margin:.5rem 0 0">${escapeHtml(PRICE_FULL)}</p>
       </div>
     </section>
 

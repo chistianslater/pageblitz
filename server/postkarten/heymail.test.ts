@@ -1,3 +1,4 @@
+import { POSTCARD_LETTER_PRICE, POSTCARD_PRICE } from "../../shared/pricingText";
 import { describe, expect, test } from "vitest";
 import {
   anfrageKoerper,
@@ -495,9 +496,9 @@ describe("betriebOrt — höchstens 38 Zeichen, lieber kürzer als abgeschnitten
 
 
 describe("Preisangabe stimmt mit shared/pricing.ts überein (2026-10-13)", () => {
-  // 19,90 € gilt nur bei jährlicher Abrechnung, monatlich sind es 24,90 €.
-  // Ohne „ab" verspricht die Karte einen Preis, den der Monatskunde nicht
-  // bekommt.
+  // 19,90 € gilt nur im Jahrestarif mit 12 Monaten Laufzeit, monatlich
+  // kündbar sind es 24,90 €. Auf Druck gibt es keine Fußnote — jede
+  // Preisnennung trägt die Bedingung deshalb direkt am Preis.
   const basis = {
     name: "Haar Galerie",
     stadt: "Bocholt",
@@ -506,17 +507,19 @@ describe("Preisangabe stimmt mit shared/pricing.ts überein (2026-10-13)", () =>
   };
   const PREIS = formatEuro(PRICING.base.yearly);
 
-  test("jede Preisnennung jeder Variante ist „ab <Jahrespreis>“", () => {
+  test("jede Preisnennung ist der Jahrespreis mit Laufzeit und MwSt.", () => {
     for (const name of Object.keys(TEXT_VARIANTEN)) {
       const v = postkartenVariablen(basis, name as never);
       for (const feld of ["headline", "copy", "abbinder", "anschreiben"] as const) {
-        const nennungen = [...v[feld].matchAll(/(\S+)\s+(\d+,\d{2}\s?€)/g)];
-        for (const [, davor, preis] of nennungen) {
+        const nennungen = [...v[feld].matchAll(/(\d+,\d{2}\s?€)([^\n]*)/g)];
+        for (const [, preis, rest] of nennungen) {
           expect(preis.replace(/\s/g, " "), `${name}.${feld}`).toBe(PREIS);
-          expect(davor, `${name}.${feld}: „ab“ vor dem Preis`).toBe("ab");
+          expect(rest, `${name}.${feld}: Laufzeit am Preis`).toMatch(/12 Mon/);
+          expect(rest, `${name}.${feld}: MwSt. am Preis`).toMatch(/inkl\. MwSt/);
         }
       }
-      expect(`${v.copy} ${v.abbinder}`, name).toContain(`ab ${PREIS}`);
+      expect(v.abbinder, name).toContain(POSTCARD_PRICE);
+      expect(v.anschreiben, name).toContain(POSTCARD_LETTER_PRICE);
     }
   });
 });
