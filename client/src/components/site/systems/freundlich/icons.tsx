@@ -21,7 +21,21 @@ export type IconName =
   | "cup"
   | "truck"
   | "sun"
-  | "list";
+  | "list"
+  | "drop"
+  | "scissors"
+  | "paw"
+  | "heart"
+  | "check"
+  | "plus"
+  | "minus"
+  | "music"
+  | "book"
+  | "sparkle"
+  | "home"
+  | "cone"
+  | "people"
+  | "smile";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   phone: (
@@ -87,6 +101,60 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   list: <path d="M4 7h16M4 12h16M4 17h16" />,
+  drop: <path d="M12 3.5s-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11z" />,
+  scissors: (
+    <>
+      <circle cx="6.5" cy="6.5" r="2.5" />
+      <circle cx="6.5" cy="17.5" r="2.5" />
+      <path d="M8.6 8l11.4 9M8.6 16L20 7" />
+    </>
+  ),
+  paw: (
+    <>
+      <circle cx="7" cy="10" r="1.8" />
+      <circle cx="10.5" cy="6.5" r="1.8" />
+      <circle cx="14.5" cy="6.5" r="1.8" />
+      <circle cx="18" cy="10" r="1.8" />
+      <path d="M12 12c-2.8 0-5 3.6-5 5.6 0 1.6 1.4 2.4 2.8 2l2.2-.6 2.2.6c1.4.4 2.8-.4 2.8-2 0-2-2.2-5.6-5-5.6z" />
+    </>
+  ),
+  heart: (
+    <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />
+  ),
+  check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  plus: <path d="M12 5v14M5 12h14" />,
+  minus: <path d="M5 12h14" />,
+  music: (
+    <>
+      <path d="M9 17.5V5l10-2v12" />
+      <circle cx="6.5" cy="17.5" r="2.5" />
+      <circle cx="16.5" cy="15" r="2.5" />
+    </>
+  ),
+  book: <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" />,
+  sparkle: (
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
+  ),
+  home: <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" />,
+  cone: (
+    <>
+      <circle cx="12" cy="8" r="4.5" />
+      <path d="M7.8 10.5L12 21l4.2-10.5" />
+    </>
+  ),
+  people: (
+    <>
+      <circle cx="9" cy="8" r="3" />
+      <circle cx="16.5" cy="9" r="2.3" />
+      <path d="M3.5 19c.6-3.3 2.8-5 5.5-5s4.9 1.7 5.5 5M14.5 14.3c2.6-.4 4.9 1 5.5 4.2" />
+    </>
+  ),
+  smile: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8.5 14c1.8 2 5.2 2 7 0M9 9.5h.01M15 9.5h.01" />
+    </>
+  ),
 };
 
 export function Icon({ name }: { name: IconName }) {

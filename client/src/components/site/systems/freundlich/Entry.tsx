@@ -16,6 +16,7 @@ import {
   type FactPill,
 } from "./facts";
 import { Icon, wayIcon } from "./icons";
+import type { Surface } from "./content";
 
 /**
  * Freundlich-Einstieg nach Systemblatt 6 (Fotolage), 10 (Handy) und 16/18
@@ -189,22 +190,21 @@ function Buttons({ primary, second }: { primary: Action; second?: Action }) {
 }
 
 /** Wolkenkante (rein CSS, zwei versetzte Kreisreihen) zur nächsten Fläche. */
-export function Cloud({ tone }: { tone: "band" | "paper" | "deep" }) {
+export function Cloud({ tone }: { tone: Surface | "deep" }) {
   return <span className={`fr-cloud fr-cloud--${tone}`} aria-hidden="true" />;
 }
 
 /**
- * `nextBand`: die erste Fläche nach dem Einstieg liegt auf dem Band — die
- * Wolke der Pastellfläche nimmt dann die Bandfarbe statt Papier (keine
- * Kante). Nach dem Foto-Einstieg liegt die erste Fläche immer auf dem Band
- * (entryCss), die Wolke ist dort immer bandfarben.
+ * `next`: Fläche des ersten Kapitels nach dem Einstieg (surfacePlan) — die
+ * Wolke nimmt ihre Farbe an (keine Kante). Nach dem Foto-Einstieg ist das
+ * erste Kapitel nie Papier (surfacePlan macht Papier dort zum Band).
  */
 export function FreundlichEntry({
   hero,
-  nextBand = false,
+  next = "paper",
 }: {
   hero: SectionOf<"hero">;
-  nextBand?: boolean;
+  next?: Surface;
 }) {
   const { data, blueprint, now } = useSystem();
   const variant = entryVariant(data, hero);
@@ -230,7 +230,7 @@ export function FreundlichEntry({
             <Pills pills={pills} label="Auf einen Blick" />
           </div>
         </div>
-        <Cloud tone="band" />
+        <Cloud tone={next === "paper" ? "band" : next} />
       </section>
     );
 
@@ -252,7 +252,7 @@ export function FreundlichEntry({
           </figure>
         )}
       </div>
-      <Cloud tone={nextBand ? "band" : "paper"} />
+      <Cloud tone={next} />
     </section>
   );
 }

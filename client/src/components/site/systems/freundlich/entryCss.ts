@@ -73,8 +73,6 @@ export const ENTRY_CSS = `
 .pb-freundlich .fr-heroimg .fr-fact:nth-child(3){--fr-pbg:var(--sys-tint-4-bg)}
 /* Pille über dem Titel auf Papier: Pastell 3 (Systemblatt 10 Mitte) */
 .pb-freundlich .fr-entry--photo .fr-pill--top{--fr-pbg:var(--sys-tint-3-bg)}
-/* Erste Fläche nach dem Foto-Einstieg: Band (die Wolke führt dorthin) */
-.pb-freundlich .fr-entry--photo+.fr-sec{background:var(--sys-band);padding-bottom:var(--sys-space-section)}
 
 /* tint: schwaches / kein Foto — Pastell 1, Kopf liegt mit darauf */
 .pb-freundlich .fr-top--tint .fr-head,.pb-freundlich .fr-entry--tint{background:var(--sys-tint-1-bg);color:var(--sys-tint-1-ink);

@@ -9,6 +9,7 @@ import {
   pusteblumeDoc,
   render,
   withContact,
+  without,
   type Doc,
 } from "./testkit";
 
@@ -44,13 +45,17 @@ describe("Einstieg nach Fotolage", () => {
     expect(entry).toContain("Heute bis 18 Uhr");
     expect(entry).toContain("4,9 von 5 Sternen bei 86 Google-Bewertungen");
   });
-  test("schwaches Foto: Pastellfläche, kleines Foto, Wolke in Papier", () => {
+  test("schwaches Foto: Pastellfläche, kleines Foto, Wolke in der Farbe der Karte (Band)", () => {
     const html = render(gelatoDoc());
     expect(html).toContain('class="fr-top fr-top--tint"');
     const entry = entryOf(html);
     expect(entry).toContain('class="fr-smallpic"');
     expect(entry.match(/<img /g)).toHaveLength(1);
-    expect(entry).toContain("fr-cloud--paper");
+    expect(entry).toContain("fr-cloud--band");
+    // Ohne Karte folgt die Galerie auf Papier: Wolke in Papier.
+    expect(entryOf(render(without(gelatoDoc(), "menu")))).toContain(
+      "fr-cloud--paper"
+    );
   });
   test("Wolke der Pastellfläche in der Farbe der nächsten Fläche", () => {
     // Pusteblume: danach kommen die Leistungen auf dem Band.
@@ -127,7 +132,9 @@ describe("Kopf, Leiste, Fuß", () => {
     expect(FREUNDLICH_CSS).toMatch(/@media \(min-width:80rem\)\{[^@]*\.fr-menu--main\{display:none\}/);
   });
   test("bis zu fünf Ziele: alle in der Zeile, kein „Mehr“", () => {
-    const html = render(pusteblumeDoc());
+    const html = render(
+      without(pusteblumeDoc(), "stats", "process", "team", "cta")
+    );
     const nav = html.match(/<nav class="fr-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
     expect((nav.match(/<a /g) ?? []).length).toBeLessThanOrEqual(5);
     expect(html).toContain('class="fr-nav"');

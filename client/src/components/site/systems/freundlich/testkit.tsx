@@ -105,6 +105,31 @@ export function withoutPhotos(doc: Doc): Doc {
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr"] as const;
 
+/** Abschnitte in fester Reihenfolge: Einstieg + Kontakt aus dem Dokument, dazwischen `middle`, danach `after`. */
+function arrange(doc: Doc, middle: Sec[], after: Sec[] = []): Doc {
+  const hero = doc.sections.find(s => s.type === "hero")!;
+  const contact = doc.sections.find(s => s.type === "contact")!;
+  return { ...doc, sections: [hero, ...middle, contact, ...after] };
+}
+
+const voices = (...items: [string, string][]) => ({
+  type: "testimonials" as const,
+  headline: "Was andere sagen",
+  items: items.map(([author, text]) => ({ author, text, rating: 5 })),
+});
+
+const faq = (...items: [string, string][]) => ({
+  type: "faq" as const,
+  headline: "Gut zu wissen",
+  items: items.map(([question, answer]) => ({ question, answer })),
+});
+
+const gallery = (urls: readonly string[], alt: string) => ({
+  type: "gallery" as const,
+  headline: "Aus dem Alltag",
+  images: urls.slice(0, 3).map((url, i) => ({ url, alt: `${alt} ${i + 1}` })),
+});
+
 /** Systemblatt 10 links: Kita Pusteblume, kein Foto (Wald). */
 export function pusteblumeDoc(palette = "wald"): Doc {
   let doc: Doc = {
@@ -137,6 +162,61 @@ export function pusteblumeDoc(palette = "wald"): Doc {
     ctaText: "Platz anfragen",
     ctaHref: undefined,
   }));
+  doc = arrange(
+    doc,
+    [
+      {
+        type: "services",
+        headline: "Ein Tag bei uns",
+        intro:
+          "Feste Abläufe geben Sicherheit. Dazwischen ist viel Platz zum Spielen.",
+        items: [
+          { title: "Eingewöhnung", description: "Nach dem Berliner Modell, zwei bis drei Wochen, immer mit Mama oder Papa." },
+          { title: "Tagesablauf", description: "Frühstück um 8:30, Morgenkreis, Spielen, Mittag um 11:30, Schlafen." },
+          { title: "Essen", description: "Bio-Mittagessen aus der Küche nebenan, vegetarisch an drei Tagen." },
+          { title: "Draußen", description: "Jeden Tag in den Garten, bei jedem Wetter. Matschhosen haben wir." },
+        ],
+      },
+      {
+        type: "stats",
+        headline: "Wir sind klein, damit jedes Kind gesehen wird.",
+        items: [
+          { value: "12", label: "Plätze, nie mehr" },
+          { value: "1:3", label: "Betreuung im Alltag" },
+          { value: "2011", label: "eröffnet in Findorff" },
+        ],
+      },
+      {
+        type: "process",
+        headline: "So läuft es ab",
+        steps: [
+          { title: "Kennenlernen", text: "Ihr schaut euch um, wir erzählen vom Alltag. Kinder dürfen mit." },
+          { title: "Anmeldung", text: "Ihr bekommt Bescheid, ob ein Platz frei wird, und den Vertrag." },
+          { title: "Eingewöhnung", text: "Mit euch, in kleinen Schritten, bis euer Kind sich wohlfühlt." },
+        ],
+      },
+      {
+        type: "team",
+        headline: "Wer bei uns ist",
+        members: [
+          { name: "Anke Bremer", role: "Leitung, Erzieherin" },
+          { name: "Tomás Reyes", role: "Erzieher" },
+          { name: "Lea Wichmann", role: "Kinderpflegerin" },
+        ],
+      },
+      voices(
+        ["Jana K.", "Nach drei Wochen wollte unsere Tochter am liebsten dort übernachten."],
+        ["Mehmet und Sara", "Klein, herzlich und immer ehrlich zu uns Eltern."],
+        ["Familie Ott", "Die Eingewöhnung war entspannter als gedacht."]
+      ),
+      faq(
+        ["Wie läuft die Eingewöhnung?", "Nach dem Berliner Modell: die ersten Tage eine Stunde mit euch, dann werden die Zeiten länger. Rechnet mit zwei bis drei Wochen."],
+        ["Was kostet ein Platz?", "Das richtet sich nach dem Einkommen und der Betreuungszeit. Wir rechnen es euch gern aus."],
+        ["Was muss mitgebracht werden?", "Wechselkleidung, Hausschuhe, Matschhose und ein Kuscheltier."]
+      ),
+    ] as Sec[],
+    [{ type: "cta", headline: "Ein Platz für euer Kind?", ctaText: "Platz anfragen" }] as Sec[]
+  );
   return withoutPhotos(withComposition(doc, "portrait"));
 }
 
@@ -174,6 +254,44 @@ export function fellfreundeDoc(palette = "himmel"): Doc {
     ctaHref: undefined,
     imageUrl: INDUSTRY_IMAGES.hundesalon.hero[0],
   }));
+  doc = arrange(
+    doc,
+    [
+      {
+        type: "services",
+        headline: "Was wir für euren Hund tun",
+        intro:
+          "Preise je nach Größe und Fell. Am Telefon sagen wir euch den genauen Preis.",
+        items: [
+          { title: "Waschen und Föhnen", description: "Mildes Shampoo, warm geföhnt, Ohren sauber.", price: "ab 35 €" },
+          { title: "Schneiden", description: "Rassetypisch oder pflegeleicht, ganz wie ihr wollt.", price: "ab 55 €" },
+          { title: "Krallen und Pfoten", description: "Kürzen, Fell zwischen den Ballen, Pfotenbalsam.", price: "12 €" },
+          { title: "Welpen-Kennenlernen", description: "Zwanzig Minuten Salon schnuppern, ohne Schere.", price: "20 €" },
+        ],
+      },
+      {
+        type: "process",
+        headline: "So läuft es ab",
+        steps: [
+          { title: "Ankommen und schnuppern", text: "Euer Hund lernt uns kennen, bevor irgendwas passiert." },
+          { title: "Pflege in Ruhe", text: "Pausen, wenn er sie braucht. Keine Box, kein Zeitdruck." },
+          { title: "Abholen mit Foto", text: "Ihr bekommt ein Foto, sobald er fertig und trocken ist." },
+        ],
+      },
+      gallery(INDUSTRY_IMAGES.hundesalon.gallery ?? [], "Hund im Salon"),
+      voices(
+        ["Katrin L.", "Unser ängstlicher Balu geht inzwischen freiwillig rein. Das sagt alles."],
+        ["Thomas R.", "Pudelschnitt wie gewünscht, und sie haben sich Zeit genommen."],
+        ["Anja B.", "Endlich ein Salon ohne Käfige."]
+      ),
+      faq(
+        ["Mein Hund ist ängstlich. Geht das?", "Ja. Wir planen mehr Zeit ein, machen Pausen und brechen ab, wenn es nicht geht. Das Kennenlernen kostet nichts extra."],
+        ["Wie lange dauert es?", "Je nach Fell eine bis drei Stunden. Wir rufen an, wenn er fertig ist."],
+        ["Muss ich dableiben?", "Nein. Ihr könnt ihn bringen und später abholen."]
+      ),
+    ] as Sec[],
+    [{ type: "cta", headline: "Termin für euren Hund?", ctaText: "Termin anfragen" }] as Sec[]
+  );
   return withComposition(doc, "stage");
 }
 
@@ -209,5 +327,38 @@ export function gelatoDoc(palette = "beere"): Doc {
     ctaHref: undefined,
     imageUrl: INDUSTRY_IMAGES.eisdiele.hero[0],
   }));
+  doc = { ...doc, addOns: { ...doc.addOns, menu: true } };
+  doc = arrange(
+    doc,
+    [
+      {
+        type: "menu",
+        headline: "Was es bei uns gibt",
+        categories: [
+          {
+            name: "Eis und mehr",
+            items: [
+              { name: "Eis in der Waffel", description: "Zwanzig Sorten, mindestens drei vegan.", price: "1,90 € je Kugel" },
+              { name: "Becher", description: "Erdbeer, Spaghetti-Eis, Joghurt-Mango.", price: "ab 6,50 €" },
+              { name: "Eistorten", description: "Auf Bestellung, drei Tage vorher.", price: "ab 32 €" },
+              { name: "Kaffee", description: "Siebträger, Affogato mit einer Kugel.", price: "ab 2,40 €" },
+            ],
+          },
+        ],
+      },
+      gallery(INDUSTRY_IMAGES.eisdiele.gallery ?? [], "Eis"),
+      voices(
+        ["Lukas F.", "Das Pistazieneis schmeckt wie in Bologna, ehrlich."],
+        ["Selin Y.", "Netter Service, auch wenn die Schlange lang ist."],
+        ["Maren und Ole", "Die vegane Schoko ist besser als die normale."]
+      ),
+      faq(
+        ["Habt ihr bei Regen geöffnet?", "Ja, drinnen sind zwanzig Plätze. Nur bei Sturm schließen wir die Terrasse."],
+        ["Gibt es laktosefreie Sorten?", "Ja, alle Sorbets und drei Sorten auf Hafermilch."],
+        ["Kann ich Eistorten bestellen?", "Ja, drei Tage vorher per Telefon oder im Laden."]
+      ),
+    ] as Sec[],
+    [{ type: "cta", headline: "Bis gleich am Ufer.", ctaText: "Route planen" }] as Sec[]
+  );
   return withComposition(doc, "portrait");
 }

@@ -1,28 +1,38 @@
 import React from "react";
-import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { useSystem } from "../SystemContext";
-import {
-  addressLine,
-  legalParts,
-  mailHref,
-  mapsHref,
-  newTabIfMaps,
-  systemHref,
-  type SystemSection,
-} from "../shared";
-import { telHref } from "../shared/heroFacts";
-import { hoursRows } from "../shared/hours";
+import { legalParts, type SystemSection } from "../shared";
 import { FreundlichEntry } from "./Entry";
-import { freundlichActions, monogramOf } from "./facts";
-import { Icon, wayIcon } from "./icons";
+import { cloudAt, titleSplit, type Surface } from "./content";
+import { Icon } from "./icons";
+import {
+  FreundlichPriced,
+  FreundlichProcess,
+  FreundlichServices,
+  FreundlichStats,
+  FreundlichUsp,
+} from "./Offer";
+import {
+  FreundlichAbout,
+  FreundlichGallery,
+  FreundlichPartners,
+  FreundlichQuote,
+  FreundlichStory,
+  FreundlichTeam,
+  FreundlichVoices,
+} from "./People";
+import { FreundlichContact, FreundlichCta, FreundlichFaq } from "./Visit";
 
 /**
- * Abschnitte von Freundlich — F2: Einstieg fertig, die übrigen Abschnitte
- * in einer schlichten Übergangsfassung (Titel, Inhalt nur aus Daten,
- * Pastellkarten). F3 baut sie nach Systemblatt 7/8/11–18 aus.
+ * Abschnitte von Freundlich nach Systemblatt 7/8/11–18 (Anker Bright Path):
+ * Einstieg (Entry), Angebot (Offer: Leistungen, Karte/Preise, Ablauf,
+ * Zahlen, Vorteile), Menschen (People: Über uns, Team, Galerie, Stimmen,
+ * Geschichte, Leitsatz, Partner), Besuch (Visit: Gut zu wissen, Zeiten +
+ * „Besuch uns", Abschluss-Band). Jedes Kapitel: h2 in zwei Tönen, Fläche
+ * Papier/Band/Pastell, Wolke beim Wechsel auf eine gefüllte Fläche.
+ * Kein Block „Wo steht ihr gerade?" (Betreiber-Entscheid 2026-10-13).
  */
 
 export type FreundlichSection = SystemSection;
@@ -30,18 +40,18 @@ export type FreundlichSection = SystemSection;
 const LABELS: Partial<Record<FreundlichSection["type"], string>> = {
   services: "Unser Angebot",
   process: "So läuft es ab",
-  pricelist: "Preise",
-  menu: "Unsere Karte",
+  pricelist: "Unsere Preise",
+  menu: "Was es bei uns gibt",
   team: "Wer bei uns ist",
   about: "Über uns",
-  gallery: "Einblicke",
+  gallery: "Aus dem Alltag",
   testimonials: "Was andere sagen",
   faq: "Gut zu wissen",
   contact: "Besuch uns",
   story: "Unsere Geschichte",
   usp: "Darauf könnt ihr zählen",
   stats: "In Zahlen",
-  partners: "Partner",
+  partners: "Mit wem wir arbeiten",
   quote: "Leitsatz",
   cta: "Meldet euch",
 };
@@ -59,199 +69,107 @@ export function chapterTitle(
   );
 }
 
+/** Lage eines Kapitels: Fläche und Wolke am oberen Rand. */
+export type Place = { surface: Surface; cloud: boolean };
+export const PAPER: Place = { surface: "paper", cloud: false };
+
+/** h2 in zwei Tönen (titleSplit); der Akzentteil bleibt im Satz. */
+export function TwoTone({ text }: { text: string }) {
+  const { lead, rest } = titleSplit(text);
+  if (!rest) return <>{rich(lead)}</>;
+  return (
+    <>
+      {rich(lead)} <span className="fr-acc">{rest}</span>
+    </>
+  );
+}
+
 /**
- * Abschnitte auf dem Band (Wechselfläche). Eine Quelle für die Kapitel und
- * für die Wolke des Einstiegs, die in die nächste Fläche führt.
+ * Ein Kapitel: h2 (zwei Töne, oder nur für Vorleser), Einleitung, Inhalt.
+ * `layout`: „split" = am Desktop Kopf links, Inhalt rechts bzw. Einleitung
+ * rechts neben dem Titel (Systemblatt 16/17); „center" = Kopf mittig.
+ * Klasse `fr-sec--<typ>` (Speisekarte: `karte`), Fläche `fr-sec--<fläche>`.
  */
-export const BAND_TYPES: ReadonlySet<FreundlichSection["type"]> = new Set([
-  "services",
-  "team",
-  "testimonials",
-  "cta",
-]);
-
-/** Pastell je Eintrag (1–4 im Wechsel). */
-const tint = (i: number) => `fr-tint-${(i % 4) + 1}`;
-
-/** Ein Kapitel: h2, Einleitung, Inhalt. `band`: Wechselfläche. */
 export function FreundlichChapter({
   type,
   own,
+  title,
   intro,
+  place = PAPER,
+  layout = "stack",
+  hiddenTitle = false,
   children,
 }: {
   type: FreundlichSection["type"];
   own?: string;
+  title?: string;
   intro?: string;
+  place?: Place;
+  layout?: "stack" | "split" | "aside" | "center";
+  hiddenTitle?: boolean;
   children?: React.ReactNode;
 }) {
   const { blueprint } = useSystem();
-  const band = BAND_TYPES.has(type);
   const id = SECTION_ANCHORS[type];
   const headingId = `${id}-titel`;
   const name = type === "menu" ? "karte" : type;
+  const text = title ?? chapterTitle(type, own, blueprint);
+  const fill = place.surface !== "paper";
+  const head = (
+    <div className={`fr-chead fr-chead--${layout}`}>
+      <h2 className={hiddenTitle ? "fr-sr" : "fr-h2"} id={headingId}>
+        <TwoTone text={text} />
+      </h2>
+      {intro && <p className="fr-intro">{rich(intro)}</p>}
+    </div>
+  );
   return (
     <section
       id={id}
-      className={`fr-sec fr-sec--${name}${band ? " fr-sec--band" : ""}`}
+      className={`fr-sec fr-sec--${name} fr-sec--${place.surface}${fill ? " fr-sec--fill" : ""}`}
       aria-labelledby={headingId}
     >
-      <div className="fr-wrap">
-        <h2 className="fr-h2" id={headingId}>
-          {rich(chapterTitle(type, own, blueprint))}
-        </h2>
-        {intro && <p className="fr-intro">{rich(intro)}</p>}
-        {children}
+      {place.cloud && fill && (
+        <span className={`fr-cloud fr-cloud--top fr-cloud--${place.surface}`} aria-hidden="true" />
+      )}
+      <div className={layout === "aside" ? "fr-wrap fr-aside" : "fr-wrap"}>
+        {layout === "aside" ? (
+          <>
+            {head}
+            <div className="fr-aside-body">{children}</div>
+          </>
+        ) : (
+          <>
+            {head}
+            {children}
+          </>
+        )}
       </div>
     </section>
   );
 }
 
-function Cards({
-  items,
+/** Gestrichelte Karte „Nur in deiner Vorschau" — nie auf der Live-Seite. */
+export function FreundlichPreviewCard({
+  title,
+  text,
 }: {
-  items: { title: string; text?: string; meta?: string }[];
+  title: string;
+  text: string;
 }) {
   return (
-    <ul className="fr-cards">
-      {items.map((item, i) => (
-        <li key={`${item.title}-${i}`} className={`fr-card ${tint(i)}`}>
-          {item.meta && <span className="fr-price">{item.meta}</span>}
-          <h3 className="fr-h3">{rich(item.title)}</h3>
-          {item.text && <p>{rich(item.text)}</p>}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Priced({ section }: { section: SectionOf<"menu"> | SectionOf<"pricelist"> }) {
-  return (
-    <FreundlichChapter type={section.type} own={section.headline}>
-      {section.categories
-        .filter(c => c.items.length > 0)
-        .map(c => (
-          <div key={c.name} className="fr-priced">
-            <h3 className="fr-h3">{rich(c.name)}</h3>
-            <ul>
-              {c.items.map((item, i) => (
-                <li key={`${item.name}-${i}`}>
-                  <span>
-                    {rich(item.name)}
-                    {item.description && (
-                      <small>{rich(item.description)}</small>
-                    )}
-                  </span>
-                  <b>{item.price}</b>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-    </FreundlichChapter>
-  );
-}
-
-function Contact({ section }: { section: SectionOf<"contact"> }) {
-  const { now, contactIsland } = useSystem();
-  const tel = telHref(section.phone);
-  const mail = mailHref(section.email);
-  const address = addressLine(section);
-  const rows = hoursRows(section.openingHours, now);
-  return (
-    <FreundlichChapter type="contact" own={section.headline}>
-      <div className="fr-visit">
-        {rows.length > 0 && (
-          <div className={`fr-card ${tint(0)}`}>
-            <h3 className="fr-h3">Öffnungszeiten</h3>
-            <dl className="fr-hours">
-              {rows.map(r => (
-                <div key={r.label} className={r.today ? "fr-today" : undefined}>
-                  <dt>{r.label}</dt>
-                  <dd>{r.lines.join(", ")}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        )}
-        {(address || tel || mail) && (
-          <div className={`fr-card ${tint(2)}`}>
-            <h3 className="fr-h3">So findet ihr uns</h3>
-            {section.street && (
-              <address>
-                {section.street}
-                <br />
-                {[section.zip, section.city].filter(Boolean).join(" ")}
-              </address>
-            )}
-            <ul className="fr-ways">
-              {tel && section.phone && (
-                <li>
-                  <a href={tel}>
-                    <Icon name="phone" />
-                    {section.phone.trim()}
-                  </a>
-                </li>
-              )}
-              {mail && section.email && (
-                <li>
-                  <a href={mail}>
-                    <Icon name="mail" />
-                    {section.email.trim()}
-                  </a>
-                </li>
-              )}
-              {address && (
-                <li>
-                  <a href={mapsHref(address)} {...newTabIfMaps(mapsHref(address))}>
-                    <Icon name="route" />
-                    Route planen
-                  </a>
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
-      </div>
-      {contactIsland && <h3 className="fr-form-title">Nachricht schreiben</h3>}
-    </FreundlichChapter>
-  );
-}
-
-function Cta({
-  section,
-  anchorPrefix,
-}: {
-  section: SectionOf<"cta">;
-  anchorPrefix: string;
-}) {
-  const { data, blueprint } = useSystem();
-  const own = systemHref(section.ctaHref, data, anchorPrefix);
-  const { primary } = freundlichActions(data, blueprint, anchorPrefix);
-  const target = own
-    ? { label: section.ctaText.trim() || primary?.label || "", href: own }
-    : primary;
-  return (
-    <FreundlichChapter type="cta" own={section.headline}>
-      {target && (
-        <div className="fr-ctas fr-ctas--start">
-          <a
-            className="fr-btn fr-btn--p"
-            href={target.href}
-            {...newTabIfMaps(target.href)}
-          >
-            <Icon name={wayIcon(target.href)} />
-            {target.href.startsWith("tel:") ? "Anrufen" : target.label}
-          </a>
-        </div>
-      )}
-    </FreundlichChapter>
+    <aside className="fr-slot" aria-label={title}>
+      <p className="fr-slot-kicker">Nur in deiner Vorschau</p>
+      <h3 className="fr-h3">{title}</h3>
+      {text && <p className="fr-slot-text">{text}</p>}
+    </aside>
   );
 }
 
 /**
- * Unter- und Rechtsseiten-Kopf: Rückweg zur Startseite, Name gedämpft,
- * Titel als einziges h1 (`secondary` = weiterer Kopf als h2).
+ * Unter- und Rechtsseiten-Kopf (Systemblatt 8 „Unterseite"): „Zur
+ * Startseite" zuerst, Name gedämpft, Titel als einziges h1 in h2-Größe,
+ * keine Wolke, keine Pastelle (`secondary` = weiterer Kopf als h2).
  */
 export function FreundlichPageHead({
   title,
@@ -310,7 +228,8 @@ export function FreundlichPageHead({
 }
 
 /**
- * Rechtsseite im Freundlich-Rahmen (legalParts).
+ * Rechtsseite im Freundlich-Rahmen (legalParts): Text 18 px in Tinte bzw.
+ * Neben-Grau (≥ 7:1 auf Papier), Links unterstrichen in Akzent.
  * SICHERHEIT: `html` stammt ausschließlich aus dem legalGenerator
  * (renderLegalPage in server/ssr/renderSite.tsx).
  */
@@ -344,169 +263,74 @@ export function FreundlichLegal({
 /**
  * Abschnitts-Weiche (exhaustiv über alle SectionV2-/PageSection-Typen).
  * `anchorPrefix`: auf Unter- und Rechtsseiten zeigen Anker zur Startseite.
+ * `plan`: Fläche je Abschnitt (surfacePlan); daraus Wolke und die Farbe
+ * der Einstiegs-Wolke (nächste Fläche).
  */
 export function renderFreundlichSection(
   section: FreundlichSection,
   sections: readonly FreundlichSection[],
   anchorPrefix = "",
-  back?: string
+  back?: string,
+  plan: readonly Surface[] = []
 ): React.ReactNode {
+  const i = sections.indexOf(section);
+  const place: Place = {
+    surface: plan[i] ?? "paper",
+    cloud: cloudAt(sections, plan, i),
+  };
   switch (section.type) {
-    case "hero": {
-      const next = sections[sections.indexOf(section) + 1];
-      return (
-        <FreundlichEntry
-          hero={section}
-          nextBand={Boolean(next && BAND_TYPES.has(next.type))}
-        />
-      );
-    }
+    case "hero":
+      return <FreundlichEntry hero={section} next={plan[i + 1] ?? "paper"} />;
     case "services":
       return (
-        <FreundlichChapter type="services" own={section.headline} intro={section.intro}>
-          <Cards
-            items={section.items.map(i => ({
-              title: i.title,
-              text: i.description,
-              meta: i.price,
-            }))}
-          />
-        </FreundlichChapter>
+        <FreundlichServices
+          section={section}
+          sections={sections}
+          anchorPrefix={anchorPrefix}
+          place={place}
+        />
       );
     case "pricelist":
     case "menu":
-      return <Priced section={section} />;
+      return (
+        <FreundlichPriced
+          section={section}
+          anchorPrefix={anchorPrefix}
+          place={place}
+        />
+      );
     case "process":
-      return (
-        <FreundlichChapter type="process" own={section.headline}>
-          <ol className="fr-steps">
-            {section.steps.map((s, i) => (
-              <li key={`${s.title}-${i}`} className={tint(i)}>
-                <span className="fr-tile" aria-hidden="true">
-                  {i + 1}
-                </span>
-                <h3 className="fr-h3">{rich(s.title)}</h3>
-                {s.text && <p>{rich(s.text)}</p>}
-              </li>
-            ))}
-          </ol>
-        </FreundlichChapter>
-      );
+      return <FreundlichProcess section={section} place={place} />;
     case "stats":
-      return (
-        <FreundlichChapter type="stats" own={section.headline}>
-          <dl className="fr-stats">
-            {section.items.map((s, i) => (
-              <div key={`${s.label}-${i}`}>
-                <dt>{rich(s.label)}</dt>
-                <dd>{s.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </FreundlichChapter>
-      );
+      return <FreundlichStats section={section} place={place} />;
     case "usp":
-      return (
-        <FreundlichChapter type="usp" own={section.headline}>
-          <Cards items={section.items.map(i => ({ title: i.title, text: i.text }))} />
-        </FreundlichChapter>
-      );
+      return <FreundlichUsp section={section} place={place} />;
     case "team":
-      return (
-        <FreundlichChapter type="team" own={section.headline}>
-          <ul className="fr-cards">
-            {section.members.map((m, i) => (
-              <li key={`${m.name}-${i}`} className={`fr-card fr-person ${tint(i)}`}>
-                <span className="fr-avatar" aria-hidden="true">
-                  {monogramOf(m.name)}
-                </span>
-                <h3 className="fr-h3">{m.name}</h3>
-                {m.role && <p>{m.role}</p>}
-              </li>
-            ))}
-          </ul>
-        </FreundlichChapter>
-      );
+      return <FreundlichTeam section={section} place={place} />;
     case "about":
-      return (
-        <FreundlichChapter type="about" own={section.headline}>
-          <div className="fr-about">
-            <p className="fr-body">{rich(section.body)}</p>
-            {section.imageUrl && (
-              <figure className="fr-photo">
-                <img src={section.imageUrl} alt="" loading="lazy" width={900} height={675} />
-              </figure>
-            )}
-          </div>
-        </FreundlichChapter>
-      );
+      return <FreundlichAbout section={section} place={place} />;
     case "gallery":
-      return section.images.length > 0 ? (
-        <FreundlichChapter type="gallery" own={section.headline}>
-          <ul className="fr-gallery">
-            {section.images.map((img, i) => (
-              <li key={`${img.url}-${i}`}>
-                <img src={img.url} alt={img.alt} loading="lazy" width={800} height={800} />
-              </li>
-            ))}
-          </ul>
-        </FreundlichChapter>
-      ) : null;
+      return <FreundlichGallery section={section} place={place} />;
     case "testimonials":
-      return (
-        <FreundlichChapter type="testimonials" own={section.headline}>
-          <ul className="fr-cards">
-            {section.items.slice(0, 3).map((t, i) => (
-              <li key={`${t.author}-${i}`} className={`fr-card ${tint(i)}`}>
-                <blockquote>„{rich(t.text)}“</blockquote>
-                <p className="fr-who">{t.author}</p>
-              </li>
-            ))}
-          </ul>
-        </FreundlichChapter>
-      );
+      return <FreundlichVoices section={section} place={place} />;
     case "story":
-      return (
-        <FreundlichChapter type="story" own={section.headline}>
-          <p className="fr-body">{rich(section.body)}</p>
-        </FreundlichChapter>
-      );
+      return <FreundlichStory section={section} place={place} />;
     case "quote":
-      return (
-        <FreundlichChapter type="quote">
-          <blockquote className="fr-quote">
-            {rich(section.text)}
-            {section.author && <footer>{section.author}</footer>}
-          </blockquote>
-        </FreundlichChapter>
-      );
+      return <FreundlichQuote section={section} place={place} />;
     case "partners":
-      return (
-        <FreundlichChapter type="partners" own={section.headline}>
-          <ul className="fr-partners">
-            {section.items.map((p, i) => (
-              <li key={`${p.name}-${i}`}>{p.name}</li>
-            ))}
-          </ul>
-        </FreundlichChapter>
-      );
+      return <FreundlichPartners section={section} place={place} />;
     case "faq":
-      return (
-        <FreundlichChapter type="faq" own={section.headline}>
-          <div className="fr-faq">
-            {section.items.map((q, i) => (
-              <details key={`${q.question}-${i}`}>
-                <summary>{rich(q.question)}</summary>
-                <p>{rich(q.answer)}</p>
-              </details>
-            ))}
-          </div>
-        </FreundlichChapter>
-      );
+      return <FreundlichFaq section={section} place={place} />;
     case "contact":
-      return <Contact section={section} />;
+      return <FreundlichContact section={section} place={place} />;
     case "cta":
-      return <Cta section={section} anchorPrefix={anchorPrefix} />;
+      return (
+        <FreundlichCta
+          section={section}
+          anchorPrefix={anchorPrefix}
+          place={place}
+        />
+      );
     case "pageHeader":
       // Genau ein h1 je Seite: nur der erste pageHeader trägt den Seitentitel.
       return (
@@ -526,3 +350,4 @@ export function renderFreundlichSection(
     }
   }
 }
+

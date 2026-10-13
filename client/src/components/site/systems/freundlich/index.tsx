@@ -3,8 +3,8 @@ import type { SiteModule } from "../../siteModule";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
 import {
-  claimPhotos,
   galleryIsFree,
+  previewSlotAnchors,
   shownNavItems,
   systemShows,
 } from "../shared";
@@ -22,6 +22,8 @@ import {
   type FreundlichSection,
 } from "./sections";
 import { entryVariant } from "./facts";
+import { freundlichPhotos, surfacePlan } from "./content";
+import { FreundlichMenuSlot, FreundlichTeamSlot } from "./Offer";
 
 type Shown = Parameters<typeof systemShows>[0];
 
@@ -48,21 +50,6 @@ export function freundlichShows(s: Shown): boolean {
   }
 }
 
-/**
- * Jedes Foto einmal je Seite (claimPhotos): Einstieg → Über uns →
- * Galerie (frei: drei Fotos, die die Seite noch nicht zeigt). Eine danach
- * leere Galerie entfällt.
- */
-export function freundlichPhotos<T extends FreundlichSection>(
-  sections: readonly T[],
-  hidden: readonly string[],
-  freeGallery: boolean
-): T[] {
-  return claimPhotos(sections, hidden, undefined, freeGallery).list.filter(
-    s => s.type !== "gallery" || s.images.length > 0
-  );
-}
-
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
   items.map(item =>
@@ -75,7 +62,8 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * jedes Foto einmal, Kopf/Fuß/Leiste auf allen Seiten. Liegt der Einstieg
  * auf der Pastellfläche (schwaches oder kein Foto), steht der Kopf mit
  * darauf. Gestalt nach docs/designsysteme/freundlich/systemblatt.html
- * (Anker Bright Path). Vorschau-Platzhalter baut F3.
+ * (Anker Bright Path). Vorschau-Platzhalter (Karte, Team) nur auf der
+ * Startseite und nur in der Vorschau.
  */
 export const FREUNDLICH_MODULE: SiteModule = {
   id: "freundlich",
@@ -89,6 +77,7 @@ export const FREUNDLICH_MODULE: SiteModule = {
       legal ? [] : (sections ?? orderedSections(data)).filter(freundlichShows)
     );
     const sub = Boolean(sections || legal);
+    const slots = sub ? {} : previewSlotAnchors(list);
     const anchorPrefix = sub ? basePath || "/" : "";
     const back = sub ? basePath || "/" : undefined;
     const homeAll = orderedSections(home);
@@ -104,10 +93,10 @@ export const FREUNDLICH_MODULE: SiteModule = {
     const ownHead =
       pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
     const first = list[0];
-    const tintTop =
-      !sub &&
-      first?.type === "hero" &&
-      entryVariant(home, first) !== "photo";
+    const photoEntry =
+      !sub && first?.type === "hero" && entryVariant(home, first) === "photo";
+    const tintTop = !sub && first?.type === "hero" && !photoEntry;
+    const plan = surfacePlan(list, photoEntry);
     return (
       <>
         <div className={tintTop ? "fr-top fr-top--tint" : "fr-top"}>
@@ -119,7 +108,9 @@ export const FREUNDLICH_MODULE: SiteModule = {
             {ownHead && <FreundlichPageHead title={pageTitle} back={back} />}
             {list.map((s, i) => (
               <React.Fragment key={`${s.type}-${i}`}>
-                {renderFreundlichSection(s, list, anchorPrefix, back)}
+                {renderFreundlichSection(s, list, anchorPrefix, back, plan)}
+                {slots.menu === i && <FreundlichMenuSlot sections={list} />}
+                {slots.team === i && <FreundlichTeamSlot sections={list} />}
               </React.Fragment>
             ))}
           </main>
