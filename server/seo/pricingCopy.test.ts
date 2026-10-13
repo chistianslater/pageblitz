@@ -24,7 +24,10 @@ import {
  */
 const pages = (): Array<[string, string]> => [
   ["Branche", generateLandingPageHTML(SEO_INDUSTRIES.friseur)],
-  ["Branche+Stadt", generateLandingPageHTML(SEO_INDUSTRIES.handwerk, DE_CITIES[0])],
+  [
+    "Branche+Stadt",
+    generateLandingPageHTML(SEO_INDUSTRIES.handwerk, DE_CITIES[0]),
+  ],
   ["Übersicht", generateOverviewHTML()],
   ["Startseite (Prerender)", generateHomePrerender()],
 ];

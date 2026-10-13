@@ -81,6 +81,19 @@ beforeEach(() => {
 });
 
 describe("handleCheckoutCompleted", () => {
+  test("speichert den Stripe-Abrechnungsanker (Laufzeitenden auf Periodengrenzen)", async () => {
+    const deps = makeDeps();
+    (deps.stripeCompat.subscriptions.retrieve as any).mockResolvedValue({
+      status: "trialing",
+      current_period_end: 1_800_000_000,
+      billing_cycle_anchor: 1_800_000_000,
+    });
+    await handleCheckoutCompleted(fakeSession(), deps);
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ billingAnchorAt: 1_800_000_000 })
+    );
+  });
+
   test("normalisiert alle 8 Add-on-Keys, legt Subscription an, setzt Website-Status", async () => {
     const deps = makeDeps();
     await handleCheckoutCompleted(fakeSession(), deps);

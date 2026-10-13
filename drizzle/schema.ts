@@ -181,6 +181,12 @@ export const subscriptions = mysqlTable("subscriptions", {
   currentTermEnd: bigint("currentTermEnd", { mode: "number" }),
   cancelRequestedAt: bigint("cancelRequestedAt", { mode: "number" }),
   cancelEffectiveAt: bigint("cancelEffectiveAt", { mode: "number" }),
+  //   billingAnchorAt   Stripe billing_cycle_anchor — Laufzeitenden zählen
+  //                     von hier (Periodengrenzen, shared/pricingTerm.ts)
+  //   b2bConfirmedAt    Bestätigung „bestelle als Unternehmer (§ 14 BGB)"
+  //                     im Checkout (Stripe-Metadatum b2b_bestaetigt_at)
+  billingAnchorAt: bigint("billingAnchorAt", { mode: "number" }),
+  b2bConfirmedAt: bigint("b2bConfirmedAt", { mode: "number" }),
   // Finding I1: die Checkout-E-Mail (session.customer_details?.email ??
   // session.customer_email), lowercase/getrimmt, EINMALIG vom Webhook
   // gesetzt und danach nie mehr verändert — im Gegensatz zu

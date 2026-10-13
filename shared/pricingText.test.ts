@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
   ADDON_TERM_NOTE,
+  B2B_CONFIRM_LABEL,
+  cancellationHint,
   CHECKOUT_FOOTER,
   HOME_META_DESCRIPTION,
   HOME_OG_DESCRIPTION,
@@ -56,7 +58,10 @@ describe("Grundtexte", () => {
   test("Kurzform mit Fußnote und Vollform", () => {
     expect(PRICE_FROM_SHORT).toBe("ab 19,90 €/Monat*");
     expect(PRICE_FULL).toBe(
-      "19,90 €/Monat bei 12 Monaten Laufzeit, danach Verlängerung um 12 Monate; monatlich kündbar: 24,90 €/Monat. Alle Preise inkl. 19 % MwSt."
+      "19,90 €/Monat bei 12 Monaten Laufzeit, danach Verlängerung um 12 Monate; monatlich kündbar: 24,90 €/Monat. Alle Preise inkl. 19 % MwSt. Angebot nur für Gewerbetreibende und Selbstständige."
+    );
+    expect(B2B_CONFIRM_LABEL).toBe(
+      "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB). Das Angebot richtet sich nicht an Verbraucher."
     );
     expect(PRICE_FOOTNOTE).toBe(`* ${PRICE_FULL}`);
     expect(PRICE_FROM_INLINE).toBe("ab 19,90 €/Monat bei 12 Monaten Laufzeit");
@@ -177,12 +182,19 @@ describe("Konto", () => {
       "Kündigst du jetzt, endet dein Abo zum Testende am 31.01.2027 – es wird nichts abgebucht."
     );
     expect(
-      accountTermLines({ ...trial, tariff: "monthly" }, t("2027-01-26T10:00:00Z"))
+      accountTermLines(
+        { ...trial, tariff: "monthly" },
+        t("2027-01-26T10:00:00Z")
+      )
     ).toEqual(["Testphase bis 31.01.2027 – bis dahin kostenlos kündbar."]);
   });
 
   test("Monatstarif", () => {
-    const monthly = { ...yearly, tariff: "monthly" as const, termStartedAt: null };
+    const monthly = {
+      ...yearly,
+      tariff: "monthly" as const,
+      termStartedAt: null,
+    };
     expect(accountTermLines(monthly, t("2027-06-10T10:00:00Z"))).toEqual([
       "Monatlich kündbar, nächster Abrechnungstag 30.06.2027.",
     ]);
@@ -286,5 +298,30 @@ describe("Schema.org und index.html", () => {
     expect(html).not.toContain("%PB_");
     const json = JSON.parse(html.match(/<script>(.*)<\/script>/)![1]);
     expect(json.offers).toHaveLength(2);
+  });
+});
+
+describe("Kündigungshinweis ohne Laufzeitbeginn (Review 2026-10-13)", () => {
+  test("cancellationHint formatiert ein Server-Ergebnis", () => {
+    expect(
+      cancellationHint({ endsAt: t("2028-02-29T12:00:00Z"), reason: "term_end" })
+    ).toBe("Kündigst du jetzt, endet dein Abo am 29.02.2028.");
+  });
+  test("Laufzeitende mit Abrechnungsanker auf Stripe-Grenze", () => {
+    expect(
+      accountTermLines(
+        {
+          tariff: "yearly",
+          status: "active",
+          currentPeriodEnd: null,
+          termStartedAt: t("2027-02-28T12:00:00Z"),
+          billingAnchorAt: t("2027-01-31T12:00:00Z"),
+          cancelEffectiveAt: null,
+        },
+        t("2027-06-01T00:00:00Z")
+      )
+    ).toEqual([
+      "Läuft bis 29.02.2028, verlängert sich um 12 Monate, Kündigung bis 29.01.2028",
+    ]);
   });
 });

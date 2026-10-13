@@ -18,8 +18,11 @@ import {
   accountPlanLine,
   accountTermLines,
   cancelButtonHint,
+  cancellationHint,
+  CANCEL_HINT_PENDING,
   type AccountSubscriptionView,
 } from "@shared/pricingText";
+import type { CancellationReason } from "@shared/pricingTerm";
 
 /**
  * Abo-Übersicht im Konto (Preismodell 2026-10-13): Tarif, Monatspreis,
@@ -35,6 +38,7 @@ export interface SubscriptionRow {
   addOns: unknown;
   currentPeriodEnd: number | null;
   termStartedAt: number | null;
+  billingAnchorAt?: number | null;
   cancelEffectiveAt: number | null;
 }
 
@@ -44,6 +48,7 @@ export function toAccountView(row: SubscriptionRow): AccountSubscriptionView {
     status: row.status,
     currentPeriodEnd: row.currentPeriodEnd,
     termStartedAt: row.termStartedAt,
+    billingAnchorAt: row.billingAnchorAt ?? null,
     cancelEffectiveAt: row.cancelEffectiveAt,
   };
 }
@@ -65,6 +70,11 @@ export interface SubscriptionSummaryProps {
   onSwitchToYearly: () => void;
   onOpenPortal: () => void;
   pending?: "cancel" | "withdraw" | "switch" | "portal" | null;
+  /**
+   * Server-Vorschau (`customer.cancellationPreview`) — dieselbe Rechnung,
+   * die beim Kündigen gilt. Hat Vorrang vor der lokalen Rechnung.
+   */
+  preview?: { endsAt: number; reason: CancellationReason } | null;
 }
 
 const RUNNING = new Set(["active", "trialing", "canceling", "past_due"]);
@@ -78,6 +88,7 @@ export function SubscriptionSummary({
   onSwitchToYearly,
   onOpenPortal,
   pending = null,
+  preview = null,
 }: SubscriptionSummaryProps) {
   const [confirming, setConfirming] = useState(false);
   const view = toAccountView(subscription);
@@ -87,8 +98,16 @@ export function SubscriptionSummary({
     PLANS[tariff].centsPerMonth +
     addOns.reduce((sum, key) => sum + addonPrice(key), 0);
   const running = RUNNING.has(subscription.status);
-  const canceled = view.cancelEffectiveAt != null || subscription.status === "canceling";
-  const hint = running && !canceled ? cancelButtonHint(view, nowSec) : null;
+  const canceled =
+    view.cancelEffectiveAt != null || subscription.status === "canceling";
+  // Kündigen ist NIE gesperrt: Server-Vorschau, sonst lokale Rechnung,
+  // sonst Hinweis, dass das Datum beim Bestätigen berechnet wird.
+  const hint =
+    running && !canceled
+      ? preview
+        ? cancellationHint(preview)
+        : (cancelButtonHint(view, nowSec) ?? CANCEL_HINT_PENDING)
+      : null;
 
   return (
     <div className="space-y-6" data-testid="subscription-summary">
@@ -108,7 +127,10 @@ export function SubscriptionSummary({
             </span>
           </div>
           {addOns.map(key => (
-            <div key={key} className="flex items-center justify-between text-sm">
+            <div
+              key={key}
+              className="flex items-center justify-between text-sm"
+            >
               <span className="text-lp-ink/80">{ADDON_NAMES[key]}</span>
               <span className="text-lp-accent font-semibold">
                 + {formatEuro(addonPrice(key))}/Monat
@@ -166,7 +188,9 @@ export function SubscriptionSummary({
             disabled={pending != null}
             onClick={onSwitchToYearly}
           >
-            {pending === "switch" && <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />}
+            {pending === "switch" && (
+              <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />
+            )}
             In den {TARIFF_LABEL.yearly} wechseln
           </button>
         </div>
@@ -183,7 +207,9 @@ export function SubscriptionSummary({
             disabled={pending != null}
             onClick={onOpenPortal}
           >
-            {pending === "portal" && <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />}
+            {pending === "portal" && (
+              <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />
+            )}
             Zahlungsdaten &amp; Rechnungen
           </button>
         )}
@@ -194,7 +220,9 @@ export function SubscriptionSummary({
             disabled={pending != null}
             onClick={onWithdraw}
           >
-            {pending === "withdraw" && <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />}
+            {pending === "withdraw" && (
+              <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />
+            )}
             Kündigung zurücknehmen
           </button>
         )}
@@ -212,8 +240,7 @@ export function SubscriptionSummary({
 
       {running && !canceled && (
         <p className="text-xs text-lp-muted" data-testid="cancel-hint">
-          {hint ??
-            "Das Kündigungsdatum lässt sich gerade nicht berechnen — bitte melde dich beim Support."}
+          {hint}
         </p>
       )}
 
@@ -228,13 +255,15 @@ export function SubscriptionSummary({
             <button
               type="button"
               className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
-              disabled={pending != null || hint == null}
+              disabled={pending != null}
               onClick={() => {
                 setConfirming(false);
                 onCancel();
               }}
             >
-              {pending === "cancel" && <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />}
+              {pending === "cancel" && (
+                <Loader2 className="inline w-4 h-4 mr-2 animate-spin" />
+              )}
               Ja, kündigen
             </button>
             <button

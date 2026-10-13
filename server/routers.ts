@@ -3,13 +3,17 @@ import { COOKIE_NAME } from "@shared/const";
 import { postkartenRouter } from "./postkarten/router";
 import {
   ensurePortalConfiguration,
+  previewCancellation,
   requestCancellation,
   SubscriptionActionError,
   switchToYearly,
   withdrawCancellation,
   type PortalConfigClient,
 } from "./subscriptionTerm";
-import { TermUnknownError } from "../shared/pricingTerm";
+import {
+  TermUnknownError,
+  pickCurrentSubscription,
+} from "../shared/pricingTerm";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import {
@@ -150,17 +154,22 @@ const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10" as any,
 });
 
-/** Abo des eingeloggten Kunden zu einer seiner Websites (sonst FORBIDDEN/NOT_FOUND). */
+/**
+ * Maßgebliches Abo des eingeloggten Kunden zu einer seiner Websites — bei
+ * mehreren Zeilen das jüngste nicht beendete (pickCurrentSubscription),
+ * deterministisch statt „erste Zeile der Join-Abfrage".
+ */
 async function ownedSubscription(userId: number, websiteId: number) {
   const rows = await getWebsitesByUserId(userId);
-  const row = rows.find(r => r.website.id === websiteId);
-  if (!row) throw new TRPCError({ code: "FORBIDDEN" });
-  if (!row.subscription)
+  const own = rows.filter(r => r.website.id === websiteId);
+  if (own.length === 0) throw new TRPCError({ code: "FORBIDDEN" });
+  const subscription = pickCurrentSubscription(own.map(r => r.subscription));
+  if (!subscription)
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Für diese Website gibt es kein Abo.",
     });
-  return row.subscription;
+  return subscription;
 }
 
 /** Stripe/DB-Deps für Kündigung und Tarifwechsel (server/subscriptionTerm.ts). */
@@ -2633,10 +2642,11 @@ export const appRouter = router({
     createBillingPortalSession: protectedProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input, ctx }) => {
-        const rows = await getWebsitesByUserId(ctx.user.id);
-        const row = rows.find(r => r.website.id === input.websiteId);
-        if (!row) throw new TRPCError({ code: "FORBIDDEN" });
-        const stripeCustomerId = row.subscription?.stripeCustomerId;
+        const subscription = await ownedSubscription(
+          ctx.user.id,
+          input.websiteId
+        );
+        const stripeCustomerId = subscription.stripeCustomerId;
         if (!stripeCustomerId)
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -2653,6 +2663,21 @@ export const appRouter = router({
           return_url: `${origin}/my-account`,
         });
         return { url: session.url };
+      }),
+
+    /**
+     * Vorschau: wann endet das Abo, wenn jetzt gekündigt wird — dieselbe
+     * Rechnung wie `cancelSubscription` (auch ohne Laufzeitbeginn in der
+     * Zeile), damit das Konto immer das Datum zeigt, das Stripe bekommt.
+     */
+    cancellationPreview: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        const subscription = await ownedSubscription(ctx.user.id, input.websiteId);
+        const result = await runSubscriptionAction(() =>
+          previewCancellation(subscription, subscriptionActionDeps())
+        );
+        return { endsAt: result.endsAt, reason: result.reason };
       }),
 
     /** Kündigung nach den Laufzeitregeln (shared/pricingTerm.ts). */

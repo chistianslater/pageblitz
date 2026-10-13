@@ -22,7 +22,6 @@ import type Stripe from "stripe";
 import type * as Db from "./db";
 import { PLANS, isTariff, type Tariff } from "../shared/pricing";
 import {
-  addMonthsUtc,
   computeCancellation,
   termEndAt,
   TermUnknownError,
@@ -41,7 +40,9 @@ export const SUB_META = {
 } as const;
 
 /** Metadaten für eine neue Subscription (Checkout). */
-export function subscriptionMetadataFor(tariff: Tariff): Record<string, string> {
+export function subscriptionMetadataFor(
+  tariff: Tariff
+): Record<string, string> {
   return {
     [SUB_META.tariff]: tariff,
     [SUB_META.termMonths]: String(PLANS[tariff].termMonths),
@@ -92,7 +93,8 @@ export function invoicePaidPeriod(
 
 /** Ende des laufenden Abrechnungszeitraums (alt: Subscription, neu: Items). */
 export function subscriptionPeriodEnd(sub: any): number | null {
-  if (typeof sub?.current_period_end === "number") return sub.current_period_end;
+  if (typeof sub?.current_period_end === "number")
+    return sub.current_period_end;
   const ends = (sub?.items?.data ?? [])
     .map((item: any) => item?.current_period_end)
     .filter((v: unknown): v is number => typeof v === "number");
@@ -117,12 +119,7 @@ function tariffOf(record: Pick<Subscription, "billingInterval">): Tariff {
  */
 export function mapStripeStatus(
   stripeSub: any
-):
-  | "active"
-  | "canceling"
-  | "trialing"
-  | "past_due"
-  | "canceled" {
+): "active" | "canceling" | "trialing" | "past_due" | "canceled" {
   const scheduled = stripeScheduledEnd(stripeSub) != null;
   switch (stripeSub?.status) {
     case "active":
@@ -141,7 +138,33 @@ export function mapStripeStatus(
 export interface InvoicePaidDeps {
   getSubscriptionByStripeId: typeof Db.getSubscriptionByStripeId;
   updateSubscription: typeof Db.updateSubscription;
-  stripe: { subscriptions: { update: (id: string, params: any) => Promise<unknown> } };
+  stripe: {
+    subscriptions: {
+      retrieve: (id: string) => Promise<any>;
+      update: (id: string, params: any) => Promise<unknown>;
+    };
+  };
+}
+
+/** Abrechnungsanker: aus unserer Zeile, sonst von Stripe (wird mitgespeichert). */
+async function resolveBillingAnchor(
+  record: Pick<Subscription, "billingAnchorAt">,
+  stripeSubId: string,
+  stripe: { subscriptions: { retrieve: (id: string) => Promise<any> } }
+): Promise<number | null> {
+  if (record.billingAnchorAt != null) return record.billingAnchorAt;
+  try {
+    const sub = await stripe.subscriptions.retrieve(stripeSubId);
+    return typeof sub?.billing_cycle_anchor === "number"
+      ? sub.billing_cycle_anchor
+      : null;
+  } catch (err) {
+    console.warn(
+      `[Laufzeit] billing_cycle_anchor für ${stripeSubId} nicht lesbar:`,
+      err
+    );
+    return null;
+  }
 }
 
 export type InvoicePaidOutcome =
@@ -178,12 +201,17 @@ export async function handleInvoicePaid(
   let outcome: InvoicePaidOutcome = "period_only";
 
   if (tariffOf(record) === "yearly") {
+    // Laufzeitenden zählen vom Stripe-Abrechnungsanker (termBoundary) —
+    // sonst landet cancel_at nach einem Tarifwechsel auf einem gekappten
+    // Tag neben der Periodengrenze (29.02.).
+    const anchor = await resolveBillingAnchor(record, stripeSubId, deps.stripe);
+    if (anchor != null && record.billingAnchorAt == null) {
+      patch.billingAnchorAt = anchor;
+    }
+    const months = PLANS.yearly.termMonths;
     if (record.termStartedAt == null) {
       patch.termStartedAt = period.start;
-      patch.currentTermEnd = addMonthsUtc(
-        period.start,
-        PLANS.yearly.termMonths
-      );
+      patch.currentTermEnd = termEndAt(period.start, period.start, months, anchor);
       outcome = "term_started";
       try {
         // Stripe als zweite Quelle — falls unsere Zeile je verloren geht.
@@ -198,15 +226,24 @@ export async function handleInvoicePaid(
       }
     } else {
       const termEnd =
-        record.currentTermEnd ?? termEndAt(record.termStartedAt, period.start);
+        record.currentTermEnd ??
+        termEndAt(record.termStartedAt, period.start, months, anchor);
       if (period.start >= termEnd) {
-        if (record.cancelEffectiveAt != null && record.cancelEffectiveAt <= termEnd) {
+        if (
+          record.cancelEffectiveAt != null &&
+          record.cancelEffectiveAt <= termEnd
+        ) {
           console.warn(
             `[Laufzeit] ${stripeSubId}: Zahlung nach Laufzeitende trotz Kündigung zum ${termEnd} — Laufzeit nicht verlängert, bitte in Stripe prüfen.`
           );
           outcome = "roll_blocked_by_cancel";
         } else {
-          patch.currentTermEnd = termEndAt(record.termStartedAt, period.start);
+          patch.currentTermEnd = termEndAt(
+            record.termStartedAt,
+            period.start,
+            months,
+            anchor
+          );
           outcome = "term_rolled";
         }
       } else {
@@ -264,16 +301,9 @@ export class SubscriptionActionError extends Error {
 
 const CANCELLABLE = new Set(["active", "trialing", "past_due"]);
 
-/**
- * Kündigung aus dem Konto: rechnet das Ende nach den Regeln, schreibt es
- * ZUERST in unsere Zeile (damit der folgende `customer.subscription.updated`
- * es als eigene Kündigung erkennt) und setzt es dann in Stripe. Schlägt
- * Stripe fehl, wird die Zeile zurückgesetzt.
- */
-export async function requestCancellation(
-  record: Subscription,
-  deps: CancellationDeps
-): Promise<CancellationResult> {
+function assertCancellable(
+  record: Subscription
+): asserts record is Subscription & { stripeSubscriptionId: string } {
   if (!record.stripeSubscriptionId) {
     throw new SubscriptionActionError(
       "Für dieses Abo gibt es keine Stripe-Verknüpfung — bitte melde dich beim Support."
@@ -285,7 +315,28 @@ export async function requestCancellation(
   if (!CANCELLABLE.has(record.status)) {
     throw new SubscriptionActionError("Dieses Abo ist nicht mehr aktiv.");
   }
-  const now = (deps.now ?? nowSec)();
+}
+
+interface CancellationPlan {
+  result: CancellationResult;
+  stripeSub: any;
+  termStartedAt: number | null;
+  billingAnchor: number | null;
+}
+
+/**
+ * Kündigungswirkung aus Zeile + Stripe-Subscription, ohne etwas zu
+ * schreiben. Fehlt der Laufzeitbeginn in der Zeile, gelten die Stripe-
+ * Metadaten bzw. der Abrechnungsanker; ein noch nicht wirksamer Wechsel
+ * Monat→Jahr hat keine Laufzeit (Ende zum Abrechnungsmonat). Dieselbe
+ * Rechnung liefert die Vorschau im Konto — das Datum dort ist das, das
+ * Stripe bekommt.
+ */
+async function planCancellation(
+  record: Subscription & { stripeSubscriptionId: string },
+  deps: CancellationDeps,
+  now: number
+): Promise<CancellationPlan> {
   const stripeSub = await deps.stripe.subscriptions.retrieve(
     record.stripeSubscriptionId
   );
@@ -293,12 +344,15 @@ export async function requestCancellation(
   const tariff = tariffOf(record);
   const termStartedAt =
     tariff === "yearly" && !inTrial ? resolveTermStart(record, stripeSub) : null;
+  const billingAnchor =
+    record.billingAnchorAt ??
+    (typeof stripeSub?.billing_cycle_anchor === "number"
+      ? stripeSub.billing_cycle_anchor
+      : null);
   const currentPeriodEnd = subscriptionPeriodEnd(stripeSub);
 
   let result: CancellationResult;
   if (tariff === "yearly" && !inTrial && termStartedAt == null) {
-    // Wechsel in den Jahrestarif noch nicht wirksam (keine Zahlung zum
-    // Jahrespreis) — es läuft keine Laufzeit, Ende zum Abrechnungsmonat.
     if (!currentPeriodEnd) throw new TermUnknownError();
     result = { mode: "period_end", endsAt: currentPeriodEnd, reason: "monthly" };
   } else {
@@ -308,15 +362,48 @@ export async function requestCancellation(
       inTrial,
       currentPeriodEnd,
       termStartedAt,
+      billingAnchor,
     });
   }
+  return { result, stripeSub, termStartedAt, billingAnchor };
+}
+
+/** Vorschau fürs Konto: wann endet das Abo, wenn jetzt gekündigt wird. */
+export async function previewCancellation(
+  record: Subscription,
+  deps: CancellationDeps
+): Promise<CancellationResult> {
+  assertCancellable(record);
+  const plan = await planCancellation(record, deps, (deps.now ?? nowSec)());
+  return plan.result;
+}
+
+/**
+ * Kündigung aus dem Konto: rechnet das Ende nach den Regeln, schreibt es
+ * ZUERST in unsere Zeile (damit der folgende `customer.subscription.updated`
+ * es als eigene Kündigung erkennt) und setzt es dann in Stripe. Schlägt
+ * Stripe fehl, wird die Zeile zurückgesetzt. Der Status folgt Stripe
+ * (`mapStripeStatus` mit der geplanten Beendigung): active/trialing →
+ * canceling, past_due bleibt past_due.
+ */
+export async function requestCancellation(
+  record: Subscription,
+  deps: CancellationDeps
+): Promise<CancellationResult> {
+  assertCancellable(record);
+  const now = (deps.now ?? nowSec)();
+  const { result, stripeSub, termStartedAt, billingAnchor } =
+    await planCancellation(record, deps, now);
 
   await deps.updateSubscription(record.id, {
-    status: "canceling",
+    status: mapStripeStatus({ ...stripeSub, cancel_at: result.endsAt }),
     cancelRequestedAt: now,
     cancelEffectiveAt: result.endsAt,
     ...(termStartedAt != null && record.termStartedAt == null
       ? { termStartedAt }
+      : {}),
+    ...(billingAnchor != null && record.billingAnchorAt == null
+      ? { billingAnchorAt: billingAnchor }
       : {}),
     updatedAt: Date.now(),
   });
@@ -364,7 +451,12 @@ export async function withdrawCancellation(
       : { cancel_at: "" }
   );
   await deps.updateSubscription(record.id, {
-    status: stripeSub?.status === "trialing" ? "trialing" : "active",
+    // Stripe-Status ohne geplante Beendigung — past_due bleibt past_due.
+    status: mapStripeStatus({
+      ...stripeSub,
+      cancel_at: null,
+      cancel_at_period_end: false,
+    }),
     cancelRequestedAt: null,
     cancelEffectiveAt: null,
     updatedAt: Date.now(),
@@ -420,7 +512,10 @@ export async function switchToYearly(
   const stripeSub = await deps.stripe.subscriptions.retrieve(
     record.stripeSubscriptionId
   );
-  const base = findBaseItem(stripeSub?.items?.data ?? [], deps.env ?? process.env);
+  const base = findBaseItem(
+    stripeSub?.items?.data ?? [],
+    deps.env ?? process.env
+  );
   if (!base) {
     throw new SubscriptionActionError(
       "Die Basis-Position des Abos ist nicht eindeutig — bitte melde dich beim Support."
@@ -462,7 +557,9 @@ export async function switchToYearly(
 export interface CancellationSyncDeps {
   getSubscriptionByStripeId: typeof Db.getSubscriptionByStripeId;
   updateSubscription: typeof Db.updateSubscription;
-  stripe: { subscriptions: { update: (id: string, params: any) => Promise<unknown> } };
+  stripe: {
+    subscriptions: { update: (id: string, params: any) => Promise<unknown> };
+  };
   now?: () => number;
 }
 
@@ -500,17 +597,21 @@ export async function syncCancellationFromStripe(
 
   const ownRequest =
     record.cancelRequestedAt != null && record.cancelEffectiveAt != null;
-  let expected = scheduledEnd;
-  let requestedAt = record.cancelRequestedAt;
   const override = subscription?.metadata?.[SUB_META.cancelOverride] === "1";
+  const externalRequestAt: number =
+    typeof subscription?.canceled_at === "number"
+      ? subscription.canceled_at
+      : (deps.now ?? nowSec)();
+  let expected = scheduledEnd;
+  let requestedAt = record.cancelRequestedAt ?? externalRequestAt;
 
-  if (ownRequest) {
+  if (override) {
+    // Kulanz des Betreibers: Stripes Ende gilt — auch wenn es früher liegt
+    // als eine eigene Kündigung; Zeile und Konto zeigen das echte Ende.
+    expected = scheduledEnd;
+  } else if (ownRequest) {
     expected = record.cancelEffectiveAt!;
-  } else if (!override) {
-    const externalRequestAt: number =
-      typeof subscription?.canceled_at === "number"
-        ? subscription.canceled_at
-        : (deps.now ?? nowSec)();
+  } else {
     requestedAt = externalRequestAt;
     const inTrial = subscription?.status === "trialing";
     const tariff = tariffOf(record);
@@ -525,6 +626,11 @@ export async function syncCancellationFromStripe(
         inTrial,
         currentPeriodEnd: subscriptionPeriodEnd(subscription),
         termStartedAt,
+        billingAnchor:
+          record.billingAnchorAt ??
+          (typeof subscription?.billing_cycle_anchor === "number"
+            ? subscription.billing_cycle_anchor
+            : null),
       }).endsAt;
     }
   }
@@ -546,7 +652,7 @@ export async function syncCancellationFromStripe(
     record.cancelRequestedAt !== requestedAt
   ) {
     await deps.updateSubscription(record.id, {
-      cancelRequestedAt: requestedAt ?? (deps.now ?? nowSec)(),
+      cancelRequestedAt: requestedAt,
       cancelEffectiveAt: expected,
       updatedAt: Date.now(),
     });
@@ -561,7 +667,15 @@ export const PORTAL_CONFIG_MARKER = "pageblitz-laufzeit-v1";
 export interface PortalConfigClient {
   billingPortal: {
     configurations: {
-      list: (params: any) => Promise<{ data: Array<{ id: string; active?: boolean; metadata?: Record<string, string> | null }> }>;
+      list: (
+        params: any
+      ) => Promise<{
+        data: Array<{
+          id: string;
+          active?: boolean;
+          metadata?: Record<string, string> | null;
+        }>;
+      }>;
       create: (params: any) => Promise<{ id: string }>;
     };
   };

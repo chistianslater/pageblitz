@@ -67,31 +67,58 @@ export function formatDateDe(sec: number): string {
   }).format(new Date(sec * SECONDS));
 }
 
+function monthIndexUtc(sec: number): number {
+  const d = new Date(sec * SECONDS);
+  return d.getUTCFullYear() * 12 + d.getUTCMonth();
+}
+
+/**
+ * k-tes Laufzeitende ab `termStartedAt`. Mit `billingAnchor` (Stripe
+ * `billing_cycle_anchor`) wird vom Abrechnungsanker aus gezählt — nur so
+ * fällt das Ende auch dann auf eine Stripe-Periodengrenze, wenn der
+ * Laufzeitbeginn selbst ein gekappter Tag ist (Anker 31.01., Beginn nach
+ * Tarifwechsel am 28.02.2027 → Ende 29.02.2028, nicht 28.02.2028).
+ */
+export function termBoundary(
+  termStartedAt: number,
+  k: number,
+  termMonths: number = PLANS.yearly.termMonths,
+  billingAnchor?: number | null
+): number {
+  if (billingAnchor == null || billingAnchor > termStartedAt) {
+    return addMonthsUtc(termStartedAt, termMonths * k);
+  }
+  const offset = monthIndexUtc(termStartedAt) - monthIndexUtc(billingAnchor);
+  return addMonthsUtc(billingAnchor, offset + termMonths * k);
+}
+
 /**
  * Ende der Laufzeit-Periode, in der `atSec` liegt: das kleinste
- * Anker + k·12 Monate (k ≥ 1), das NACH `atSec` liegt.
+ * k-te Laufzeitende (k ≥ 1), das NACH `atSec` liegt.
  */
 export function termEndAt(
   termStartedAt: number,
   atSec: number,
-  termMonths: number = PLANS.yearly.termMonths
+  termMonths: number = PLANS.yearly.termMonths,
+  billingAnchor?: number | null
 ): number {
   let k = 1;
-  let end = addMonthsUtc(termStartedAt, termMonths);
+  let end = termBoundary(termStartedAt, k, termMonths, billingAnchor);
   while (end <= atSec) {
     k += 1;
-    end = addMonthsUtc(termStartedAt, termMonths * k);
+    end = termBoundary(termStartedAt, k, termMonths, billingAnchor);
   }
   return end;
 }
 
-/** Das auf `termEnd` folgende Laufzeitende (vom Anker aus gerechnet). */
+/** Das auf `termEnd` folgende Laufzeitende. */
 export function nextTermEndAfter(
   termStartedAt: number,
   termEnd: number,
-  termMonths: number = PLANS.yearly.termMonths
+  termMonths: number = PLANS.yearly.termMonths,
+  billingAnchor?: number | null
 ): number {
-  return termEndAt(termStartedAt, termEnd, termMonths);
+  return termEndAt(termStartedAt, termEnd, termMonths, billingAnchor);
 }
 
 /** Letzter Tag, an dem eine Kündigung noch zum Laufzeitende `termEnd` wirkt. */
@@ -117,12 +144,17 @@ export interface TermState {
 }
 
 /** Laufzeitstand zum Zeitpunkt `atSec` (Jahrestarif mit begonnener Laufzeit). */
-export function termStateAt(termStartedAt: number, atSec: number): TermState {
-  const termEnd = termEndAt(termStartedAt, atSec);
+export function termStateAt(
+  termStartedAt: number,
+  atSec: number,
+  billingAnchor?: number | null
+): TermState {
+  const months = PLANS.yearly.termMonths;
+  const termEnd = termEndAt(termStartedAt, atSec, months, billingAnchor);
   return {
     termEnd,
     deadline: cancelDeadline(termEnd),
-    nextTermEnd: nextTermEndAfter(termStartedAt, termEnd),
+    nextTermEnd: nextTermEndAfter(termStartedAt, termEnd, months, billingAnchor),
   };
 }
 
@@ -142,6 +174,8 @@ export interface CancellationInput {
   currentPeriodEnd: number | null;
   /** Beginn der 12-Monats-Laufzeit (erste Zahlung), null = noch nicht begonnen. */
   termStartedAt: number | null;
+  /** Stripe `billing_cycle_anchor` — Laufzeitenden zählen von hier (siehe termBoundary). */
+  billingAnchor?: number | null;
 }
 
 export interface CancellationResult {
@@ -182,7 +216,11 @@ export function computeCancellation(
     };
   }
   if (input.termStartedAt == null) throw new TermUnknownError();
-  const state = termStateAt(input.termStartedAt, input.requestedAt);
+  const state = termStateAt(
+    input.termStartedAt,
+    input.requestedAt,
+    input.billingAnchor
+  );
   if (isWithinNotice(input.requestedAt, state.deadline)) {
     return { mode: "cancel_at", endsAt: state.termEnd, reason: "term_end" };
   }
@@ -191,4 +229,25 @@ export function computeCancellation(
     endsAt: state.nextTermEnd,
     reason: "next_term_end",
   };
+}
+
+/** Felder einer Abo-Zeile, die für die Auswahl des aktuellen Abos zählen. */
+export interface SubscriptionPick {
+  id: number;
+  status: string;
+  createdAt: number;
+}
+
+/**
+ * Das maßgebliche Abo einer Website, wenn es mehrere Zeilen gibt (z. B.
+ * abgelaufenes Abo + neuer Checkout): das jüngste nicht beendete, sonst das
+ * jüngste überhaupt. Deterministisch: bei gleichem createdAt die höhere id.
+ */
+export function pickCurrentSubscription<T extends SubscriptionPick>(
+  rows: readonly T[]
+): T | undefined {
+  const newestFirst = [...rows].sort(
+    (a, b) => b.createdAt - a.createdAt || b.id - a.id
+  );
+  return newestFirst.find(r => r.status !== "canceled") ?? newestFirst[0];
 }

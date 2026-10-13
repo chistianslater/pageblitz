@@ -6,6 +6,7 @@ import {
   invoicePaidPeriod,
   invoiceSubscriptionId,
   mapStripeStatus,
+  previewCancellation,
   portalConfigurationParams,
   requestCancellation,
   resetPortalConfigCache,
@@ -38,6 +39,8 @@ function row(overrides: Record<string, unknown> = {}): any {
     currentPeriodEnd: null,
     termStartedAt: TRIAL_END,
     currentTermEnd: TERM_END,
+    billingAnchorAt: TRIAL_END,
+    b2bConfirmedAt: null,
     cancelRequestedAt: null,
     cancelEffectiveAt: null,
     checkoutEmail: "kunde@x.de",
@@ -47,7 +50,11 @@ function row(overrides: Record<string, unknown> = {}): any {
   };
 }
 
-function invoice(start: number, end: number, overrides: Record<string, unknown> = {}) {
+function invoice(
+  start: number,
+  end: number,
+  overrides: Record<string, unknown> = {}
+) {
   return {
     amount_paid: 1990,
     subscription: "sub_1",
@@ -59,7 +66,9 @@ function invoice(start: number, end: number, overrides: Record<string, unknown> 
 describe("Lesehilfen", () => {
   test("invoiceSubscriptionId: alt, clover, Position", () => {
     expect(invoiceSubscriptionId({ subscription: "sub_a" })).toBe("sub_a");
-    expect(invoiceSubscriptionId({ subscription: { id: "sub_b" } })).toBe("sub_b");
+    expect(invoiceSubscriptionId({ subscription: { id: "sub_b" } })).toBe(
+      "sub_b"
+    );
     expect(
       invoiceSubscriptionId({
         parent: { subscription_details: { subscription: "sub_c" } },
@@ -69,7 +78,9 @@ describe("Lesehilfen", () => {
       invoiceSubscriptionId({
         lines: {
           data: [
-            { parent: { subscription_item_details: { subscription: "sub_d" } } },
+            {
+              parent: { subscription_item_details: { subscription: "sub_d" } },
+            },
           ],
         },
       })
@@ -103,9 +114,15 @@ describe("Lesehilfen", () => {
     ).toBe(5);
     expect(stripeScheduledEnd({ cancel_at: null })).toBeNull();
     expect(mapStripeStatus({ status: "active" })).toBe("active");
-    expect(mapStripeStatus({ status: "active", cancel_at: 9 })).toBe("canceling");
+    expect(mapStripeStatus({ status: "active", cancel_at: 9 })).toBe(
+      "canceling"
+    );
     expect(
-      mapStripeStatus({ status: "trialing", cancel_at_period_end: true, current_period_end: 3 })
+      mapStripeStatus({
+        status: "trialing",
+        cancel_at_period_end: true,
+        current_period_end: 3,
+      })
     ).toBe("canceling");
     expect(mapStripeStatus({ status: "trialing" })).toBe("trialing");
     expect(mapStripeStatus({ status: "past_due" })).toBe("past_due");
@@ -126,7 +143,10 @@ describe("Lesehilfen", () => {
   test("resolveTermStart: Zeile → Metadaten → Anker; ausstehender Wechsel → null", () => {
     expect(resolveTermStart({ termStartedAt: 5 }, {})).toBe(5);
     expect(
-      resolveTermStart({ termStartedAt: null }, { metadata: { termStartedAt: "6" } })
+      resolveTermStart(
+        { termStartedAt: null },
+        { metadata: { termStartedAt: "6" } }
+      )
     ).toBe(6);
     expect(
       resolveTermStart({ termStartedAt: null }, { billing_cycle_anchor: 7 })
@@ -145,9 +165,34 @@ describe("handleInvoicePaid", () => {
     return {
       getSubscriptionByStripeId: vi.fn().mockResolvedValue(record),
       updateSubscription: vi.fn().mockResolvedValue(undefined),
-      stripe: { subscriptions: { update: vi.fn().mockResolvedValue({}) } },
+      stripe: {
+        subscriptions: {
+          retrieve: vi
+            .fn()
+            .mockResolvedValue({ billing_cycle_anchor: TRIAL_END }),
+          update: vi.fn().mockResolvedValue({}),
+        },
+      },
     };
   }
+
+  test("Tarifwechsel: Laufzeitbeginn am gekappten 28.02. → Ende auf Stripe-Grenze 29.02.2028 (Anker 31.01.)", async () => {
+    const d = deps(
+      row({ termStartedAt: null, currentTermEnd: null, billingAnchorAt: null })
+    );
+    const start = t("2027-02-28T12:00:00Z");
+    expect(
+      await handleInvoicePaid(invoice(start, t("2027-03-31T12:00:00Z")), d)
+    ).toBe("term_started");
+    expect(d.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({
+        termStartedAt: start,
+        billingAnchorAt: TRIAL_END,
+        currentTermEnd: t("2028-02-29T12:00:00Z"),
+      })
+    );
+  });
 
   test("0-€-Rechnung (Testbeginn) wird ignoriert", async () => {
     const d = deps(row({ termStartedAt: null, currentTermEnd: null }));
@@ -212,24 +257,30 @@ describe("handleInvoicePaid", () => {
 
   test("Kündigung zum Laufzeitende blockiert das Rollen", async () => {
     const d = deps(row({ cancelEffectiveAt: TERM_END, cancelRequestedAt: 1 }));
-    expect(
-      await handleInvoicePaid(invoice(TERM_END, TERM_END + 100), d)
-    ).toBe("roll_blocked_by_cancel");
+    expect(await handleInvoicePaid(invoice(TERM_END, TERM_END + 100), d)).toBe(
+      "roll_blocked_by_cancel"
+    );
     expect(d.updateSubscription.mock.calls[0][1]).not.toHaveProperty(
       "currentTermEnd"
     );
   });
 
   test("Kündigung zum NÄCHSTEN Laufzeitende (spät gekündigt) → Laufzeit rollt", async () => {
-    const d = deps(row({ cancelEffectiveAt: NEXT_TERM_END, cancelRequestedAt: 1 }));
-    expect(
-      await handleInvoicePaid(invoice(TERM_END, TERM_END + 100), d)
-    ).toBe("term_rolled");
+    const d = deps(
+      row({ cancelEffectiveAt: NEXT_TERM_END, cancelRequestedAt: 1 })
+    );
+    expect(await handleInvoicePaid(invoice(TERM_END, TERM_END + 100), d)).toBe(
+      "term_rolled"
+    );
   });
 
   test("Monatstarif: nur Abrechnungsende, keine Laufzeit", async () => {
     const d = deps(
-      row({ billingInterval: "monthly", termStartedAt: null, currentTermEnd: null })
+      row({
+        billingInterval: "monthly",
+        termStartedAt: null,
+        currentTermEnd: null,
+      })
     );
     expect(await handleInvoicePaid(invoice(10, 20), d)).toBe("period_only");
     expect(d.updateSubscription.mock.calls[0][1]).not.toHaveProperty(
@@ -297,7 +348,11 @@ describe("requestCancellation", () => {
       row({ status: "trialing", termStartedAt: null, currentTermEnd: null }),
       d
     );
-    expect(result).toEqual({ mode: "period_end", endsAt: TRIAL_END, reason: "trial" });
+    expect(result).toEqual({
+      mode: "period_end",
+      endsAt: TRIAL_END,
+      reason: "trial",
+    });
     expect(d.stripe.subscriptions.update).toHaveBeenCalledWith("sub_1", {
       cancel_at_period_end: true,
     });
@@ -305,12 +360,23 @@ describe("requestCancellation", () => {
 
   test("Monatstarif → Ende des Abrechnungsmonats", async () => {
     const end = t("2027-06-30T12:00:00Z");
-    const d = deps({ status: "active", current_period_end: end }, t("2027-06-10T08:00:00Z"));
+    const d = deps(
+      { status: "active", current_period_end: end },
+      t("2027-06-10T08:00:00Z")
+    );
     const result = await requestCancellation(
-      row({ billingInterval: "monthly", termStartedAt: null, currentTermEnd: null }),
+      row({
+        billingInterval: "monthly",
+        termStartedAt: null,
+        currentTermEnd: null,
+      }),
       d
     );
-    expect(result).toEqual({ mode: "period_end", endsAt: end, reason: "monthly" });
+    expect(result).toEqual({
+      mode: "period_end",
+      endsAt: end,
+      reason: "monthly",
+    });
   });
 
   test("Laufzeitbeginn fehlt in der Zeile → aus Stripe-Anker, wird nachgetragen", async () => {
@@ -344,7 +410,11 @@ describe("requestCancellation", () => {
       row({ termStartedAt: null, currentTermEnd: null }),
       d
     );
-    expect(result).toEqual({ mode: "period_end", endsAt: end, reason: "monthly" });
+    expect(result).toEqual({
+      mode: "period_end",
+      endsAt: end,
+      reason: "monthly",
+    });
   });
 
   test("Stripe-Fehler → Zeile wird zurückgesetzt, Fehler durchgereicht", async () => {
@@ -382,14 +452,20 @@ describe("withdrawCancellation", () => {
       updateSubscription: vi.fn(),
       stripe: {
         subscriptions: {
-          retrieve: vi.fn().mockResolvedValue({ status: "active", cancel_at: TERM_END }),
+          retrieve: vi
+            .fn()
+            .mockResolvedValue({ status: "active", cancel_at: TERM_END }),
           update: vi.fn().mockResolvedValue({}),
         },
       },
       now: () => t("2027-06-01T00:00:00Z"),
     };
     await withdrawCancellation(
-      row({ status: "canceling", cancelRequestedAt: 1, cancelEffectiveAt: TERM_END }),
+      row({
+        status: "canceling",
+        cancelRequestedAt: 1,
+        cancelEffectiveAt: TERM_END,
+      }),
       d
     );
     expect(d.stripe.subscriptions.update).toHaveBeenCalledWith("sub_1", {
@@ -412,14 +488,21 @@ describe("withdrawCancellation", () => {
         subscriptions: {
           retrieve: vi
             .fn()
-            .mockResolvedValue({ status: "trialing", cancel_at_period_end: true }),
+            .mockResolvedValue({
+              status: "trialing",
+              cancel_at_period_end: true,
+            }),
           update: vi.fn().mockResolvedValue({}),
         },
       },
       now: () => TRIAL_END - 100,
     };
     await withdrawCancellation(
-      row({ status: "canceling", cancelRequestedAt: 1, cancelEffectiveAt: TRIAL_END }),
+      row({
+        status: "canceling",
+        cancelRequestedAt: 1,
+        cancelEffectiveAt: TRIAL_END,
+      }),
       d
     );
     expect(d.stripe.subscriptions.update).toHaveBeenCalledWith("sub_1", {
@@ -444,16 +527,24 @@ describe("withdrawCancellation", () => {
 
 describe("switchToYearly", () => {
   const items = [
-    { id: "si_base", price: { id: "price_adhoc", unit_amount: 2490, product: "prod_base" } },
-    { id: "si_gal", price: { id: "price_gallery", unit_amount: 390, product: "prod_g" } },
+    {
+      id: "si_base",
+      price: { id: "price_adhoc", unit_amount: 2490, product: "prod_base" },
+    },
+    {
+      id: "si_gal",
+      price: { id: "price_gallery", unit_amount: 390, product: "prod_g" },
+    },
   ];
 
   test("findBaseItem: Basis-Position eindeutig, Add-ons ausgeschlossen", () => {
-    expect(findBaseItem(items, { STRIPE_PRICE_ADDON_GALLERY: "price_gallery" })?.id).toBe(
-      "si_base"
-    );
+    expect(
+      findBaseItem(items, { STRIPE_PRICE_ADDON_GALLERY: "price_gallery" })?.id
+    ).toBe("si_base");
     expect(findBaseItem([], {})).toBeNull();
-    expect(findBaseItem([items[0], { ...items[0], id: "si_2" }], {})).toBeNull();
+    expect(
+      findBaseItem([items[0], { ...items[0], id: "si_2" }], {})
+    ).toBeNull();
   });
 
   test("Basis auf Jahrespreis ohne Proration, Metadaten tariff=yearly, Laufzeit startet mit nächster Zahlung", async () => {
@@ -461,7 +552,9 @@ describe("switchToYearly", () => {
       updateSubscription: vi.fn(),
       stripe: {
         subscriptions: {
-          retrieve: vi.fn().mockResolvedValue({ status: "active", items: { data: items } }),
+          retrieve: vi
+            .fn()
+            .mockResolvedValue({ status: "active", items: { data: items } }),
           update: vi.fn().mockResolvedValue({}),
         },
       },
@@ -469,7 +562,11 @@ describe("switchToYearly", () => {
       env: {},
     };
     await switchToYearly(
-      row({ billingInterval: "monthly", termStartedAt: null, currentTermEnd: null }),
+      row({
+        billingInterval: "monthly",
+        termStartedAt: null,
+        currentTermEnd: null,
+      }),
       d
     );
     expect(d.stripe.subscriptions.update).toHaveBeenCalledWith("sub_1", {
@@ -486,7 +583,11 @@ describe("switchToYearly", () => {
         },
       ],
       proration_behavior: "none",
-      metadata: { tariff: "yearly", termMonths: "12", tariffSwitchedAt: "1000" },
+      metadata: {
+        tariff: "yearly",
+        termMonths: "12",
+        tariffSwitchedAt: "1000",
+      },
     });
     expect(d.updateSubscription).toHaveBeenCalledWith(
       9,
@@ -508,7 +609,11 @@ describe("switchToYearly", () => {
     );
     await expect(
       switchToYearly(
-        row({ billingInterval: "monthly", cancelEffectiveAt: 5, status: "canceling" }),
+        row({
+          billingInterval: "monthly",
+          cancelEffectiveAt: 5,
+          status: "canceling",
+        }),
         d
       )
     ).rejects.toBeInstanceOf(SubscriptionActionError);
@@ -528,18 +633,23 @@ describe("syncCancellationFromStripe", () => {
 
   test("keine Kündigung, keine gespeicherte → nichts", async () => {
     const d = deps(row());
-    expect(await syncCancellationFromStripe({ id: "sub_1", status: "active" }, d)).toBe("none");
+    expect(
+      await syncCancellationFromStripe({ id: "sub_1", status: "active" }, d)
+    ).toBe("none");
     expect(d.updateSubscription).not.toHaveBeenCalled();
   });
 
   test("Kündigung zurückgenommen (z. B. im Dashboard) → Felder geleert", async () => {
     const d = deps(row({ cancelRequestedAt: 1, cancelEffectiveAt: TERM_END }));
-    expect(await syncCancellationFromStripe({ id: "sub_1", status: "active" }, d)).toBe(
-      "cleared"
-    );
+    expect(
+      await syncCancellationFromStripe({ id: "sub_1", status: "active" }, d)
+    ).toBe("cleared");
     expect(d.updateSubscription).toHaveBeenCalledWith(
       9,
-      expect.objectContaining({ cancelRequestedAt: null, cancelEffectiveAt: null })
+      expect.objectContaining({
+        cancelRequestedAt: null,
+        cancelEffectiveAt: null,
+      })
     );
   });
 
@@ -572,7 +682,10 @@ describe("syncCancellationFromStripe", () => {
   test("eigene Kündigung, Stripe stimmt überein → akzeptiert, kein Write", async () => {
     const d = deps(row({ cancelRequestedAt: 5, cancelEffectiveAt: TERM_END }));
     expect(
-      await syncCancellationFromStripe({ id: "sub_1", status: "active", cancel_at: TERM_END }, d)
+      await syncCancellationFromStripe(
+        { id: "sub_1", status: "active", cancel_at: TERM_END },
+        d
+      )
     ).toBe("accepted");
     expect(d.stripe.subscriptions.update).not.toHaveBeenCalled();
     expect(d.updateSubscription).not.toHaveBeenCalled();
@@ -604,7 +717,12 @@ describe("syncCancellationFromStripe", () => {
     const end = t("2027-05-31T12:00:00Z");
     expect(
       await syncCancellationFromStripe(
-        { id: "sub_1", status: "active", cancel_at_period_end: true, current_period_end: end },
+        {
+          id: "sub_1",
+          status: "active",
+          cancel_at_period_end: true,
+          current_period_end: end,
+        },
         d
       )
     ).toBe("accepted");
@@ -629,7 +747,9 @@ describe("ensurePortalConfiguration", () => {
   test("Env-ID hat Vorrang, kein API-Aufruf", async () => {
     const c = client();
     expect(
-      await ensurePortalConfiguration(c, { STRIPE_PORTAL_CONFIGURATION_ID: "bpc_env" })
+      await ensurePortalConfiguration(c, {
+        STRIPE_PORTAL_CONFIGURATION_ID: "bpc_env",
+      })
     ).toBe("bpc_env");
     expect(c.billingPortal.configurations.list).not.toHaveBeenCalled();
   });
@@ -653,5 +773,112 @@ describe("ensurePortalConfiguration", () => {
     expect(params.features.subscription_cancel).toEqual({ enabled: false });
     expect(params.features.subscription_update).toEqual({ enabled: false });
     expect(params.features.payment_method_update).toEqual({ enabled: true });
+  });
+});
+
+describe("Review-Fixes 2026-10-13", () => {
+  function cdeps(stripeSub: any, now: number) {
+    return {
+      updateSubscription: vi.fn().mockResolvedValue(undefined),
+      stripe: {
+        subscriptions: {
+          retrieve: vi.fn().mockResolvedValue(stripeSub),
+          update: vi.fn().mockResolvedValue({}),
+        },
+      },
+      now: () => now,
+    };
+  }
+
+  test("past_due bleibt past_due beim Kündigen, Kündigungsfelder getrennt", async () => {
+    const d = cdeps({ status: "past_due" }, t("2027-05-10T08:00:00Z"));
+    await requestCancellation(row({ status: "past_due" }), d);
+    expect(d.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({
+        status: "past_due",
+        cancelEffectiveAt: TERM_END,
+      })
+    );
+  });
+
+  test("past_due bleibt past_due beim Zurücknehmen", async () => {
+    const d = cdeps(
+      { status: "past_due", cancel_at: TERM_END },
+      t("2027-05-10T08:00:00Z")
+    );
+    await withdrawCancellation(
+      row({ status: "past_due", cancelRequestedAt: 1, cancelEffectiveAt: TERM_END }),
+      d
+    );
+    expect(d.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ status: "past_due", cancelEffectiveAt: null })
+    );
+  });
+
+  test("previewCancellation: ohne Laufzeitbeginn in der Zeile → Datum aus Stripe-Anker, schreibt nichts", async () => {
+    const d = cdeps(
+      { status: "active", billing_cycle_anchor: TRIAL_END },
+      t("2027-05-10T08:00:00Z")
+    );
+    const result = await previewCancellation(
+      row({ termStartedAt: null, currentTermEnd: null, billingAnchorAt: null }),
+      d
+    );
+    expect(result).toEqual({ mode: "cancel_at", endsAt: TERM_END, reason: "term_end" });
+    expect(d.updateSubscription).not.toHaveBeenCalled();
+    expect(d.stripe.subscriptions.update).not.toHaveBeenCalled();
+  });
+
+  test("previewCancellation: ausstehender Wechsel → Ende Abrechnungsmonat", async () => {
+    const end = t("2027-06-30T12:00:00Z");
+    const d = cdeps(
+      { status: "active", current_period_end: end, metadata: { tariffSwitchedAt: "1" } },
+      t("2027-06-10T08:00:00Z")
+    );
+    expect(
+      await previewCancellation(row({ termStartedAt: null, currentTermEnd: null }), d)
+    ).toEqual({ mode: "period_end", endsAt: end, reason: "monthly" });
+  });
+
+  test("Kündigung nach Wechsel nutzt den Abrechnungsanker (29.02.)", async () => {
+    const d = cdeps({ status: "active" }, t("2027-06-10T08:00:00Z"));
+    const result = await requestCancellation(
+      row({
+        termStartedAt: t("2027-02-28T12:00:00Z"),
+        currentTermEnd: null,
+        billingAnchorAt: TRIAL_END,
+      }),
+      d
+    );
+    expect(result.endsAt).toBe(t("2028-02-29T12:00:00Z"));
+  });
+
+  test("Kulanz mit eigener Kündigung: früheres cancel_at gilt, Zeile zeigt echtes Ende", async () => {
+    const early = t("2027-06-30T12:00:00Z");
+    const d = {
+      getSubscriptionByStripeId: vi
+        .fn()
+        .mockResolvedValue(row({ cancelRequestedAt: 5, cancelEffectiveAt: TERM_END })),
+      updateSubscription: vi.fn(),
+      stripe: { subscriptions: { update: vi.fn() } },
+    };
+    expect(
+      await syncCancellationFromStripe(
+        {
+          id: "sub_1",
+          status: "active",
+          cancel_at: early,
+          metadata: { cancelOverride: "1" },
+        },
+        d
+      )
+    ).toBe("accepted");
+    expect(d.stripe.subscriptions.update).not.toHaveBeenCalled();
+    expect(d.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ cancelEffectiveAt: early, cancelRequestedAt: 5 })
+    );
   });
 });

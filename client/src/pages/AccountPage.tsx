@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { motion, useReducedMotion } from "framer-motion";
 import "./dashboard/customer.css";
 import { SubscriptionSummary } from "./dashboard/SubscriptionSummary";
-import { formatDateDe } from "@shared/pricingTerm";
+import { formatDateDe, pickCurrentSubscription } from "@shared/pricingTerm";
 
 // ── Components ───────────────────────────────────────────
 
@@ -148,7 +148,11 @@ export default function AccountPage() {
     });
 
   const utils = trpc.useUtils();
-  const refreshSubscription = () => utils.customer.getMyWebsites.invalidate();
+  const refreshSubscription = () =>
+    Promise.all([
+      utils.customer.getMyWebsites.invalidate(),
+      utils.customer.cancellationPreview.invalidate(),
+    ]);
   const cancelMutation = trpc.customer.cancelSubscription.useMutation({
     onSuccess: data => {
       toast.success(
@@ -176,6 +180,27 @@ export default function AccountPage() {
   // Fetch user's websites and subscriptions
   const { data: myWebsites, isLoading: websitesLoading } =
     trpc.customer.getMyWebsites.useQuery(undefined, { enabled: !!user });
+
+  // Kündigungs-Vorschau (Hook VOR den frühen Returns): dieselbe Rechnung wie
+  // beim Kündigen, auch wenn der Laufzeitbeginn in der Zeile fehlt.
+  const previewWebsiteId = myWebsites?.[0]?.website.id;
+  const previewSubscription = pickCurrentSubscription(
+    (myWebsites ?? [])
+      .filter(r => r.website.id === previewWebsiteId)
+      .map(r => r.subscription)
+  );
+  const cancelPreview = trpc.customer.cancellationPreview.useQuery(
+    { websiteId: previewWebsiteId ?? 0 },
+    {
+      enabled:
+        previewWebsiteId != null &&
+        ["active", "trialing", "past_due"].includes(
+          previewSubscription?.status ?? ""
+        ) &&
+        previewSubscription?.cancelEffectiveAt == null,
+      retry: false,
+    }
+  );
 
   const handleSaveProfile = () => {
     updateProfileMutation.mutate({ name, email });
@@ -237,9 +262,14 @@ export default function AccountPage() {
     );
   }
 
-  // Get subscription info from first website (if any)
-  const subscription = myWebsites?.[0]?.subscription;
+  // Erste Website; bei mehreren Abo-Zeilen das maßgebliche (jüngstes nicht
+  // beendetes, wie serverseitig in ownedSubscription).
   const website = myWebsites?.[0]?.website;
+  const subscription = pickCurrentSubscription(
+    (myWebsites ?? [])
+      .filter(r => r.website.id === website?.id)
+      .map(r => r.subscription)
+  );
   const hasActiveSubscription =
     subscription?.status === "active" ||
     subscription?.status === "trialing" ||
@@ -535,6 +565,7 @@ export default function AccountPage() {
                           websiteSlug={hasActiveSubscription ? website?.slug : null}
                           nowSec={nowSec}
                           pending={subscriptionPending}
+                          preview={cancelPreview.data ?? null}
                           onCancel={() =>
                             cancelMutation.mutate({ websiteId: website!.id })
                           }

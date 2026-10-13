@@ -25,6 +25,7 @@ import {
   termStateAt,
   cancelDeadline,
   TermUnknownError,
+  type CancellationReason,
 } from "./pricingTerm";
 
 const Y = PLANS.yearly;
@@ -54,10 +55,17 @@ export const YEARLY_SAVINGS_TEXT = `spare ${YEARLY_SAVINGS} im Jahr`;
 export const PRICE_FROM_SHORT = `ab ${PRICE_YEARLY}/Monat*`;
 
 /** Vollständige Bedingungen in einem Satz (ohne Sternchen). */
+/** Zielgruppe (B2B) — steht in jeder Preis-Fußnote. */
+export const B2B_NOTE = "Angebot nur für Gewerbetreibende und Selbstständige.";
+
+/** Pflicht-Häkchen vor dem Checkout (gespeichert als `b2b_bestaetigt_at`). */
+export const B2B_CONFIRM_LABEL =
+  "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB). Das Angebot richtet sich nicht an Verbraucher.";
+
 export const PRICE_FULL =
   `${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit, danach ` +
   `Verlängerung um ${Y.renewMonths} Monate; monatlich kündbar: ` +
-  `${PRICE_MONTHLY}/Monat. ${VAT_NOTE_ALL}`;
+  `${PRICE_MONTHLY}/Monat. ${VAT_NOTE_ALL} ${B2B_NOTE}`;
 
 /** Fußnote zu PRICE_FROM_SHORT bzw. jedem „*" hinter einem Preis. */
 export const PRICE_FOOTNOTE = `* ${PRICE_FULL}`;
@@ -156,6 +164,8 @@ export interface AccountSubscriptionView {
   /** Unix-Sekunden: Ende Testphase bzw. laufender Abrechnungsmonat. */
   currentPeriodEnd: number | null;
   termStartedAt: number | null;
+  /** Stripe `billing_cycle_anchor` (siehe shared/pricingTerm.ts termBoundary). */
+  billingAnchorAt?: number | null;
   cancelEffectiveAt: number | null;
 }
 
@@ -203,7 +213,7 @@ export function accountTermLines(
       `Die ${Y.termMonths} Monate Laufzeit beginnen mit der nächsten Zahlung.`,
     ];
   }
-  const state = termStateAt(view.termStartedAt, nowSec);
+  const state = termStateAt(view.termStartedAt, nowSec, view.billingAnchorAt);
   if (isWithinNotice(nowSec, state.deadline)) {
     return [
       `Läuft bis ${formatDateDe(state.termEnd)}, verlängert sich um ${Y.renewMonths} Monate, Kündigung bis ${formatDateDe(state.deadline)}`,
@@ -214,9 +224,29 @@ export function accountTermLines(
   ];
 }
 
+/** Satz zur Wirkung einer Kündigung (lokal berechnet oder vom Server). */
+export function cancellationHint(result: {
+  endsAt: number;
+  reason: CancellationReason;
+}): string {
+  const date = formatDateDe(result.endsAt);
+  if (result.reason === "trial") {
+    return `Kündigst du jetzt, endet dein Abo zum Testende am ${date} – es wird nichts abgebucht.`;
+  }
+  if (result.reason === "next_term_end") {
+    return `Die Kündigungsfrist für das aktuelle Laufzeitende ist verstrichen – kündigst du jetzt, endet dein Abo am ${date}.`;
+  }
+  return `Kündigst du jetzt, endet dein Abo am ${date}.`;
+}
+
+/** Fallback, solange das Enddatum (noch) nicht vorliegt — Kündigen bleibt möglich. */
+export const CANCEL_HINT_PENDING =
+  "Das genaue Enddatum berechnen wir beim Bestätigen nach deinen Vertragsregeln und zeigen es dir danach an.";
+
 /**
  * Hinweis am Kündigen-Button: wann das Abo endet, wenn heute gekündigt wird.
- * null, wenn sich das Datum (noch) nicht berechnen lässt.
+ * null, wenn sich das Datum lokal nicht berechnen lässt (dann gilt die
+ * Server-Vorschau `customer.cancellationPreview`).
  */
 export function cancelButtonHint(
   view: AccountSubscriptionView,
@@ -229,15 +259,9 @@ export function cancelButtonHint(
       inTrial: view.status === "trialing",
       currentPeriodEnd: view.currentPeriodEnd,
       termStartedAt: view.termStartedAt,
+      billingAnchor: view.billingAnchorAt,
     });
-    const date = formatDateDe(result.endsAt);
-    if (result.reason === "trial") {
-      return `Kündigst du jetzt, endet dein Abo zum Testende am ${date} – es wird nichts abgebucht.`;
-    }
-    if (result.reason === "next_term_end") {
-      return `Die Kündigungsfrist für das aktuelle Laufzeitende ist verstrichen – kündigst du jetzt, endet dein Abo am ${date}.`;
-    }
-    return `Kündigst du jetzt, endet dein Abo am ${date}.`;
+    return cancellationHint(result);
   } catch (err) {
     if (err instanceof TermUnknownError) return null;
     throw err;

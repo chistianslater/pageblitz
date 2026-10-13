@@ -72,7 +72,8 @@ describe("Preis-Literale nur in shared/pricing*.ts", () => {
         const allowed = ALLOWLIST.some(
           a => a.file === rel && line.includes(a.snippet)
         );
-        if (!allowed) hits.push(`${rel}:${i + 1}: ${line.trim().slice(0, 140)}`);
+        if (!allowed)
+          hits.push(`${rel}:${i + 1}: ${line.trim().slice(0, 140)}`);
       });
     }
     expect(hits, hits.join("\n")).toEqual([]);
@@ -89,7 +90,9 @@ describe("Preis-Literale nur in shared/pricing*.ts", () => {
   test("jeder Allowlist-Eintrag trifft noch eine Zeile (keine Altlasten)", () => {
     for (const entry of ALLOWLIST) {
       const content = fs.readFileSync(path.join(ROOT, entry.file), "utf-8");
-      expect(content, `${entry.file}: ${entry.reason}`).toContain(entry.snippet);
+      expect(content, `${entry.file}: ${entry.reason}`).toContain(
+        entry.snippet
+      );
     }
   });
 });

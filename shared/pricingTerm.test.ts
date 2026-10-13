@@ -6,6 +6,8 @@ import {
   computeCancellation,
   formatDateDe,
   isWithinNotice,
+  pickCurrentSubscription,
+  termBoundary,
   termEndAt,
   termStateAt,
   TermUnknownError,
@@ -171,5 +173,58 @@ describe("computeCancellation", () => {
         requestedAt: t("2027-06-10T08:00:00Z"),
       })
     ).toThrow(TermUnknownError);
+  });
+});
+
+describe("Laufzeit vom Stripe-Abrechnungsanker (Tarifwechsel, 29.02.)", () => {
+  const anchor = t("2027-01-31T12:00:00Z"); // billing_cycle_anchor
+  const switchStart = t("2027-02-28T12:00:00Z"); // gekappte Periodengrenze
+
+  test("ohne Anker endet die Laufzeit am 28.02.2028 — keine Stripe-Grenze", () => {
+    expect(iso(termBoundary(switchStart, 1))).toBe("2028-02-28T12:00:00.000Z");
+  });
+  test("mit Anker am 29.02.2028 — Stripe-Periodengrenze (31. gekappt)", () => {
+    expect(iso(termBoundary(switchStart, 1, 12, anchor))).toBe(
+      "2028-02-29T12:00:00.000Z"
+    );
+    expect(iso(termBoundary(switchStart, 2, 12, anchor))).toBe(
+      "2029-02-28T12:00:00.000Z"
+    );
+  });
+  test("Anker = Laufzeitbeginn ändert nichts", () => {
+    expect(termBoundary(anchor, 3, 12, anchor)).toBe(termBoundary(anchor, 3));
+  });
+  test("computeCancellation nutzt den Anker", () => {
+    const result = computeCancellation({
+      tariff: "yearly",
+      requestedAt: t("2027-06-01T00:00:00Z"),
+      inTrial: false,
+      currentPeriodEnd: null,
+      termStartedAt: switchStart,
+      billingAnchor: anchor,
+    });
+    expect(iso(result.endsAt)).toBe("2028-02-29T12:00:00.000Z");
+  });
+});
+
+describe("pickCurrentSubscription", () => {
+  test("jüngstes nicht beendetes Abo, deterministisch", () => {
+    const rows = [
+      { id: 1, status: "canceled", createdAt: 300 },
+      { id: 2, status: "active", createdAt: 100 },
+      { id: 3, status: "trialing", createdAt: 200 },
+      { id: 4, status: "active", createdAt: 200 },
+    ];
+    expect(pickCurrentSubscription(rows)?.id).toBe(4);
+    expect(pickCurrentSubscription([...rows].reverse())?.id).toBe(4);
+  });
+  test("nur beendete → das jüngste; leer → undefined", () => {
+    expect(
+      pickCurrentSubscription([
+        { id: 1, status: "canceled", createdAt: 1 },
+        { id: 2, status: "canceled", createdAt: 2 },
+      ])?.id
+    ).toBe(2);
+    expect(pickCurrentSubscription([])).toBeUndefined();
   });
 });

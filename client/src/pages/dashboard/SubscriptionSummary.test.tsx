@@ -11,7 +11,11 @@ import {
 const t = (iso: string) => Math.floor(Date.parse(iso) / 1000);
 const noop = () => {};
 
-function render(row: Partial<SubscriptionRow>, now: string) {
+function render(
+  row: Partial<SubscriptionRow>,
+  now: string,
+  preview: { endsAt: number; reason: "term_end" | "next_term_end" | "trial" | "monthly" } | null = null
+) {
   const subscription: SubscriptionRow = {
     status: "active",
     billingInterval: "yearly",
@@ -30,6 +34,7 @@ function render(row: Partial<SubscriptionRow>, now: string) {
       onWithdraw={noop}
       onSwitchToYearly={noop}
       onOpenPortal={noop}
+      preview={preview}
     />
   );
 }
@@ -53,7 +58,9 @@ describe("SubscriptionSummary (Konto)", () => {
     );
     expect(html).toContain("Monatstarif · 24,90 €/Monat");
     expect(html).not.toContain("19,90 €/Monat · ");
-    expect(html).toContain("Monatlich kündbar, nächster Abrechnungstag 31.05.2027.");
+    expect(html).toContain(
+      "Monatlich kündbar, nächster Abrechnungstag 31.05.2027."
+    );
     expect(html).toContain("In den Jahrestarif wechseln");
   });
 
@@ -97,10 +104,9 @@ describe("SubscriptionSummary (Konto)", () => {
   });
 
   test("Hilfsfunktionen", () => {
-    expect(activeAddOnKeys({ features: { menu: true }, subpages: true })).toEqual([
-      "menu",
-      "subpages",
-    ]);
+    expect(
+      activeAddOnKeys({ features: { menu: true }, subpages: true })
+    ).toEqual(["menu", "subpages"]);
     expect(
       toAccountView({
         status: "active",
@@ -111,5 +117,20 @@ describe("SubscriptionSummary (Konto)", () => {
         cancelEffectiveAt: null,
       }).tariff
     ).toBe("monthly");
+  });
+});
+
+describe("Kündigen nie gesperrt (Review 2026-10-13)", () => {
+  test("Jahrestarif ohne Laufzeitbeginn: Kündigen-Knopf da, Hinweis statt Sperre", () => {
+    const html = render({ termStartedAt: null }, "2027-06-10T08:00:00Z");
+    expect(html).toContain(">Kündigen<");
+    expect(html).toContain("Das genaue Enddatum berechnen wir beim Bestätigen");
+  });
+  test("Server-Vorschau hat Vorrang und zeigt das Datum, das Stripe bekommt", () => {
+    const html = render({ termStartedAt: null }, "2027-06-10T08:00:00Z", {
+      endsAt: t("2028-02-29T12:00:00Z"),
+      reason: "term_end",
+    });
+    expect(html).toContain("Kündigst du jetzt, endet dein Abo am 29.02.2028.");
   });
 });

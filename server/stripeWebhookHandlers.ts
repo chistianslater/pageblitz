@@ -95,11 +95,16 @@ export async function handleCheckoutCompleted(
   // currentPeriodEnd von Stripe holen (current_period_end nur über den
   // Compat-Client verfügbar)
   let currentPeriodEnd: number | undefined;
+  // Abrechnungsanker (= Testende): Laufzeitenden des Jahrestarifs zählen von
+  // hier, damit cancel_at auf einer Stripe-Periodengrenze liegt.
+  let billingAnchorAt: number | null = null;
   if (subscriptionId) {
     try {
       const stripeSub =
         await deps.stripeCompat.subscriptions.retrieve(subscriptionId);
       currentPeriodEnd = (stripeSub as any).current_period_end;
+      const anchor = (stripeSub as any).billing_cycle_anchor;
+      if (typeof anchor === "number") billingAnchorAt = anchor;
     } catch (e) {
       console.warn("[Webhook] Could not fetch subscription period end:", e);
     }
@@ -154,6 +159,7 @@ export async function handleCheckoutCompleted(
     addOns,
     checkoutEmail,
     currentPeriodEnd,
+    billingAnchorAt,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });
