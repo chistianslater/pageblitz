@@ -18,8 +18,16 @@ import sharp from "sharp";
 import { ENV } from "../_core/env";
 import { uploadBufferToR2 } from "../r2Upload";
 import { storagePut } from "../storage";
-import { seiteAufnehmen } from "./aufnahme";
+import { aufnahmegeraetOeffnen, seiteAufnehmen } from "./aufnahme";
 import { laptopMockup } from "./mockup";
+import {
+  alsDruckJpeg,
+  schriftDataUrl,
+  screenshotFenster,
+  VORDERSEITE_PX,
+  vorderseiteHtml,
+  type VorderseiteText,
+} from "./screenshotMotiv";
 
 /** Qualitaet fuer den Druck — darunter werden Kanten im Hero sichtbar. */
 const JPEG_QUALITAET = 92;
@@ -41,8 +49,33 @@ export async function motivErzeugen(opts: {
    * die Kartengrafik das Geraet selbst mitbringt.
    */
   ohneMockup?: boolean;
+  /**
+   * Kartenlayout (Welle 2): `screenshot` baut die KOMPLETTE Vorderseite
+   * der Vorlage B (214 × 109 mm, 300 dpi) mit Schlagzeile und Screenshot
+   * und legt sie als `<code>-screenshot.jpg` ab — am Namen erkennt
+   * `motivPasstZumLayout`, dass sie zu diesem Layout gehört.
+   */
+  layout?: string | null;
+  /** Texte der Vorderseite — nur fuer `layout: "screenshot"` noetig. */
+  vorderseite?: VorderseiteText;
   chromiumPfad?: string;
 }): Promise<{ bildUrl: string; bytes: number }> {
+  if (opts.layout === "screenshot") {
+    if (!opts.vorderseite) {
+      throw new Error("Screenshot-Layout braucht die Texte der Vorderseite.");
+    }
+    const jpeg = await vorderseiteErzeugen(
+      opts.vorschauUrl,
+      opts.vorderseite,
+      opts.chromiumPfad
+    );
+    return hochladen(
+      `postkarten/${opts.code}-screenshot.jpg`,
+      jpeg,
+      "image/jpeg"
+    );
+  }
+
   const png = await seiteAufnehmen(opts.vorschauUrl, opts.chromiumPfad);
 
   if (opts.ohneMockup) {
@@ -71,4 +104,32 @@ async function hochladen(
   // wechselnder.
   const hoch = await storagePut(key, daten, typ);
   return { bildUrl: hoch.url, bytes: daten.length };
+}
+
+/**
+ * Vorderseite der Screenshot-Karte: Seite aufnehmen, in die Komposition
+ * setzen, in Druckgroesse rendern. Ein Browser fuer beides.
+ */
+export async function vorderseiteErzeugen(
+  vorschauUrl: string,
+  text: VorderseiteText,
+  chromiumPfad?: string
+): Promise<Buffer> {
+  const geraet = await aufnahmegeraetOeffnen(chromiumPfad);
+  try {
+    const aufnahme = await geraet.aufnehmen(vorschauUrl, screenshotFenster());
+    const html = vorderseiteHtml({
+      text,
+      screenshot: `data:image/png;base64,${aufnahme.toString("base64")}`,
+      schrift: schriftDataUrl(),
+    });
+    const png = await geraet.rendern(
+      html,
+      VORDERSEITE_PX.breite,
+      VORDERSEITE_PX.hoehe
+    );
+    return alsDruckJpeg(png);
+  } finally {
+    await geraet.schliessen();
+  }
 }

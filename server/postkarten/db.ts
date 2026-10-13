@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import {
   generatedWebsites,
@@ -8,21 +8,45 @@ import {
 import { kurzcodeErzeugen, type Kanal } from "./kurzcode";
 import { parseStudioProgress } from "../../shared/onboardingV2/checklist";
 import type { KurzlinkKarte } from "./route";
+import type { NachfassKandidat } from "./nachfass";
 
 /** Wie oft wir bei einer Code-Kollision neu wuerfeln, bevor wir aufgeben. */
 const MAX_VERSUCHE = 8;
 
-/**
- * Legt eine Karte an — oder gibt die bestehende zurueck. Ein Betrieb
- * bekommt genau einen Code, sonst zeigen zwei gedruckte Karten desselben
- * Salons auf verschiedene Zeilen und die Zaehlung zerfaellt.
- */
-export async function postkarteSichern(eintrag: {
+/** Was beim Anlegen oder Aktualisieren einer Karte mitgegeben werden kann. */
+export interface KartenEintrag {
   businessId: number;
   websiteId?: number | null;
   city?: string | null;
   textVariant?: string | null;
-}): Promise<{ id: number; code: string }> {
+  /**
+   * Welle 2 (Migration 0039). `undefined` heißt „nicht anfassen" — so
+   * bleibt beim Motiv-Aufnehmen ohne Batch-Angabe die Zuordnung stehen.
+   */
+  welle?: string | null;
+  batch?: string | null;
+  layout?: string | null;
+}
+
+/** Nur die ausdrücklich angegebenen Welle-Felder — `undefined` fehlt. */
+function welleFelder(eintrag: KartenEintrag) {
+  return {
+    ...(eintrag.welle !== undefined ? { welle: eintrag.welle } : {}),
+    ...(eintrag.batch !== undefined ? { batch: eintrag.batch } : {}),
+    ...(eintrag.layout !== undefined ? { layout: eintrag.layout } : {}),
+  };
+}
+
+/**
+ * Legt eine Karte an — oder arbeitet an der jüngsten Karte des Betriebs
+ * weiter. Bis Welle 1 hatte jeder Betrieb genau einen Code; seit dem
+ * Nachfass (Welle 2, Batch D) kann ein Betrieb eine zweite Karte haben,
+ * die über `nachfassKarteAnlegen` entsteht. Gearbeitet wird immer an der
+ * jüngsten — dieselbe, die `kandidaten.ts` anzeigt.
+ */
+export async function postkarteSichern(
+  eintrag: KartenEintrag
+): Promise<{ id: number; code: string }> {
   const db = await getDb();
   if (!db) throw new Error("Keine Datenbank verfügbar");
 
@@ -30,6 +54,7 @@ export async function postkarteSichern(eintrag: {
     .select({ id: postcards.id, code: postcards.code })
     .from(postcards)
     .where(eq(postcards.businessId, eintrag.businessId))
+    .orderBy(desc(postcards.id))
     .limit(1);
   if (vorhanden[0]) {
     // Der Code bleibt — er steht schon auf Papier. Stadt und Variante
@@ -40,11 +65,30 @@ export async function postkarteSichern(eintrag: {
         city: eintrag.city ?? null,
         textVariant: eintrag.textVariant ?? null,
         websiteId: eintrag.websiteId ?? null,
+        ...welleFelder(eintrag),
       })
       .where(eq(postcards.id, vorhanden[0].id));
     return vorhanden[0];
   }
+  return neueKarteEinfuegen(eintrag);
+}
 
+/**
+ * Zweite Karte für einen Betrieb der ersten Welle (Batch D). Immer eine
+ * NEUE Zeile mit neuem Code: Die alte Karte liegt beim Salon, ihr Code
+ * steht auf Papier und zählt weiter für die erste Welle.
+ */
+export async function nachfassKarteAnlegen(
+  eintrag: KartenEintrag
+): Promise<{ id: number; code: string }> {
+  return neueKarteEinfuegen(eintrag);
+}
+
+async function neueKarteEinfuegen(
+  eintrag: KartenEintrag
+): Promise<{ id: number; code: string }> {
+  const db = await getDb();
+  if (!db) throw new Error("Keine Datenbank verfügbar");
   for (let versuch = 0; versuch < MAX_VERSUCHE; versuch++) {
     const code = kurzcodeErzeugen();
     try {
@@ -54,6 +98,9 @@ export async function postkarteSichern(eintrag: {
         websiteId: eintrag.websiteId ?? null,
         city: eintrag.city ?? null,
         textVariant: eintrag.textVariant ?? null,
+        welle: eintrag.welle ?? null,
+        batch: eintrag.batch ?? null,
+        layout: eintrag.layout ?? null,
       });
       const neu = await db
         .select({ id: postcards.id, code: postcards.code })
@@ -194,6 +241,15 @@ export interface KartenZeile {
   websiteStatus: string | null;
   hatEmail: boolean;
   designBestaetigt: boolean;
+  /** Welle 2 (Migration 0039): `null` = erste Welle. */
+  welle: string | null;
+  batch: string | null;
+  layout: string | null;
+  /**
+   * Zum Betrieb gibt es eine jüngere Karte (Nachfass). Dann gehören
+   * Fortschritte im Studio der neuen Karte — siehe `trichterStufe`.
+   */
+  abgeloest: boolean;
 }
 
 /**
@@ -215,6 +271,10 @@ export async function kartenUebersicht(): Promise<KartenZeile[]> {
       betrieb: businesses.name,
       city: postcards.city,
       textVariant: postcards.textVariant,
+      welle: postcards.welle,
+      batch: postcards.batch,
+      layout: postcards.layout,
+      abgeloest: sql<number>`exists(select 1 from postcards p2 where p2.businessId = ${postcards.businessId} and p2.id > ${postcards.id})`,
       status: postcards.status,
       druckstatus: postcards.druckstatus,
       sentAt: postcards.sentAt,
@@ -242,6 +302,7 @@ export async function kartenUebersicht(): Promise<KartenZeile[]> {
     betrieb: z.betrieb ?? "—",
     scans: Number(z.scans ?? 0),
     hatEmail: Number(z.hatEmail ?? 0) === 1,
+    abgeloest: Number(z.abgeloest ?? 0) === 1,
     designBestaetigt:
       parseStudioProgress(parseJson(studioProgress)).styleConfirmed === true,
   }));
@@ -274,4 +335,43 @@ export async function druckstatusSetzen(
     .set({ druckstatus })
     .where(inArray(postcards.id, ids));
   return ids.length;
+}
+
+/**
+ * Karten der ersten Welle als Grundlage für den Nachfass (Batch D). Bewusst
+ * ALLE Karten der ersten Welle, auch die gesperrten: Die Liste im Backend
+ * zeigt, warum ein Salon nicht in Frage kommt.
+ */
+export async function nachfassKandidatenLaden(): Promise<NachfassKandidat[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const { businesses } = await import("../../drizzle/schema");
+  const zeilen = await db
+    .select({
+      karteId: postcards.id,
+      code: postcards.code,
+      businessId: postcards.businessId,
+      betrieb: businesses.name,
+      city: postcards.city,
+      welle: postcards.welle,
+      status: postcards.status,
+      testkarte: postcards.testkarte,
+      druckstatus: postcards.druckstatus,
+      sentAt: postcards.sentAt,
+      scans: sql<number>`(select count(*) from postcard_scans s where s.postcardId = ${postcards.id})`,
+      websiteStatus: generatedWebsites.status,
+      hatNeuereKarte: sql<number>`exists(select 1 from postcards p2 where p2.businessId = ${postcards.businessId} and p2.id > ${postcards.id})`,
+    })
+    .from(postcards)
+    .leftJoin(businesses, eq(businesses.id, postcards.businessId))
+    .leftJoin(generatedWebsites, eq(generatedWebsites.id, postcards.websiteId))
+    .where(isNull(postcards.welle))
+    .orderBy(postcards.city, postcards.code);
+  return zeilen.map(z => ({
+    ...z,
+    betrieb: z.betrieb ?? "—",
+    testkarte: Boolean(z.testkarte),
+    scans: Number(z.scans ?? 0),
+    hatNeuereKarte: Number(z.hatNeuereKarte ?? 0) === 1,
+  }));
 }

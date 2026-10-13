@@ -21,20 +21,39 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { deleteWebsite, updateBusiness } from "../db";
-import { gruppiere, trichter } from "./auswertung";
+import {
+  gruppiere,
+  nachVersuchsarm,
+  trichter,
+  trichterStufe,
+} from "./auswertung";
 import { karteAnHeymail, standardTemplate } from "./auftrag";
 import {
   karteWiederAufnehmen,
   karteZurueckstellen,
   kartenUebersicht,
   motivGespeichert,
+  nachfassKandidatenLaden,
+  nachfassKarteAnlegen,
   postkarteSichern,
   postkarteVersendet,
   vorschauGespeichert,
   druckstatusSetzen,
 } from "./db";
 import {
+  batchVorgabe,
+  batchWiderspruch,
+  KARTEN_JE_BATCH,
+  layoutVon,
+  POSTKARTEN_LAYOUTS,
+  WELLE_2,
+} from "../../shared/postkartenWelle";
+import { nachfassSperre, nachfassVorschlag } from "./nachfass";
+import { motivPasstZumLayout, VORDERSEITE_MM, VORDERSEITE_PX } from "./screenshotMotiv";
+import { vorlageAufloesen, vorlagenUebersicht } from "./vorlagen";
+import {
   anschriftZerlegen,
+  betriebOrt,
   postkartenVariablen,
   TEXT_VARIANTEN,
   type TextVariante,
@@ -53,6 +72,76 @@ const TemplateSchema = z.string().trim().min(8).max(100).optional();
 const VarianteSchema = z.enum(
   Object.keys(TEXT_VARIANTEN) as [TextVariante, ...TextVariante[]]
 );
+
+/**
+ * Zuordnung einer Karte zu Welle, Batch und Layout (Welle 2, 2026-10-13).
+ * Alles optional: Ohne Angabe bleibt, was an der Karte steht — so laufen
+ * die Wege der ersten Welle unverändert weiter.
+ */
+const WelleSchema = z
+  .string()
+  .trim()
+  .regex(/^welle-\d{1,3}$/, "Form: welle-2")
+  .optional();
+const BatchSchema = z.enum(["A", "B", "C", "D"]).optional();
+const LayoutSchema = z.enum(POSTKARTEN_LAYOUTS).optional();
+const ZuordnungSchema = {
+  welle: WelleSchema,
+  batch: BatchSchema,
+  layout: LayoutSchema,
+};
+
+/** Bricht ab, wenn die Auswahl dem Batch widerspricht. */
+function batchPruefen(opts: {
+  batch: string | undefined;
+  layout: string | null;
+  textVariant: string;
+}): void {
+  const widerspruch = batchWiderspruch(opts);
+  if (widerspruch) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: widerspruch });
+  }
+}
+
+/**
+ * Das Motiv muss zum Layout passen, mit dem die Karte jetzt gedruckt wird —
+ * nicht nur zu dem, das an der Karte stand. Sonst druckte ein Wechsel auf
+ * „screenshot" das quadratische Laptop-Bild über die ganze Vorderseite.
+ */
+function motivPruefen(kandidat: Kandidat, layout: string | null): void {
+  if (kandidat.bildUrl && !motivPasstZumLayout(layout, kandidat.bildUrl)) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: `${kandidat.name}: Das Motiv passt nicht zum Layout „${layoutVon(layout)}" — erst das Motiv neu aufnehmen.`,
+    });
+  }
+}
+
+/**
+ * Texte der Screenshot-Vorderseite (Batch B): Die Vorlage B hat keine
+ * Textfelder mehr vorne — Eyebrow, Schlagzeile und Copy stehen im Bild.
+ */
+function vorderseiteTexte(name: string, stadt: string | null) {
+  const text = TEXT_VARIANTEN.screenshot;
+  return {
+    // Ohne Ort nur der Name — „Für Salon in " sähe nach Fehler aus.
+    eyebrow: stadt ? betriebOrt(name, stadt) : `Für ${name}`,
+    headline: text.headline,
+    copy: text.copy,
+  };
+}
+
+/** Vorlage je Layout; Fehler als verständliche Meldung im Backend. */
+function vorlageFuer(layout: string | null, override?: string): string {
+  try {
+    return vorlageAufloesen({ layout, override });
+  } catch (err) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
 
 function basisUrl(): string {
   return (process.env.APP_BASE_URL || "https://pageblitz.de").replace(
@@ -141,8 +230,11 @@ export const postkartenRouter = router({
   uebersicht: adminProcedure.query(async () => {
     const karten = await kartenUebersicht();
     return {
-      karten,
+      // Die Stufe kommt vom Server mit, statt dass die Oberfläche die Regel
+      // nachbaut — seit dem Nachfass hat sie eine Ausnahme mehr.
+      karten: karten.map(k => ({ ...k, stufe: trichterStufe(k) })),
       trichter: trichter(karten),
+      nachVersuchsarm: nachVersuchsarm(karten),
       nachStadt: gruppiere(karten, z => z.city),
       nachVariante: gruppiere(karten, z => z.textVariant),
     };
@@ -168,6 +260,10 @@ export const postkartenRouter = router({
     templateId: standardTemplate(),
     ausUmgebung: !!process.env.HEYMAIL_TEMPLATE_ID?.trim(),
     heymailBereit: !!process.env.HEYMAIL_API_KEY,
+    /** Vorlage je Layout (Welle 2) — fehlt eine, steht `templateId: null`. */
+    vorlagen: vorlagenUebersicht(),
+    /** Maße der Screenshot-Vorderseite (Vorlage B) — für den Hinweis im Backend. */
+    vorderseite: { mm: VORDERSEITE_MM, px: VORDERSEITE_PX },
   })),
 
   /** Textvarianten fuer die Auswahl im Backend. */
@@ -176,6 +272,7 @@ export const postkartenRouter = router({
       id,
       headline: text.headline,
       copy: text.copy,
+      abbinder: text.abbinder,
     }))
   ),
 
@@ -324,7 +421,9 @@ export const postkartenRouter = router({
    * das ist der Handgriff nach einer Neugenerierung der Seiten.
    */
   motiv: adminProcedure
-    .input(z.object({ businessId: z.number().int().positive() }))
+    .input(
+      z.object({ businessId: z.number().int().positive(), ...ZuordnungSchema })
+    )
     .mutation(async ({ input }) => {
       const kandidat = await offenerKandidat(input.businessId);
       if (!kandidat.previewToken) {
@@ -336,16 +435,25 @@ export const postkartenRouter = router({
       }
       // Der Code entsteht hier, falls es noch keinen gibt: Er bestimmt den
       // Dateinamen des Motivs und steht spaeter auf dem Papier.
+      // Das Layout entscheidet, WELCHES Motiv entsteht (Laptop oder
+      // Screenshot in Druckaufloesung) — deshalb wird es hier schon
+      // gespeichert, nicht erst beim Auftrag.
+      const layout = input.layout ?? kandidat.layout;
       const karte = await postkarteSichern({
         businessId: kandidat.businessId,
         websiteId: kandidat.websiteId,
         city: kandidat.stadt,
         textVariant: kandidat.textVariant,
+        welle: input.welle,
+        batch: input.batch,
+        layout: input.layout,
       });
       try {
         const { bildUrl, bytes } = await motivErzeugen({
           vorschauUrl: `${basisUrl()}/preview-ssr/${kandidat.previewToken}`,
           code: karte.code,
+          layout,
+          vorderseite: vorderseiteTexte(kandidat.name, kandidat.stadt),
         });
         await motivGespeichert(karte.id, bildUrl);
         return { code: karte.code, bildUrl, bytes };
@@ -374,7 +482,10 @@ export const postkartenRouter = router({
   musterMotiv: adminProcedure
     .input(
       z
-        .object({ businessId: z.number().int().positive().optional() })
+        .object({
+          businessId: z.number().int().positive().optional(),
+          layout: LayoutSchema,
+        })
         .optional()
     )
     .mutation(async ({ input }) => {
@@ -390,9 +501,13 @@ export const postkartenRouter = router({
             "Keine Vorschau-Seite gefunden, von der sich ein Muster aufnehmen ließe.",
         });
       }
+      // Eigenes Muster je Layout: Die Screenshot-Vorlage (Batch B) wird an
+      // `muster-screenshot.jpg` gebaut, die erste an `muster.png`.
       const { bildUrl } = await motivErzeugen({
         vorschauUrl: `${basisUrl()}/preview-ssr/${kandidat.previewToken}`,
         code: "muster",
+        layout: input?.layout,
+        vorderseite: vorderseiteTexte(kandidat.name, kandidat.stadt),
       });
       return { bildUrl, betrieb: kandidat.name };
     }),
@@ -406,15 +521,23 @@ export const postkartenRouter = router({
         businessId: z.number().int().positive(),
         variante: VarianteSchema.default("ungefragt"),
         templateId: TemplateSchema,
+        ...ZuordnungSchema,
       })
     )
     .mutation(async ({ input }) => {
       const kandidat = await offenerKandidat(input.businessId);
+      const layout = input.layout ?? kandidat.layout;
+      batchPruefen({ batch: input.batch, layout, textVariant: input.variante });
+      motivPruefen(kandidat, layout);
+      const templateId = vorlageFuer(layout, input.templateId);
       const karte = await postkarteSichern({
         businessId: kandidat.businessId,
         websiteId: kandidat.websiteId,
         city: kandidat.stadt,
         textVariant: input.variante,
+        welle: input.welle,
+        batch: input.batch,
+        layout: input.layout,
       });
       const { empfaenger, variablen } = variablenFuer(
         kandidat,
@@ -424,13 +547,13 @@ export const postkartenRouter = router({
       const ergebnis = await karteAnHeymail({
         modus: "vorschau",
         apiKey: heymailSchluessel(),
-        ...(input.templateId ? { templateId: input.templateId } : {}),
+        templateId,
         firma: kandidat.name,
         empfaenger,
         variablen,
       });
       await vorschauGespeichert(karte.id, ergebnis.pdfUrl);
-      return { code: karte.code, pdfUrl: ergebnis.pdfUrl };
+      return { code: karte.code, pdfUrl: ergebnis.pdfUrl, templateId };
     }),
 
   /**
@@ -445,6 +568,7 @@ export const postkartenRouter = router({
         variante: VarianteSchema.default("ungefragt"),
         templateId: TemplateSchema,
         bestaetigung: z.literal("VERSENDEN"),
+        ...ZuordnungSchema,
       })
     )
     .mutation(async ({ input }) => {
@@ -455,11 +579,20 @@ export const postkartenRouter = router({
           message: `${kandidat.name}: ${kandidat.hinweis}`,
         });
       }
+      // Alle Pruefungen VOR dem ersten Schreiben: Ein Auftrag, der an der
+      // Vorlage scheitert, soll die Karte nicht schon umetikettiert haben.
+      const layout = input.layout ?? kandidat.layout;
+      batchPruefen({ batch: input.batch, layout, textVariant: input.variante });
+      motivPruefen(kandidat, layout);
+      const templateId = vorlageFuer(layout, input.templateId);
       const karte = await postkarteSichern({
         businessId: kandidat.businessId,
         websiteId: kandidat.websiteId,
         city: kandidat.stadt,
         textVariant: input.variante,
+        welle: input.welle,
+        batch: input.batch,
+        layout: input.layout,
       });
       const { empfaenger, variablen } = variablenFuer(
         kandidat,
@@ -469,7 +602,7 @@ export const postkartenRouter = router({
       const ergebnis = await karteAnHeymail({
         modus: "versand",
         apiKey: heymailSchluessel(),
-        ...(input.templateId ? { templateId: input.templateId } : {}),
+        templateId,
         firma: kandidat.name,
         // Steht als Titel des Mailings in der HeyMail-Liste — sonst heisst
         // dort jeder der 31 Auftraege gleich.
@@ -486,5 +619,84 @@ export const postkartenRouter = router({
       }
       await postkarteVersendet(karte.id, ergebnis.referenz);
       return { code: karte.code, referenz: ergebnis.referenz };
+    }),
+
+  /**
+   * Nachfass-Liste fuer Welle 2, Batch D: alle Karten der ersten Welle mit
+   * dem Grund, warum sie (nicht) in Frage kommen, und dem Vorschlag —
+   * fuenf, reihum ueber die Staedte. Liest nur.
+   */
+  nachfassListe: adminProcedure.query(async () => {
+    const karten = await nachfassKandidatenLaden();
+    const vorschlag = nachfassVorschlag(karten, KARTEN_JE_BATCH);
+    const vorgeschlagen = new Set(vorschlag.map(k => k.karteId));
+    return {
+      zeilen: karten.map(k => ({
+        ...k,
+        sperre: nachfassSperre(k),
+        vorgeschlagen: vorgeschlagen.has(k.karteId),
+      })),
+      vorschlag: vorschlag.map(k => k.karteId),
+    };
+  }),
+
+  /**
+   * Legt die Nachfass-Karten an: je gewaehlter Karte der ersten Welle eine
+   * NEUE Zeile mit neuem Code zum selben Betrieb (Batch D, Text
+   * „nachfass", Standard-Layout). Die alte Karte bleibt, wie sie ist.
+   * Verschickt nichts — danach laufen Motiv, Vorschau und Auftrag wie bei
+   * jeder Karte.
+   */
+  nachfassAnlegen: adminProcedure
+    .input(
+      z.object({
+        karteIds: z.array(z.number().int().positive()).min(1).max(10),
+        welle: z
+          .string()
+          .trim()
+          .regex(/^welle-\d{1,3}$/)
+          .default(WELLE_2),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const vorgabe = batchVorgabe("D")!;
+      const alle = await nachfassKandidatenLaden();
+      const angelegt: { betrieb: string; code: string }[] = [];
+      for (const karteId of input.karteIds) {
+        const alt = alle.find(k => k.karteId === karteId);
+        if (!alt) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Karte ${karteId} gehört nicht zur ersten Welle.`,
+          });
+        }
+        const sperre = nachfassSperre(alt);
+        if (sperre) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: `${alt.betrieb} (${alt.code}): ${sperre}.`,
+          });
+        }
+        // Die aktuelle Vorschau-Seite des Betriebs — der QR zeigt ueber den
+        // Betrieb ohnehin dorthin, und das Motiv entsteht von ihr.
+        const kandidat = await kandidatLaden(alt.businessId);
+        if (!kandidat) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `${alt.betrieb}: keine Vorschau-Seite mehr.`,
+          });
+        }
+        const neu = await nachfassKarteAnlegen({
+          businessId: alt.businessId,
+          websiteId: kandidat.websiteId,
+          city: alt.city,
+          textVariant: vorgabe.textVariant,
+          welle: input.welle,
+          batch: vorgabe.batch,
+          layout: vorgabe.layout,
+        });
+        angelegt.push({ betrieb: alt.betrieb, code: neu.code });
+      }
+      return { angelegt };
     }),
 });

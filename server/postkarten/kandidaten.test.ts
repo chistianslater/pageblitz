@@ -19,6 +19,9 @@ const zeile = (teil: Partial<KandidatZeile> = {}): KandidatZeile => ({
   bildAt: new Date("2026-09-12T10:00:00Z"),
   pdfUrl: null,
   sentAt: null,
+  welle: null,
+  batch: null,
+  layout: null,
   ...teil,
 });
 
@@ -109,5 +112,41 @@ describe("kandidatBewerten", () => {
     const k = kandidatBewerten(zeile({ previewToken: null }));
     expect(k.zustand).toBe("ohne-vorschau");
     expect(k.beauftragbar).toBe(false);
+  });
+
+  test("Screenshot-Layout mit Laptop-Motiv ist nicht beauftragbar (Welle 2, B)", () => {
+    // Sonst ginge die Screenshot-Vorlage mit dem quadratischen Laptop-Bild
+    // in den Druck — gestaucht über die ganze Vorderseite.
+    const k = kandidatBewerten(
+      zeile({
+        layout: "screenshot",
+        bildUrl: "https://media.pageblitz.de/postkarten/AB12.png",
+      })
+    );
+    expect(k.zustand).toBe("motiv-veraltet");
+    expect(k.beauftragbar).toBe(false);
+    expect(k.hinweis).toMatch(/Screenshot-Motiv/);
+  });
+
+  test("Screenshot-Layout mit passendem Motiv ist bereit", () => {
+    const k = kandidatBewerten(
+      zeile({
+        layout: "screenshot",
+        welle: "welle-2",
+        batch: "B",
+        bildUrl: "https://media.pageblitz.de/postkarten/AB12-screenshot.jpg",
+      })
+    );
+    expect(k.zustand).toBe("bereit");
+  });
+
+  test("Standard-Karte mit Screenshot-Motiv muss neu aufgenommen werden", () => {
+    const k = kandidatBewerten(
+      zeile({
+        layout: "standard",
+        bildUrl: "https://media.pageblitz.de/postkarten/AB12-screenshot.jpg",
+      })
+    );
+    expect(k.zustand).toBe("motiv-veraltet");
   });
 });

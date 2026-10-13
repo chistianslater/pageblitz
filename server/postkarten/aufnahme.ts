@@ -38,6 +38,11 @@ export interface AufnahmeFenster {
 export interface Aufnahmegeraet {
   /** Nimmt eine Seite auf; wirft, wenn dort keine Kundenseite steht. */
   aufnehmen(url: string, fenster?: AufnahmeFenster): Promise<Buffer>;
+  /**
+   * Rendert fertiges HTML in genau dieser Pixelgroesse (Welle 2: die
+   * Vorderseite der Screenshot-Karte). Wartet auf Schrift und Bilder.
+   */
+  rendern(html: string, breite: number, hoehe: number): Promise<Buffer>;
   schliessen(): Promise<void>;
 }
 
@@ -103,6 +108,21 @@ export async function aufnahmegeraetOeffnen(
         await page.close();
       }
     },
+    async rendern(html: string, breite: number, hoehe: number): Promise<Buffer> {
+      const page = await browser.newPage({
+        viewport: { width: breite, height: hoehe },
+        deviceScaleFactor: 1,
+      });
+      try {
+        await page.setContent(html, { waitUntil: "load" });
+        await page.evaluate(() => document.fonts.ready);
+        return await page.screenshot({
+          clip: { x: 0, y: 0, width: breite, height: hoehe },
+        });
+      } finally {
+        await page.close();
+      }
+    },
     async schliessen(): Promise<void> {
       await browser.close();
     },
@@ -112,11 +132,12 @@ export async function aufnahmegeraetOeffnen(
 /** Einzelaufnahme mit eigenem Browser — fuer den Weg ueber das Backend. */
 export async function seiteAufnehmen(
   url: string,
-  chromiumPfad?: string
+  chromiumPfad?: string,
+  fenster?: AufnahmeFenster
 ): Promise<Buffer> {
   const geraet = await aufnahmegeraetOeffnen(chromiumPfad);
   try {
-    return await geraet.aufnehmen(url);
+    return await geraet.aufnehmen(url, fenster);
   } finally {
     await geraet.schliessen();
   }

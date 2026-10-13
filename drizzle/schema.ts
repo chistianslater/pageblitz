@@ -606,51 +606,80 @@ export type InsertWebsiteVersion = typeof websiteVersions.$inferInsert;
  * Postkarten-Akquise (2026-09-09). Eine Zeile je gedruckte Karte; der
  * `code` steht darauf und fuehrt ueber `/k/:code` zur Vorschau.
  */
-export const postcards = mysqlTable("postcards", {
-  id: int("id").autoincrement().primaryKey(),
-  code: varchar("code", { length: 12 }).notNull().unique(),
-  businessId: int("businessId").notNull(),
-  websiteId: int("websiteId"),
-  city: varchar("city", { length: 120 }),
-  textVariant: varchar("textVariant", { length: 60 }),
-  heymailId: varchar("heymailId", { length: 120 }),
-  /**
-   * `zurueckgestellt` heisst: Dieser Betrieb bekommt in dieser Kampagne
-   * keine Karte — meist, weil es keine brauchbare Anschrift gibt. Der
-   * Unterschied zum Loeschen der Seite ist Absicht: Die Zeile bleibt, und
-   * damit die Antwort auf „haben wir den schon angefasst?" (Betreiber-Wunsch
-   * 2026-09-13).
-   */
-  status: mysqlEnum("status", ["entwurf", "versendet", "zurueckgestellt"])
-    .default("entwurf")
-    .notNull(),
-  /** Warum zurueckgestellt — steht in der Liste unter dem Namen. */
-  notiz: varchar("notiz", { length: 300 }),
-  /**
-   * Stand im HeyMail-Konto (2026-09-19), von Hand gepflegt: HeyMail bietet
-   * per API-Schluessel keine Status-Abfrage. `null` = nie beauftragt.
-   */
-  druckstatus: mysqlEnum("druckstatus", ["geplant", "verschickt", "storniert"]),
-  /**
-   * Eigene Testkarte des Betreibers (2026-09-19, 7N38 an SCHAU & HORCH):
-   * Der Kurz-Link funktioniert, in Übersicht und Trichter zählt sie nicht.
-   */
-  testkarte: boolean("testkarte").notNull().default(false),
-  /**
-   * Motiv der Karte: Aufnahme der Vorschau-Seite, oeffentlich bei R2.
-   * `bildAt` sagt, von wann sie ist — aelter als
-   * `generated_websites.updatedAt` heisst: Die Seite wurde seither neu
-   * erzeugt, das Motiv zeigt einen Stand, den es nicht mehr gibt
-   * (Betreiber-Wunsch 2026-09-13: im Backend nachziehen koennen).
-   */
-  bildUrl: varchar("bildUrl", { length: 500 }),
-  bildAt: timestamp("bildAt"),
-  /** Letzte HeyMail-Vorschau (PDF) — die Kontrolle vor dem Auftrag. */
-  pdfUrl: varchar("pdfUrl", { length: 500 }),
-  pdfAt: timestamp("pdfAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  sentAt: timestamp("sentAt"),
-});
+export const postcards = mysqlTable(
+  "postcards",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    code: varchar("code", { length: 12 }).notNull().unique(),
+    businessId: int("businessId").notNull(),
+    websiteId: int("websiteId"),
+    city: varchar("city", { length: 120 }),
+    textVariant: varchar("textVariant", { length: 60 }),
+    heymailId: varchar("heymailId", { length: 120 }),
+    /**
+     * `zurueckgestellt` heisst: Dieser Betrieb bekommt in dieser Kampagne
+     * keine Karte — meist, weil es keine brauchbare Anschrift gibt. Der
+     * Unterschied zum Loeschen der Seite ist Absicht: Die Zeile bleibt, und
+     * damit die Antwort auf „haben wir den schon angefasst?" (Betreiber-Wunsch
+     * 2026-09-13).
+     */
+    status: mysqlEnum("status", ["entwurf", "versendet", "zurueckgestellt"])
+      .default("entwurf")
+      .notNull(),
+    /** Warum zurueckgestellt — steht in der Liste unter dem Namen. */
+    notiz: varchar("notiz", { length: 300 }),
+    /**
+     * Stand im HeyMail-Konto (2026-09-19), von Hand gepflegt: HeyMail bietet
+     * per API-Schluessel keine Status-Abfrage. `null` = nie beauftragt.
+     */
+    druckstatus: mysqlEnum("druckstatus", [
+      "geplant",
+      "verschickt",
+      "storniert",
+    ]),
+    /**
+     * Eigene Testkarte des Betreibers (2026-09-19, 7N38 an SCHAU & HORCH):
+     * Der Kurz-Link funktioniert, in Übersicht und Trichter zählt sie nicht.
+     */
+    testkarte: boolean("testkarte").notNull().default(false),
+    /**
+     * Postkarten-Welle (2026-10-13, Migration 0039), z. B. `welle-2`. Die
+     * Karten der ersten Welle bleiben `null` und heißen in der Auswertung
+     * `welle-1`.
+     */
+    welle: varchar("welle", { length: 20 }),
+    /**
+     * Versuchsarm innerhalb der Welle (`A`..`D`). Eigene Spalte statt in
+     * `layout`: Zwei Arme können dasselbe Layout teilen und sich nur im Text
+     * unterscheiden.
+     */
+    batch: varchar("batch", { length: 20 }),
+    /**
+     * Kartenlayout — bestimmt HeyMail-Vorlage und Motiv. `null` = `standard`
+     * (Laptop-Mockup, `HEYMAIL_TEMPLATE_ID`); `screenshot` = nackter
+     * Screenshot großflächig (`HEYMAIL_TEMPLATE_ID_SCREENSHOT`).
+     */
+    layout: varchar("layout", { length: 40 }),
+    /**
+     * Motiv der Karte: Aufnahme der Vorschau-Seite, oeffentlich bei R2.
+     * `bildAt` sagt, von wann sie ist — aelter als
+     * `generated_websites.updatedAt` heisst: Die Seite wurde seither neu
+     * erzeugt, das Motiv zeigt einen Stand, den es nicht mehr gibt
+     * (Betreiber-Wunsch 2026-09-13: im Backend nachziehen koennen).
+     */
+    bildUrl: varchar("bildUrl", { length: 500 }),
+    bildAt: timestamp("bildAt"),
+    /** Letzte HeyMail-Vorschau (PDF) — die Kontrolle vor dem Auftrag. */
+    pdfUrl: varchar("pdfUrl", { length: 500 }),
+    pdfAt: timestamp("pdfAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    sentAt: timestamp("sentAt"),
+  },
+  table => ({
+    welleIdx: index("postcards_welle_idx").on(table.welle),
+    businessIdx: index("postcards_business_idx").on(table.businessId),
+  })
+);
 
 /** Ein Aufruf der Karte — ohne Personenbezug, nur Zeitpunkt und Kanal. */
 export const postcardScans = mysqlTable(

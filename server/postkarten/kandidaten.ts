@@ -11,10 +11,11 @@
  * der Datenbank steht: jede Vorschau-Seite mit ihrem Betrieb und der Karte,
  * falls es schon eine gibt.
  */
-import { and, desc, eq, like, or, type SQL } from "drizzle-orm";
+import { and, desc, eq, like, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "../db";
 import { businesses, generatedWebsites, postcards } from "../../drizzle/schema";
 import { anschriftZerlegen, type Empfaenger } from "./heymail";
+import { motivPasstZumLayout } from "./screenshotMotiv";
 
 export interface KandidatZeile {
   businessId: number;
@@ -36,6 +37,10 @@ export interface KandidatZeile {
   bildAt: Date | null;
   pdfUrl: string | null;
   sentAt: Date | null;
+  /** Welle 2 (Migration 0039): `null` = erste Welle. */
+  welle: string | null;
+  batch: string | null;
+  layout: string | null;
 }
 
 export type Zustand =
@@ -111,6 +116,17 @@ export function kandidatBewerten(zeile: KandidatZeile): Kandidat {
       beauftragbar: false,
     };
   }
+  if (!motivPasstZumLayout(zeile.layout, zeile.bildUrl)) {
+    return {
+      ...basis,
+      zustand: "motiv-veraltet",
+      hinweis:
+        zeile.layout === "screenshot"
+          ? "Layout Screenshot braucht das Screenshot-Motiv — Motiv neu aufnehmen."
+          : "Das Motiv gehört zum Screenshot-Layout — Motiv neu aufnehmen.",
+      beauftragbar: false,
+    };
+  }
   if (
     zeile.bildAt &&
     zeile.websiteUpdatedAt &&
@@ -131,6 +147,40 @@ export function kandidatBewerten(zeile: KandidatZeile): Kandidat {
     beauftragbar: true,
   };
 }
+
+const SPALTEN = {
+  businessId: businesses.id,
+  name: businesses.name,
+  anschrift: businesses.address,
+  branche: businesses.category,
+  websiteId: generatedWebsites.id,
+  slug: generatedWebsites.slug,
+  previewToken: generatedWebsites.previewToken,
+  websiteUpdatedAt: generatedWebsites.updatedAt,
+  karteId: postcards.id,
+  code: postcards.code,
+  kartenStatus: postcards.status,
+  notiz: postcards.notiz,
+  textVariant: postcards.textVariant,
+  bildUrl: postcards.bildUrl,
+  bildAt: postcards.bildAt,
+  pdfUrl: postcards.pdfUrl,
+  sentAt: postcards.sentAt,
+  welle: postcards.welle,
+  batch: postcards.batch,
+  layout: postcards.layout,
+};
+
+/**
+ * Je Betrieb zählt seine JÜNGSTE Karte (Welle 2, 2026-10-13). Bis dahin
+ * hatte jeder Betrieb höchstens eine; mit dem Nachfass (Batch D) bekommt
+ * ein Salon der ersten Welle eine zweite. Die erste bleibt als
+ * `versendet` stehen — gearbeitet wird an der neuen.
+ */
+const juengsteKarte = and(
+  eq(postcards.businessId, businesses.id),
+  sql`${postcards.id} = (select max(p2.id) from postcards p2 where p2.businessId = ${businesses.id})`
+);
 
 export interface KandidatenFilter {
   /** Teilstring in der Kategorie, z. B. "Friseur". */
@@ -167,28 +217,10 @@ export async function kandidatenLaden(
   }
 
   const zeilen = await db
-    .select({
-      businessId: businesses.id,
-      name: businesses.name,
-      anschrift: businesses.address,
-      branche: businesses.category,
-      websiteId: generatedWebsites.id,
-      slug: generatedWebsites.slug,
-      previewToken: generatedWebsites.previewToken,
-      websiteUpdatedAt: generatedWebsites.updatedAt,
-      karteId: postcards.id,
-      code: postcards.code,
-      kartenStatus: postcards.status,
-      notiz: postcards.notiz,
-      textVariant: postcards.textVariant,
-      bildUrl: postcards.bildUrl,
-      bildAt: postcards.bildAt,
-      pdfUrl: postcards.pdfUrl,
-      sentAt: postcards.sentAt,
-    })
+    .select(SPALTEN)
     .from(generatedWebsites)
     .innerJoin(businesses, eq(businesses.id, generatedWebsites.businessId))
-    .leftJoin(postcards, eq(postcards.businessId, businesses.id))
+    .leftJoin(postcards, juengsteKarte)
     .where(and(...bedingungen))
     .orderBy(desc(generatedWebsites.updatedAt))
     .limit(limit);
@@ -223,28 +255,10 @@ export async function kandidatLaden(
   const db = await getDb();
   if (!db) return null;
   const zeilen = await db
-    .select({
-      businessId: businesses.id,
-      name: businesses.name,
-      anschrift: businesses.address,
-      branche: businesses.category,
-      websiteId: generatedWebsites.id,
-      slug: generatedWebsites.slug,
-      previewToken: generatedWebsites.previewToken,
-      websiteUpdatedAt: generatedWebsites.updatedAt,
-      karteId: postcards.id,
-      code: postcards.code,
-      kartenStatus: postcards.status,
-      notiz: postcards.notiz,
-      textVariant: postcards.textVariant,
-      bildUrl: postcards.bildUrl,
-      bildAt: postcards.bildAt,
-      pdfUrl: postcards.pdfUrl,
-      sentAt: postcards.sentAt,
-    })
+    .select(SPALTEN)
     .from(generatedWebsites)
     .innerJoin(businesses, eq(businesses.id, generatedWebsites.businessId))
-    .leftJoin(postcards, eq(postcards.businessId, businesses.id))
+    .leftJoin(postcards, juengsteKarte)
     .where(
       and(
         eq(businesses.id, businessId),

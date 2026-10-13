@@ -4,11 +4,16 @@ import {
   anschriftZerlegen,
   mailingTitel,
   betriebOrt,
+  MAX_ABBINDER,
+  MAX_ANSCHREIBEN,
   MAX_BETRIEB_ORT,
+  MAX_COPY,
+  MAX_HEADLINE,
   MAX_MAILING_NAME,
   postkartenVariablen,
   TEXT_VARIANTEN,
 } from "./heymail";
+import { WELLE_2_BATCHES } from "../../shared/postkartenWelle";
 
 describe("anschriftZerlegen (Google-Anschrift → HeyMail-Empfänger)", () => {
   test("ein Zusatz vor der Strasse landet nicht in der Strasse", () => {
@@ -189,10 +194,57 @@ describe("Textvarianten (Betreiber-Wunsch 2026-09-09: Wording testen)", () => {
   });
 
   test("die Varianten unterscheiden sich tatsaechlich im Wortlaut", () => {
-    const alle = Object.keys(TEXT_VARIANTEN).map(
-      n => postkartenVariablen(basis, n as never).headline
-    );
+    // Schlagzeile UND Copy zusammen: „angebot" (Welle 2, Batch C) behält
+    // die Schlagzeile der ersten Welle mit Absicht — dort variiert nur die
+    // Copy.
+    const alle = Object.keys(TEXT_VARIANTEN).map(n => {
+      const v = postkartenVariablen(basis, n as never);
+      return `${v.headline} | ${v.copy}`;
+    });
     expect(new Set(alle).size).toBe(alle.length);
+  });
+
+  test("jedes Textfeld bleibt in den gedruckt erprobten Grenzen (Welle 2)", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      expect(v.headline.length, `${name}.headline`).toBeLessThanOrEqual(MAX_HEADLINE);
+      expect(v.copy.length, `${name}.copy`).toBeLessThanOrEqual(MAX_COPY);
+      expect(v.abbinder.length, `${name}.abbinder`).toBeLessThanOrEqual(MAX_ABBINDER);
+      expect(v.anschreiben.length, `${name}.anschreiben`).toBeLessThanOrEqual(MAX_ANSCHREIBEN);
+    }
+  });
+
+  test("Welle 2: B, C und D tragen den abgestimmten Wortlaut", () => {
+    expect(TEXT_VARIANTEN.screenshot.headline).toBe("Das ist deine neue Website.");
+    // C: der Satz des Betreibers, auf Schlagzeile und Copy verteilt.
+    expect(
+      `${TEXT_VARIANTEN.angebot.headline} ${TEXT_VARIANTEN.angebot.copy}`
+    ).toBe(
+      "Deine Website ist fertig. Schau sie dir kostenlos an – freischalten nur, wenn sie dir gefällt."
+    );
+    expect(TEXT_VARIANTEN.nachfass.copy).toMatch(/vor ein paar Wochen/);
+  });
+
+  test("B und C ändern nur die Vorderseite — Rückseite wie Welle 1", () => {
+    // Sonst wüsste man nach der Welle nicht, welche Änderung gewirkt hat.
+    for (const name of ["screenshot", "angebot"] as const) {
+      expect(TEXT_VARIANTEN[name].anschreiben).toBe(
+        TEXT_VARIANTEN.ungefragt.anschreiben
+      );
+    }
+    expect(TEXT_VARIANTEN.screenshot.copy).toBe(TEXT_VARIANTEN.ungefragt.copy);
+    expect(TEXT_VARIANTEN.screenshot.abbinder).toBe(
+      TEXT_VARIANTEN.ungefragt.abbinder
+    );
+    expect(TEXT_VARIANTEN.angebot.headline).toBe(
+      TEXT_VARIANTEN.ungefragt.headline
+    );
+  });
+
+  test("jeder Batch der Welle 2 verweist auf eine vorhandene Textvariante", () => {
+    for (const b of WELLE_2_BATCHES) {
+      expect(Object.keys(TEXT_VARIANTEN), b.batch).toContain(b.textVariant);
+    }
   });
 });
 

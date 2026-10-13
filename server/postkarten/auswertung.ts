@@ -1,4 +1,5 @@
 import type { KartenZeile } from "./db";
+import { layoutVon, WELLE_1, welleVon } from "../../shared/postkartenWelle";
 
 export interface Gruppenwert {
   name: string;
@@ -75,6 +76,11 @@ export const TRICHTER_LABELS: Record<TrichterStufe, string> = {
  */
 export function trichterStufe(z: KartenZeile): TrichterStufe | null {
   if (z.status !== "versendet" || z.druckstatus === "storniert") return null;
+  // Abgelöst durch einen Nachfass (Welle 2, Batch D) und selbst nie
+  // gescannt: Was danach im Studio passiert, hat die NEUE Karte bewirkt.
+  // Ohne diese Regel zählte ein Kauf nach dem Nachfass doppelt — einmal
+  // für den Nachfass, einmal für die erste Welle.
+  if (z.abgeloest && z.scans === 0) return "beauftragt";
   if (z.websiteStatus === "sold" || z.websiteStatus === "active") {
     return "gekauft";
   }
@@ -108,4 +114,54 @@ export function trichter(zeilen: KartenZeile[]): TrichterWert[] {
       quote: basis > 0 ? Math.round((anzahl / basis) * 100) : 0,
     };
   });
+}
+
+/**
+ * Ein Versuchsarm: Welle, Batch, Layout und Textvariante (Welle 2,
+ * 2026-10-13). Die erste Welle steht als Vergleichszeile oben.
+ */
+export interface Versuchsarm {
+  schluessel: string;
+  welle: string;
+  /** `null` in der ersten Welle — dort gab es keine Batches. */
+  batch: string | null;
+  layout: string;
+  textVariant: string;
+  /** Karten im Trichter (versendet, nicht storniert). */
+  versendet: number;
+  trichter: TrichterWert[];
+}
+
+/**
+ * Trichter je Versuchsarm. Gruppiert nach allen vier Merkmalen: Nur so
+ * steht ein Unterschied für genau eine Änderung. Hätte ein Batch versehentlich
+ * zwei Textvarianten, erscheint er als zwei Zeilen statt still gemittelt.
+ */
+export function nachVersuchsarm(zeilen: KartenZeile[]): Versuchsarm[] {
+  const arme = new Map<string, { kopf: Omit<Versuchsarm, "versendet" | "trichter">; karten: KartenZeile[] }>();
+  for (const z of zeilen) {
+    const welle = welleVon(z.welle);
+    const batch = z.batch?.trim() || null;
+    const layout = layoutVon(z.layout);
+    const textVariant = z.textVariant ?? "ohne Angabe";
+    const schluessel = [welle, batch ?? "–", layout, textVariant].join(" · ");
+    const arm = arme.get(schluessel) ?? {
+      kopf: { schluessel, welle, batch, layout, textVariant },
+      karten: [],
+    };
+    arm.karten.push(z);
+    arme.set(schluessel, arm);
+  }
+  return [...arme.values()]
+    .map(({ kopf, karten }) => {
+      const t = trichter(karten);
+      return { ...kopf, versendet: t[0]?.anzahl ?? 0, trichter: t };
+    })
+    .sort(
+      (a, b) =>
+        Number(b.welle === WELLE_1) - Number(a.welle === WELLE_1) ||
+        a.welle.localeCompare(b.welle) ||
+        (a.batch ?? "").localeCompare(b.batch ?? "") ||
+        a.schluessel.localeCompare(b.schluessel)
+    );
 }

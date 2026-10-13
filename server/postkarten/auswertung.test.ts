@@ -1,12 +1,18 @@
 import { describe, expect, test } from "vitest";
-import { gruppiere, trichter, trichterStufe } from "./auswertung";
+import {
+  gruppiere,
+  nachVersuchsarm,
+  trichter,
+  trichterStufe,
+} from "./auswertung";
 import type { KartenZeile } from "./db";
 
 const karte = (o: Partial<KartenZeile>): KartenZeile => ({
   id: 1, code: "AAAA", betrieb: "Salon", city: "Bocholt",
   textVariant: "ungefragt", status: "versendet", sentAt: new Date(),
   scans: 0, ersterScan: null, letzterScan: null, druckstatus: "geplant",
-  websiteStatus: "preview", hatEmail: false, designBestaetigt: false, ...o,
+  websiteStatus: "preview", hatEmail: false, designBestaetigt: false,
+  welle: null, batch: null, layout: null, abgeloest: false, ...o,
 });
 
 describe("gruppiere", () => {
@@ -87,5 +93,78 @@ describe("trichter", () => {
 
   test("leere Kampagne: keine Division durch null", () => {
     expect(trichter([]).every(s => s.anzahl === 0 && s.quote === 0)).toBe(true);
+  });
+});
+
+describe("Nachfass-Zuordnung (Welle 2, Batch D)", () => {
+  test("abgelöste, nie gescannte Karte bekommt den Kauf nicht gutgeschrieben", () => {
+    // Die Seite ist dieselbe — ohne die Regel zählte der Kauf für beide Karten.
+    expect(
+      trichterStufe(karte({ abgeloest: true, websiteStatus: "active" }))
+    ).toBe("beauftragt");
+    expect(
+      trichterStufe(
+        karte({ welle: "welle-2", batch: "D", websiteStatus: "active" })
+      )
+    ).toBe("gekauft");
+  });
+
+  test("hat die alte Karte selbst gescannt, behält sie ihren Fortschritt", () => {
+    expect(
+      trichterStufe(karte({ abgeloest: true, scans: 1, designBestaetigt: true }))
+    ).toBe("design");
+  });
+});
+
+describe("nachVersuchsarm", () => {
+  const karten = [
+    karte({ id: 1, scans: 1 }),
+    karte({ id: 2 }),
+    karte({ id: 3, welle: "welle-2", batch: "B", layout: "screenshot", textVariant: "screenshot", scans: 2, designBestaetigt: true }),
+    karte({ id: 4, welle: "welle-2", batch: "B", layout: "screenshot", textVariant: "screenshot" }),
+    karte({ id: 5, welle: "welle-2", batch: "A", layout: "standard", textVariant: "ungefragt", websiteStatus: "active" }),
+    karte({ id: 6, welle: "welle-2", batch: "C", layout: "standard", textVariant: "angebot", status: "entwurf", druckstatus: null }),
+  ];
+
+  test("erste Welle steht als Vergleichszeile oben, dann die Batches in Reihenfolge", () => {
+    expect(nachVersuchsarm(karten).map(a => [a.welle, a.batch])).toEqual([
+      ["welle-1", null],
+      ["welle-2", "A"],
+      ["welle-2", "B"],
+      ["welle-2", "C"],
+    ]);
+  });
+
+  test("Karten ohne Welle und Layout heißen welle-1 und standard", () => {
+    const [basis] = nachVersuchsarm(karten);
+    expect(basis).toMatchObject({
+      welle: "welle-1",
+      layout: "standard",
+      textVariant: "ungefragt",
+      versendet: 2,
+    });
+    expect(basis.trichter[1]).toMatchObject({ stufe: "gescannt", anzahl: 1, quote: 50 });
+  });
+
+  test("jeder Arm hat seinen eigenen Trichter", () => {
+    const b = nachVersuchsarm(karten).find(a => a.batch === "B")!;
+    expect(b.layout).toBe("screenshot");
+    expect(b.trichter.map(s => s.anzahl)).toEqual([2, 1, 1, 0, 0]);
+    const a = nachVersuchsarm(karten).find(x => x.batch === "A")!;
+    expect(a.trichter.at(-1)).toMatchObject({ stufe: "gekauft", anzahl: 1 });
+  });
+
+  test("Entwürfe erscheinen, zählen aber nicht als versendet", () => {
+    const c = nachVersuchsarm(karten).find(a => a.batch === "C")!;
+    expect(c.versendet).toBe(0);
+    expect(c.trichter[0].quote).toBe(0);
+  });
+
+  test("zwei Textvarianten in einem Batch werden zwei Zeilen, nicht gemittelt", () => {
+    const arme = nachVersuchsarm([
+      karte({ id: 1, welle: "welle-2", batch: "C", textVariant: "angebot" }),
+      karte({ id: 2, welle: "welle-2", batch: "C", textVariant: "ungefragt" }),
+    ]);
+    expect(arme).toHaveLength(2);
   });
 });

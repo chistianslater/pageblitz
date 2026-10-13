@@ -118,6 +118,22 @@ export interface PostkartenText {
   anschreiben: string;
 }
 
+/**
+ * Obergrenzen der Textfelder, gemessen am gedruckten PDF der ersten Welle:
+ * Die Schlagzeile bricht ab ~46 Zeichen auf vier Zeilen um und läuft in die
+ * Copy (2026-09-09); Copy und Abbinder sind auf die längste gedruckte
+ * Fassung begrenzt (77 bzw. 58 Zeichen) plus etwas Luft — darüber ist nichts
+ * erprobt. Das Anschreiben lief bei 417 Zeichen aus dem Satzspiegel.
+ */
+export const MAX_HEADLINE = 46;
+export const MAX_COPY = 80;
+export const MAX_ABBINDER = 60;
+export const MAX_ANSCHREIBEN = 320;
+
+/** Anschreiben der ersten Welle — B und C behalten es, damit nur die Vorderseite variiert. */
+const ANSCHREIBEN_UNGEFRAGT =
+  "euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian";
+
 export const TEXT_VARIANTEN = {
   /**
    * Umkehrung: Der zweite Satz dreht die Erwartung. Die alte Fassung
@@ -128,8 +144,7 @@ export const TEXT_VARIANTEN = {
     headline: "Deine Website ist fertig.",
     copy: "Du wusstest nur nichts davon. Deine Fotos, Zeiten und Bewertungen sind drin.",
     abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
-    anschreiben:
-      "euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
+    anschreiben: ANSCHREIBEN_UNGEFRAGT,
   },
   /** Der Verlust: Was passiert, wenn nichts passiert. */
   gefunden: {
@@ -146,6 +161,41 @@ export const TEXT_VARIANTEN = {
     abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
     anschreiben:
       "dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
+  },
+  /**
+   * Welle 2, Batch B (2026-10-13): eigene Vorlage mit dem Screenshot der
+   * Seite groß auf der Vorderseite. Nur die Schlagzeile ist neu — sie
+   * beschreibt das Bild; Copy, Abbinder und Rückseite bleiben wie in Welle
+   * 1, damit allein das Design den Unterschied macht.
+   */
+  screenshot: {
+    headline: "Das ist deine neue Website.",
+    copy: "Du wusstest nur nichts davon. Deine Fotos, Zeiten und Bewertungen sind drin.",
+    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
+    anschreiben: ANSCHREIBEN_UNGEFRAGT,
+  },
+  /**
+   * Welle 2, Batch C: das Angebot statt der Umkehrung. Schlagzeile und
+   * Rückseite wie Welle 1 — verändert ist nur, was die Copy verspricht:
+   * kostenlos ansehen, freischalten nur bei Gefallen.
+   */
+  angebot: {
+    headline: "Deine Website ist fertig.",
+    copy: "Schau sie dir kostenlos an – freischalten nur, wenn sie dir gefällt.",
+    abbinder: "Erst dann kostet sie 19,90 € im Monat.",
+    anschreiben: ANSCHREIBEN_UNGEFRAGT,
+  },
+  /**
+   * Welle 2, Batch D: zweite Karte an Salons der ersten Welle, die nie
+   * gescannt haben. Kurz, freundlich, ohne Vorwurf — die erste Karte kann
+   * schlicht im Stapel untergegangen sein.
+   */
+  nachfass: {
+    headline: "Deine Website wartet noch auf dich.",
+    copy: "Wir haben dir vor ein paar Wochen geschrieben. Deine Seite steht noch.",
+    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
+    anschreiben:
+      "vor ein paar Wochen kam schon eine Karte von mir. Vielleicht ist sie untergegangen.\n\nDeine Seite aus deinem Google-Profil steht noch. In meiner Agentur dauert so etwas sonst Wochen.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
 } as const satisfies Record<string, PostkartenText>;
 
