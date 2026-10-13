@@ -130,6 +130,11 @@ export interface PostkartenText {
  * Beide kommen aus shared/pricingText.ts. Die bereits versendeten Karten der
  * ersten Welle trugen noch „Behalten <Jahrespreis>"; die Zeilen speichern nur den
  * Variantennamen, ihre Historie bleibt unberührt.
+ *
+ * „Anschauen kostet nichts." passt NICHT mehr mit in den Abbinder
+ * (24 + 1 + 57 Zeichen > MAX_ABBINDER 60): die Preiszeile mit Laufzeit und
+ * MwSt. hat Vorrang (Preisangabe); der Gratis-Hinweis steht deshalb im
+ * Anschreiben auf der Rückseite („Scannen und anschauen kostet nichts.").
  */
 export const PREIS_AB = POSTCARD_PRICE;
 
@@ -147,7 +152,7 @@ export const MAX_ANSCHREIBEN = 320;
 
 /** Anschreiben der ersten Welle — B und C behalten es, damit nur die Vorderseite variiert. */
 const ANSCHREIBEN_UNGEFRAGT =
-  `euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`;
+  `euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen und anschauen kostet nichts. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`;
 
 export const TEXT_VARIANTEN = {
   /**
@@ -167,7 +172,7 @@ export const TEXT_VARIANTEN = {
     copy: "Die Seite, die dort fehlt, steht schon — mit euren Fotos und Bewertungen.",
     abbinder: `Live ${PREIS_AB}`,
     anschreiben:
-      `wer dich sucht, landet auf deinem Google-Profil und dann im Nichts.\n\nIch führe selbst eine Agentur und kenne den Grund: zu teuer, zu langsam. Deine Seite steht trotzdem schon.\n\nScannen, anschauen. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`,
+      `wer dich sucht, landet auf deinem Google-Profil und dann im Nichts.\n\nIch führe selbst eine Agentur und kenne den Grund: zu teuer, zu langsam. Deine Seite steht trotzdem schon.\n\nScannen und anschauen kostet nichts. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`,
   },
   /** Der Wettbewerb vor Ort — nah an der Welt des Salons. */
   nachbarschaft: {
@@ -175,7 +180,7 @@ export const TEXT_VARIANTEN = {
     copy: "Deine auch — seit heute. Mit euren Fotos, Zeiten und Bewertungen.",
     abbinder: `Behalten ${PREIS_AB}`,
     anschreiben:
-      `dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen, anschauen. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`,
+      `dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen und anschauen kostet nichts. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`,
   },
   /**
    * Welle 2, Batch B (2026-10-13): eigene Vorlage mit dem Screenshot der
@@ -210,7 +215,7 @@ export const TEXT_VARIANTEN = {
     copy: "Wir haben dir vor ein paar Wochen geschrieben. Deine Seite steht noch.",
     abbinder: `Behalten ${PREIS_AB}`,
     anschreiben:
-      `vor ein paar Wochen kam schon eine Karte von mir. Vielleicht ist sie untergegangen.\n\nDeine Seite aus deinem Google-Profil steht noch. In meiner Agentur dauert so etwas sonst Wochen.\n\nScannen, anschauen. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`,
+      `vor ein paar Wochen kam schon eine Karte von mir. Vielleicht ist sie untergegangen.\n\nDeine Seite aus deinem Google-Profil steht noch. In meiner Agentur dauert so etwas sonst Wochen.\n\nScannen und anschauen kostet nichts. Behalten kostet ${POSTCARD_LETTER_PRICE}.\n\nViele Grüße\nChristian`,
   },
 } as const satisfies Record<string, PostkartenText>;
 

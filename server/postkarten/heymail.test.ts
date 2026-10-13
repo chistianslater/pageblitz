@@ -522,4 +522,15 @@ describe("Preisangabe stimmt mit shared/pricing.ts überein (2026-10-13)", () =>
       expect(v.anschreiben, name).toContain(POSTCARD_LETTER_PRICE);
     }
   });
+
+  test("Gratis-Hinweis bleibt erhalten — im Anschreiben, weil der Abbinder (60) nur die Preiszeile fasst", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      expect(v.anschreiben, name).toContain("anschauen kostet nichts");
+      expect(
+        `Anschauen kostet nichts. ${v.abbinder}`.length,
+        name
+      ).toBeGreaterThan(MAX_ABBINDER);
+    }
+  });
 });
