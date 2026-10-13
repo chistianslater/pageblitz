@@ -194,11 +194,14 @@ describe("CSS-Regeln", () => {
       ".fr-foot :focus-visible{outline-color:var(--sys-on-deep)}"
     );
   });
-  test("Kippen nur ab Desktop (64rem)", () => {
-    const outside = css.replace(
-      /@media \(min-width:64rem\)\{[\s\S]*?\n\}/g,
-      ""
-    );
+  test("Kippen nur ab Desktop (64rem); Farbkarten kippen nur unter dem Mauszeiger", () => {
+    const outside = css
+      .replace(/@media \(min-width:64rem\)\{[\s\S]*?\n\}/g, "")
+      // Bewegung (F4): Kippen der Farbkarte nur bei hover:hover/pointer:fine
+      .replace(
+        /  @media \(hover:hover\) and \(pointer:fine\)\{\n    [^\n]*\.fr-offer:hover\{[^\n]*\n  \}/,
+        ""
+      );
     expect(outside).not.toMatch(/rotate\((?:calc\()?var\(--sys-tilt/);
     expect(css).toMatch(
       /@media \(min-width:64rem\)\{[\s\S]*rotate\(calc\(var\(--sys-tilt\) \* -1\)\)/

@@ -5,6 +5,7 @@ import { mountWerkstoffMotion } from "../components/site/systems/werkstoff/motio
 import { mountPlakatMotion } from "../components/site/systems/plakat/motion";
 import { mountKlarMotion } from "../components/site/systems/klar/motion";
 import { mountNachtMotion } from "../components/site/systems/nacht/motion";
+import { mountFreundlichMotion } from "../components/site/systems/freundlich/motion";
 import { mountDockAutoHide } from "../components/site/systems/shared/dockAutoHide";
 
 type Mount = (root: HTMLElement) => () => void;
@@ -17,6 +18,7 @@ export const ISLAND_MOTION: Partial<Record<DesignSystemId, Mount>> = {
   plakat: mountPlakatMotion,
   klar: mountKlarMotion,
   nacht: mountNachtMotion,
+  freundlich: mountFreundlichMotion,
 };
 
 /** Wurzel eines Designsystems (Klasse plus `data-pb-system`). */

@@ -17,6 +17,8 @@ import {
 } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 import { CONTENT_CSS } from "./contentCss";
+import { FREUNDLICH_MOTION_CSS } from "./motionCss";
+import { ISLAND_CSS } from "./islandCss";
 
 export { step } from "./step";
 
@@ -171,6 +173,9 @@ ${sections}
   .pb-freundlich .fr-menu-toggle{min-width:${H_MIN};justify-content:center;padding:0}
 }
 
+${ISLAND_CSS}
+
+${FREUNDLICH_MOTION_CSS}
 @media (prefers-reduced-motion:reduce){.pb-freundlich *,.pb-freundlich *::before,.pb-freundlich *::after{transition:none!important;animation:none!important}}
 /* ende freundlich */
 `;
