@@ -4,7 +4,7 @@ import {
   contrastRatio,
   mix,
   rgbToHex,
-} from "../../../../../../shared/stylePacks/colorMath";
+} from "../../../../../../shared/designSystems/colorMath";
 import { BLEED_FILTER, BLEED_SCRIM, RASTER_CSS } from "./css";
 
 /**

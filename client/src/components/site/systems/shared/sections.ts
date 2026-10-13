@@ -2,7 +2,7 @@ import type {
   PageSection,
   SectionV2,
 } from "../../../../../../shared/siteContract/types";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
+import { pickReviewQuote } from "./heroFacts";
 import type { NavItem } from "../../engine";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */

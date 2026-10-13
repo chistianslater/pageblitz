@@ -3,7 +3,7 @@ import { NUMBERED, chapterIndex, type SystemSection } from "../shared";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
 export type JournalSection = SystemSection;
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { rich, stripMarks } from "../../richText";
 import { JournalEntry } from "./Entry";
 import {

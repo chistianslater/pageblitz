@@ -5,7 +5,7 @@ import {
   hexToRgb,
   mix,
   rgbToHex,
-} from "../../../../../../shared/stylePacks/colorMath";
+} from "../../../../../../shared/designSystems/colorMath";
 import { NACHT_CSS } from "./css";
 import {
   BAND_STOP,

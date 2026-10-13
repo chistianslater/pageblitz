@@ -18,7 +18,7 @@ import {
   todayFact,
 } from "./facts";
 import { echoesKicker, isRoundTheClock } from "../shared";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 
 const entryOf = (html: string) =>

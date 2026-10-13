@@ -2,7 +2,7 @@
  * Google-Kategorie → Branchenfamilie (4080 Kategorien, 6939 Schlüssel).
  * Erzeugt von scripts/build-category-families.ts — nicht von Hand pflegen.
  */
-import type { BlueprintId } from "../../shared/stylePacks/blueprints";
+import type { BlueprintId } from "../../shared/blueprints/blueprints";
 
 export const CATEGORY_FAMILIES: Record<string, BlueprintId> = {
   "3d druck service": "trade",

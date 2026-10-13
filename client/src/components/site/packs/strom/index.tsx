@@ -25,7 +25,8 @@ import {
   SECTION_ANCHORS,
   type NavItem,
 } from "../../engine";
-import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PACK_MODULES } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
@@ -496,7 +497,7 @@ const StromPage: React.FC<{
   );
 };
 
-const STROM_MODULE: PackModule = {
+const STROM_MODULE: SiteModule = {
   id: "strom",
   css: STROM_CSS,
   Page: StromPage,

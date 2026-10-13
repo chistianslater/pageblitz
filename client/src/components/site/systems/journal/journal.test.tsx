@@ -13,7 +13,7 @@ import { JOURNAL_CSS } from "./css";
 import { entryLine, nameFitClasses, ratingLine } from "./Entry";
 import { brandClasses } from "./Chrome";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
-import { isPlaceholderHours } from "../../artDirection/heroFacts";
+import { isPlaceholderHours } from "../shared/heroFacts";
 
 /** [ids, Klassen/Attribute/Pseudoklassen, Elemente] eines einfachen Selektors. */
 function specificityOf(selector: string): [number, number, number] {

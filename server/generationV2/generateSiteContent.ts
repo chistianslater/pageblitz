@@ -2,9 +2,9 @@ import {
   amenityPromptLine,
   blueprintFor,
   withBlueprint,
-} from "../../shared/stylePacks/blueprints";
+} from "../../shared/blueprints/blueprints";
 import type { Amenities } from "../../shared/siteContract/types";
-import type { BlueprintId } from "../../shared/stylePacks/blueprints";
+import type { BlueprintId } from "../../shared/blueprints/blueprints";
 import { resolveIndustryFamily } from "./industryFamily";
 import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
@@ -18,7 +18,7 @@ import type {
   WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import { buildContentPrompt } from "./contentPrompt";
-import { streetLine } from "../../client/src/components/site/artDirection/heroFacts";
+import { streetLine } from "../../client/src/components/site/systems/shared/heroFacts";
 import { llmComplete } from "./llmClient";
 import { jsonFromLlm, normalizeLlmText } from "./jsonFromLlm";
 import {

@@ -1,4 +1,4 @@
-import { resolveDesignCategory } from "./categoryAliases";
+import { resolveDesignCategory } from "../blueprints/categoryAliases";
 import type { PackId } from "../siteContract/types";
 import type { PackConstitution } from "./types";
 import { WERKBANK } from "./werkbank";

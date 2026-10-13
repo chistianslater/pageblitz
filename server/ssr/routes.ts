@@ -19,7 +19,7 @@ import {
   findShowcase,
   showcaseDoc,
   systemShowcaseDoc,
-} from "../../shared/stylePacks/blueprintShowcase";
+} from "../../shared/showcases/blueprintShowcase";
 import { withArtDirection } from "../../shared/stylePacks/artDirection";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {

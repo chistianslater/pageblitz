@@ -9,7 +9,7 @@ import {
   withEntryComposition,
   type EntryPhotos,
 } from "../../shared/stylePacks/artDirection";
-import { designIndustryKey } from "../../shared/stylePacks/categoryAliases";
+import { designIndustryKey } from "../../shared/blueprints/categoryAliases";
 import {
   getBusinessById,
   listDesignNeighbors,

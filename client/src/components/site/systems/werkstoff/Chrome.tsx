@@ -5,7 +5,7 @@ import {
   isPlaceholderHours,
   shortHours,
   telHref,
-} from "../../artDirection/heroFacts";
+} from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import {
   contactOf,

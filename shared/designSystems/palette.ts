@@ -1,4 +1,4 @@
-import { hexToRgb } from "../stylePacks/colorMath";
+import { hexToRgb } from "./colorMath";
 import type { DesignSystemDef, SystemPalette } from "./types";
 
 export function getPalette(def: DesignSystemDef, id?: string): SystemPalette {

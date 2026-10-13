@@ -22,7 +22,7 @@ import {
   hslToHex,
   mix,
   relativeLuminance,
-} from "./colorMath";
+} from "../designSystems/colorMath";
 
 export interface ColorWorld {
   id: string;

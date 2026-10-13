@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { RasterHead, RASTER_MENU_JS } from "./Chrome";
 import { SystemContext } from "../SystemContext";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import type { NavItem } from "../../engine";
 import { rasterDoc } from "./testkit";
 

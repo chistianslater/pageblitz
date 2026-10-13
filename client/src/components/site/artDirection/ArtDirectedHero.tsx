@@ -1,7 +1,7 @@
 import {
   blueprintFor,
   tradeLabel,
-} from "../../../../../shared/stylePacks/blueprints";
+} from "../../../../../shared/blueprints/blueprints";
 import { EntryContext, EntryMenuSlot, EntryTrust } from "./entrySections";
 import { menuLink } from "./entryGastro";
 import React, { useContext } from "react";
@@ -18,17 +18,15 @@ import {
 } from "../../../../../shared/stylePacks/artDirection";
 import { rich, stripMarks } from "../richText";
 import { LAYOUT_SLOT } from "../layoutSlots";
-import { bandQuote, streetLine, telHref, todayLine } from "./heroFacts";
+import {
+  bandQuote,
+  formatHeroRating,
+  streetLine,
+  telHref,
+  todayLine,
+} from "../systems/shared/heroFacts";
 
 type GoogleRating = NonNullable<WebsiteDataV2["google"]>;
-
-/** Deutsche Schreibweise mit einer Nachkommastelle, z. B. „4,9". */
-export function formatHeroRating(rating: number): string {
-  return rating.toLocaleString("de-DE", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
 
 /** Vertrauenssignal direkt an der Überschrift (Hero-Audit 2026-09-19):
  * Der erste Stern stand sonst erst 3000 px tiefer bei den Bewertungen. */

@@ -1,7 +1,7 @@
 import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { useSystem } from "../SystemContext";
 import { legalParts, type SystemSection } from "../shared";
 import { NachtEntry } from "./Entry";

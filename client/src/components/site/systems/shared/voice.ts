@@ -1,5 +1,5 @@
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
+import { pickReviewQuote } from "./heroFacts";
 
 /* ── Stimme ───────────────────────────────────────────────────────────── */
 

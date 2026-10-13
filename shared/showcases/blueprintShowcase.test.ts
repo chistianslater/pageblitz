@@ -5,8 +5,8 @@ import {
   showcaseDoc,
   systemShowcaseDoc,
 } from "./blueprintShowcase";
-import { healthBlueprint } from "./blueprintFamilies";
-import { blueprintFor } from "./blueprints";
+import { healthBlueprint } from "../blueprints/blueprintFamilies";
+import { blueprintFor } from "../blueprints/blueprints";
 import { systemsForDoc } from "../designSystems";
 import { INDUSTRY_IMAGES } from "../industryImages";
 

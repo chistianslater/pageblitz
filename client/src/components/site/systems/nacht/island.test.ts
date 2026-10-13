@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { NACHT } from "../../../../../../shared/designSystems/nacht";
-import { contrastRatio } from "../../../../../../shared/stylePacks/colorMath";
+import { contrastRatio } from "../../../../../../shared/designSystems/colorMath";
 import { legacyPackVars } from "../legacyVars";
 import { NACHT_CSS } from "./css";
 import { ISLAND_CSS } from "./islandCss";

@@ -10,10 +10,10 @@ import { getSystem } from "../designSystems/registry";
 import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
-import { withArtDirection, withEntryComposition } from "./artDirection";
+import { withArtDirection, withEntryComposition } from "../stylePacks/artDirection";
 import { INDUSTRY_IMAGES } from "../industryImages";
-import { pickArtTheme } from "./artThemes";
-import { blueprintFor, withBlueprint } from "./blueprints";
+import { pickArtTheme } from "../stylePacks/artThemes";
+import { blueprintFor, withBlueprint } from "../blueprints/blueprints";
 import {
   SHOWCASES,
   type Showcase,

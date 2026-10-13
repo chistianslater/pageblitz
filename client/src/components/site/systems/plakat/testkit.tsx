@@ -9,7 +9,7 @@ import { INDUSTRY_IMAGES } from "../../../../../../shared/industryImages";
 import {
   findShowcase,
   systemShowcaseDoc,
-} from "../../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../../shared/showcases/blueprintShowcase";
 
 /**
  * Testhilfen für Plakat: die drei Betriebe aus Systemblatt 8 (alles

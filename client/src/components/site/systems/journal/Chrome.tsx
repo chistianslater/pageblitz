@@ -1,7 +1,7 @@
 import React from "react";
 import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS } from "../../engine";
-import { telHref } from "../../artDirection/heroFacts";
+import { telHref } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import {
   addressLine,

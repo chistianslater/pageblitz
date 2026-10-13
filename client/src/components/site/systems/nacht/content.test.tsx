@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 import { SiteRenderer } from "../../SiteRenderer";
 import { SECTION_ANCHORS } from "../../engine";
 import { NACHT } from "../../../../../../shared/designSystems/nacht";
-import { contrastRatio } from "../../../../../../shared/stylePacks/colorMath";
+import { contrastRatio } from "../../../../../../shared/designSystems/colorMath";
 import { INDUSTRY_IMAGES } from "../../../../../../shared/industryImages";
 import { NACHT_CSS } from "./css";
 import { CONTENT_CSS } from "./contentCss";

@@ -1,5 +1,5 @@
 import type { WebsiteDataV2 } from "../siteContract/types";
-import { blueprintFor, isBarberShop, type BlueprintId, type GastroKind } from "../stylePacks/blueprints";
+import { blueprintFor, isBarberShop, type BlueprintId, type GastroKind } from "../blueprints/blueprints";
 import type { DesignSystemId } from "./types";
 
 export type SystemTriple = readonly [DesignSystemId, DesignSystemId, DesignSystemId];

@@ -11,7 +11,7 @@
 import {
   contrastRatio,
   relativeLuminance,
-} from "../../../../../shared/stylePacks/colorMath";
+} from "../../../../../shared/designSystems/colorMath";
 
 /** Unter dieser Leuchtdichte gilt das Papier als dunkel (Raster „Kohle"). */
 const DARK_PAPER = 0.18;

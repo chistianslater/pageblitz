@@ -12,17 +12,9 @@ import type {
 import { SECTION_ANCHORS } from "../engine";
 import { rich } from "../richText";
 import type { EntryState } from "./entrySections";
+import { menuVisible } from "../systems/shared/heroFacts";
 
 export type TrustFact = { value: string; label: string };
-
-/** Ist eine echte Speisekarte sichtbar (Abschnitt + gebuchtes Extra)? */
-export function menuVisible(data: WebsiteDataV2): boolean {
-  return (
-    data.sections.some(s => s.type === "menu") &&
-    data.addOns?.menu === true &&
-    !data.hiddenSections?.includes("menu")
-  );
-}
 
 /** Zeigt die Vorschau den Karten-Platzhalter? */
 export function menuPlaceholderShown(state: EntryState): boolean {

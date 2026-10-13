@@ -1,6 +1,6 @@
 import type { WebsiteDataV2 } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
-import { tradeLabel } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
+import { tradeLabel } from "../../../../../../shared/blueprints/blueprints";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import { orderedSections } from "../../engine";
 import { systemShows } from "./sections";

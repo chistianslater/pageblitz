@@ -1,5 +1,5 @@
 import React from "react";
-import type { PackModule } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
 import {
@@ -55,7 +55,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * (Anker Restaurant Zimmerl). Dunkles Papier: `scheme: "dark"` setzt
  * color-scheme/theme-color (SiteRenderer, SSR-Kopf).
  */
-export const NACHT_MODULE: PackModule = {
+export const NACHT_MODULE: SiteModule = {
   id: "nacht",
   css: NACHT_CSS,
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {

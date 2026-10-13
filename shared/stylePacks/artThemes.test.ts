@@ -3,7 +3,7 @@ import { PACK_IDS } from "../siteContract/packIds";
 import { pickArtTheme } from "./artThemes";
 import { PACK_FONT_PAIRS } from "./packVariants";
 import { getConstitution, toCssVars } from "./index";
-import { contrastRatio } from "./colorMath";
+import { contrastRatio } from "../designSystems/colorMath";
 describe("customer art themes", () => {
   test.each(PACK_IDS)(
     "%s varies color and curated type with readable final tokens",

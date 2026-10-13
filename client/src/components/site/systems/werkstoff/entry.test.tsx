@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
-import { contrastRatio, mix } from "../../../../../../shared/stylePacks/colorMath";
+import { contrastRatio, mix } from "../../../../../../shared/designSystems/colorMath";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import {
   actionPair,

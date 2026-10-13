@@ -25,7 +25,8 @@ import {
   SECTION_ANCHORS,
   type NavItem,
 } from "../../engine";
-import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PACK_MODULES } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
@@ -513,7 +514,7 @@ const MarktplatzPage: React.FC<{
   );
 };
 
-const MARKTPLATZ_MODULE: PackModule = {
+const MARKTPLATZ_MODULE: SiteModule = {
   id: "marktplatz",
   css: MARKTPLATZ_CSS,
   Page: MarktplatzPage,

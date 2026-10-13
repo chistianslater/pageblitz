@@ -1,7 +1,7 @@
 import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+import { formatHeroRating } from "../shared/heroFacts";
 import { galleryIsStock } from "../../PhotoCredits";
 import { useSystem } from "../SystemContext";
 import { versalEszett } from "../shared";

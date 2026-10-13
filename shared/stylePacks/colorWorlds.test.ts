@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { PACK_IDS } from "../siteContract/packIds";
-import { contrastRatio, ensureTextContrast, mix } from "./colorMath";
+import { contrastRatio, ensureTextContrast, mix } from "../designSystems/colorMath";
 import {
   activeColorWorldId,
   buildCustomWorldOverrides,

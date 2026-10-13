@@ -25,7 +25,8 @@ import {
   SECTION_ANCHORS,
   type NavItem,
 } from "../../engine";
-import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PACK_MODULES } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
@@ -483,7 +484,7 @@ const KaratPage: React.FC<{
   );
 };
 
-const KARAT_MODULE: PackModule = {
+const KARAT_MODULE: SiteModule = {
   id: "karat",
   css: KARAT_CSS,
   Page: KaratPage,

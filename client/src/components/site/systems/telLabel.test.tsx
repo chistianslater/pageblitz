@@ -9,7 +9,7 @@ import type { DesignSystemId } from "../../../../../shared/designSystems/types";
 import {
   findShowcase,
   systemShowcaseDoc,
-} from "../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../shared/showcases/blueprintShowcase";
 import { telLabel } from "./shared";
 
 /**

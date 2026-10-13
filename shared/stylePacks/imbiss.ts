@@ -1,4 +1,4 @@
-import { categoryAliasKey } from "./categoryAliases";
+import { categoryAliasKey } from "../blueprints/categoryAliases";
 
 /**
  * Imbiss-Stimmung innerhalb von Gusto (2026-09-26, Test „Dicle Döner").

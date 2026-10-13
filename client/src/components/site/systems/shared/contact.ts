@@ -1,10 +1,10 @@
 import { SECTION_ANCHORS } from "../../engine";
-import { telHref } from "../../artDirection/heroFacts";
+import { telHref } from "./heroFacts";
 import type {
   SectionOf,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 
 /** Kontakt-Helfer, die alle Designsysteme (rev 3) teilen. */
 

@@ -1,5 +1,5 @@
 import React from "react";
-import type { PackModule } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
 import {
@@ -30,7 +30,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * Seiten.
  * Gestalt nach docs/designsysteme/klar/systemblatt.html (Anker Luma Dental).
  */
-export const KLAR_MODULE: PackModule = {
+export const KLAR_MODULE: SiteModule = {
   id: "klar",
   css: KLAR_CSS,
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {

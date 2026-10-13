@@ -2,8 +2,8 @@ import type {
   SectionOf,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
-import { telHref } from "../../artDirection/heroFacts";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
+import { telHref } from "./heroFacts";
 import { stripMarks } from "../../richText";
 import { SECTION_ANCHORS } from "../../engine";
 import {

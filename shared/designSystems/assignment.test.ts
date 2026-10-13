@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { BLUEPRINT_IDS, isBarberShop } from "../stylePacks/blueprints";
+import { BLUEPRINT_IDS, isBarberShop } from "../blueprints/blueprints";
 import { systemsFor, systemsForDoc } from "./assignment";
 
 describe("Zuordnung Branche → System", () => {

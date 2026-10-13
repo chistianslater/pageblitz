@@ -24,7 +24,7 @@ import {
   WerkstoffStory,
   WerkstoffUsp,
 } from "./Extras";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
 export type WerkstoffSection = SystemSection;

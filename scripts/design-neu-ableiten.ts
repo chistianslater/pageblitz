@@ -42,7 +42,7 @@ import {
   compositionFingerprint,
   deriveArtDirectedProfile,
 } from "../shared/stylePacks/artDirection";
-import { designIndustryKey } from "../shared/stylePacks/categoryAliases";
+import { designIndustryKey } from "../shared/blueprints/categoryAliases";
 
 const schreiben = process.argv.includes("--schreiben");
 

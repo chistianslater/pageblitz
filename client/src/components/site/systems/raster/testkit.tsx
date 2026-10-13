@@ -8,7 +8,7 @@ import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import {
   findShowcase,
   systemShowcaseDoc,
-} from "../../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../../shared/showcases/blueprintShowcase";
 
 /** Testhilfen für Raster: Beispielbetrieb (Werkstatt) als rev-3-Dokument. */
 export const rasterDoc = (palette?: string, showcase = "werkstatt") =>

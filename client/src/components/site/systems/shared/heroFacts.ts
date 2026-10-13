@@ -3,7 +3,8 @@
  * Öffnungszeit von heute, Straße, Telefon. Alles kommt aus dem
  * Kontakt-Abschnitt — fehlt etwas, entfällt das Element, erfunden wird nie.
  */
-import { PLACEHOLDER_OPENING_HOURS } from "../../../../../shared/onboardingV2/openingHours";
+import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
+import type { WebsiteDataV2 } from "../../../../../../shared/siteContract/types";
 
 type OpeningHours = { day: string; hours: string }[];
 
@@ -224,5 +225,22 @@ export function isBandQuote(
     quote &&
       item.author === quote.author &&
       item.text.trim().startsWith(quote.text.slice(0, 40))
+  );
+}
+
+/** Deutsche Schreibweise mit einer Nachkommastelle, z. B. „4,9". */
+export function formatHeroRating(rating: number): string {
+  return rating.toLocaleString("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+/** Ist eine echte Speisekarte sichtbar (Abschnitt + gebuchtes Extra)? */
+export function menuVisible(data: WebsiteDataV2): boolean {
+  return (
+    data.sections.some(s => s.type === "menu") &&
+    data.addOns?.menu === true &&
+    !data.hiddenSections?.includes("menu")
   );
 }

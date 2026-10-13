@@ -1,14 +1,14 @@
 import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
-import { tradeLabel } from "../../../../../../shared/stylePacks/blueprints";
+import { tradeLabel } from "../../../../../../shared/blueprints/blueprints";
 import { stripMarks } from "../../richText";
 import { SECTION_ANCHORS } from "../../engine";
 import {
   shortHours,
   streetLine,
   todayLine,
-} from "../../artDirection/heroFacts";
-import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+  formatHeroRating,
+} from "../shared/heroFacts";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import { useSystem } from "../SystemContext";
 import { addressLine, mapsHref, primaryAction, newTabIfMaps } from "../shared";

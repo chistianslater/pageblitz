@@ -8,7 +8,7 @@ import {
   shortHours,
   telHref,
   whatsappHref,
-} from "../../artDirection/heroFacts";
+} from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, contactOf, mailHref, mapsHref } from "../shared";
 import { todayStatus } from "./facts";

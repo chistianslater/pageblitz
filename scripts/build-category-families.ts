@@ -9,7 +9,7 @@
  */
 import fs from "fs";
 import path from "path";
-import { BLUEPRINT_IDS } from "../shared/stylePacks/blueprints";
+import { BLUEPRINT_IDS } from "../shared/blueprints/blueprints";
 import { categoryKey } from "../server/generationV2/industryFamily";
 
 const files = process.argv.slice(2);
@@ -63,7 +63,7 @@ fs.writeFileSync(
  * Google-Kategorie → Branchenfamilie (${total} Kategorien, ${Object.keys(table).length} Schlüssel).
  * Erzeugt von scripts/build-category-families.ts — nicht von Hand pflegen.
  */
-import type { BlueprintId } from "../../shared/stylePacks/blueprints";
+import type { BlueprintId } from "../../shared/blueprints/blueprints";
 
 export const CATEGORY_FAMILIES: Record<string, BlueprintId> = {
 ${body}

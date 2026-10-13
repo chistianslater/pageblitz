@@ -3,7 +3,7 @@ import { blueprintFor, isBarberShop, withBlueprint } from "./blueprints";
 import { systemsFor } from "../designSystems/assignment";
 import { getFixture } from "../siteContract/fixtures";
 import { renderSiteHtml } from "../../server/ssr/renderSite";
-import { withEntryComposition } from "./artDirection";
+import { withEntryComposition } from "../stylePacks/artDirection";
 import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 
 describe("blueprintFor", () => {

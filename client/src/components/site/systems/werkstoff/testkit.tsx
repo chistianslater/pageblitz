@@ -8,7 +8,7 @@ import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import {
   findShowcase,
   systemShowcaseDoc,
-} from "../../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../../shared/showcases/blueprintShowcase";
 
 /** Testhilfen für Werkstoff: Beispielbetrieb (Schreinerei) als rev-3-Dokument. */
 export const werkstoffDoc = (palette?: string, showcase = "schreinerei") =>

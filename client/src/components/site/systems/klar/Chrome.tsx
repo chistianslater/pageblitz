@@ -1,11 +1,11 @@
 import React from "react";
 import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS, orderedSections } from "../../engine";
-import { telHref } from "../../artDirection/heroFacts";
-import { shortHours } from "../../artDirection/heroFacts";
+import { telHref } from "../shared/heroFacts";
+import { shortHours } from "../shared/heroFacts";
 import { groupOpeningHours } from "../../../../../../shared/onboardingV2/openingHours";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { useSystem } from "../SystemContext";
 import {
   contactOf,

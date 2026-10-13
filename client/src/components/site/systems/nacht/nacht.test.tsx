@@ -5,7 +5,7 @@ import { SiteRenderer, SYSTEM_MOTION } from "../../SiteRenderer";
 import { longestWord } from "./Entry";
 import { NACHT_CSS } from "./css";
 import { NACHT } from "../../../../../../shared/designSystems/nacht";
-import { SHOWCASES } from "../../../../../../shared/stylePacks/blueprintShowcase";
+import { SHOWCASES } from "../../../../../../shared/showcases/blueprintShowcase";
 import { SYSTEM_MODULES } from "../registry";
 import {
   RELEASED_SYSTEMS,

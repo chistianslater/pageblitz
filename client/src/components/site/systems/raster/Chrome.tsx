@@ -1,8 +1,8 @@
 import React from "react";
 import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS, orderedSections } from "../../engine";
-import { shortHours, telHref } from "../../artDirection/heroFacts";
-import { isPlaceholderHours } from "../../artDirection/heroFacts";
+import { shortHours, telHref } from "../shared/heroFacts";
+import { isPlaceholderHours } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import {
   addressLine,

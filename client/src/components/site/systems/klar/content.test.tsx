@@ -5,7 +5,7 @@ import { SiteRenderer } from "../../SiteRenderer";
 import { KLAR_CSS } from "./css";
 import { INDUSTRY_IMAGES } from "../../../../../../shared/industryImages";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import { klarPhotos, monoInitials } from "./content";
 import { chapterTitle } from "./sections";
 import {

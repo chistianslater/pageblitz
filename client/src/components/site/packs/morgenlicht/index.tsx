@@ -25,7 +25,8 @@ import {
   SECTION_ANCHORS,
   type NavItem,
 } from "../../engine";
-import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PACK_MODULES } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
@@ -555,7 +556,7 @@ const MorgenlichtPage: React.FC<{
   );
 };
 
-const MORGENLICHT_MODULE: PackModule = {
+const MORGENLICHT_MODULE: SiteModule = {
   id: "morgenlicht",
   css: MORGENLICHT_CSS,
   Page: MorgenlichtPage,

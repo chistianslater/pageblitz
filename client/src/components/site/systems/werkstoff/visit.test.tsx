@@ -9,7 +9,7 @@ import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import {
   contrastRatio,
   mix,
-} from "../../../../../../shared/stylePacks/colorMath";
+} from "../../../../../../shared/designSystems/colorMath";
 import { SECTION_ANCHORS } from "../../engine";
 import { WERKSTOFF_CSS } from "./css";
 import {

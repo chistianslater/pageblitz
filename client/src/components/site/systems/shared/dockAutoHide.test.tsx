@@ -10,7 +10,7 @@ import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import {
   SHOWCASES,
   systemShowcaseDoc,
-} from "../../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../../shared/showcases/blueprintShowcase";
 import { DOCK_HIDDEN_ATTR, mountDockAutoHide } from "./dockAutoHide";
 
 /* ---------- Helfer: IntersectionObserver-Attrappe ---------- */

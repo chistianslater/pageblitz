@@ -6,7 +6,7 @@ import { JournalHead, JOURNAL_MENU_JS } from "./Chrome";
 import { SystemContext } from "../SystemContext";
 import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import type { NavItem } from "../../engine";
 
 const data = withDesignSystem(getFixture("salon-noir", "full"), "journal");

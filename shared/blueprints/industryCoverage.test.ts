@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { SEO_INDUSTRIES } from "../../server/seo/landingPages";
-import { packMatchesCategory } from "./index";
+import { packMatchesCategory } from "../stylePacks/index";
 import { PACK_IDS } from "../siteContract/packIds";
 import { CATEGORY_GROUPS } from "../gmbCategories";
 

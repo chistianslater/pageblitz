@@ -3,7 +3,7 @@
  * (2026-10-05/06). Die Packs rendern ihre Abschnitte sonst selbst; für die
  * neuen Einstiege gibt es eine gemeinsame, hochwertige Fassung — Farben und
  * Schriften kommen weiter aus den Pack-Variablen, die Sprache aus dem
- * Branchen-Bauplan (shared/stylePacks/blueprints.ts).
+ * Branchen-Bauplan (shared/blueprints/blueprints.ts).
  *
  * Anker bleiben die alten (#leistungen, #galerie, #kontakt …): Studio,
  * Galerie-Lightbox und Kontaktformular-Insel hängen daran.
@@ -23,7 +23,7 @@ import {
 import {
   blueprintFor,
   type Blueprint,
-} from "../../../../../shared/stylePacks/blueprints";
+} from "../../../../../shared/blueprints/blueprints";
 import { SECTION_ANCHORS } from "../engine";
 import { LAYOUT_SLOT } from "../layoutSlots";
 import { googleMapsUrl } from "../mapsLink";
@@ -33,17 +33,17 @@ import {
   EntryMenuPlaceholder,
   gastroTrustFacts,
   menuPlaceholderShown,
-  menuVisible,
 } from "./entryGastro";
 import {
   bandQuote,
   coversToday,
   isBandQuote,
   isPlaceholderHours,
+  menuVisible,
   shortHours,
   telHref,
   whatsappHref,
-} from "./heroFacts";
+} from "../systems/shared/heroFacts";
 
 export type EntryComposition = "stage" | "colorfield";
 

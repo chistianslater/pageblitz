@@ -2,15 +2,15 @@ import type {
   SectionOf,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
-import { tradeLabel } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
+import { tradeLabel } from "../../../../../../shared/blueprints/blueprints";
 import { stripMarks } from "../../richText";
 import {
   shortHours,
   streetLine,
   telHref,
   todayLine,
-} from "../../artDirection/heroFacts";
+} from "../shared/heroFacts";
 import {
   addressLine,
   contactOf,

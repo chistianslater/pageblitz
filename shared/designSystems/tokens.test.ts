@@ -10,7 +10,7 @@ import { assertSafeImageFilter } from "./toCss";
 import type { DesignSystemDef } from "./types";
 import { getPalette, pickPalette } from "./palette";
 import { systemCssVars } from "./toCss";
-import { contrastRatio } from "../stylePacks/colorMath";
+import { contrastRatio } from "./colorMath";
 
 describe("Journal-Tokens", () => {
   test("genau drei Paletten mit eindeutigen IDs", () => {

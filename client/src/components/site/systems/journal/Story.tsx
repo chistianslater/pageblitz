@@ -1,7 +1,7 @@
 import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
+import { pickReviewQuote } from "../shared/heroFacts";
 import { galleryIsStock } from "../../PhotoCredits";
 import { useSystem } from "../SystemContext";
 import { chapterIndex, figureNumbers } from "../shared";

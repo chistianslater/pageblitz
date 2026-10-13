@@ -25,7 +25,8 @@ import {
   SECTION_ANCHORS,
   type NavItem,
 } from "../../engine";
-import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PACK_MODULES } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
@@ -465,7 +466,7 @@ const PlakatPage: React.FC<{
   );
 };
 
-const PLAKAT_MODULE: PackModule = {
+const PLAKAT_MODULE: SiteModule = {
   id: "plakat",
   css: PLAKAT_CSS,
   Page: PlakatPage,

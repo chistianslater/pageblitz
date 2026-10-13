@@ -10,7 +10,7 @@ import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import { KLAR } from "../../../../../../shared/designSystems/klar";
 import { NACHT } from "../../../../../../shared/designSystems/nacht";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import { SECTION_ANCHORS, type NavItem } from "../../engine";
 import {
   addressLine,

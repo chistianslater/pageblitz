@@ -18,7 +18,7 @@ import {
   hexToHsl,
   mix,
   relativeLuminance,
-} from "../../../../shared/stylePacks/colorMath";
+} from "../../../../shared/designSystems/colorMath";
 
 /** Ab dieser Sättigung wirkt eine Akzentfläche schreiend (gemessen an 24 Packs). */
 const LOUD_ACCENT_SATURATION = 0.6;
@@ -39,7 +39,7 @@ import { legacyPackVars } from "./systems/legacyVars";
 import { getSystem } from "../../../../shared/designSystems/registry";
 import { getPalette } from "../../../../shared/designSystems/palette";
 import { systemCssVars } from "../../../../shared/designSystems/toCss";
-import { blueprintFor } from "../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../shared/blueprints/blueprints";
 import { SiteIslands } from "./islands/SiteIslands";
 import { MOBILE_NAV_CSS } from "./mobileNavCss";
 import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";

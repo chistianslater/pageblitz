@@ -1,7 +1,7 @@
 import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { rich } from "../../richText";
-import { telHref } from "../../artDirection/heroFacts";
+import { telHref } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, mailHref, mapsHref, newTabIfMaps } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";

@@ -1,7 +1,7 @@
 import React from "react";
 import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS, orderedSections } from "../../engine";
-import { telHref } from "../../artDirection/heroFacts";
+import { telHref } from "../shared/heroFacts";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
 import { useSystem } from "../SystemContext";
 import {

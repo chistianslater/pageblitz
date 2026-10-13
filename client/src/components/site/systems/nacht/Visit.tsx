@@ -2,7 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { telHref } from "../../artDirection/heroFacts";
+import { telHref } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import {
   addressLine,

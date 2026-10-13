@@ -1,5 +1,5 @@
 import React from "react";
-import type { PackModule } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { RASTER_CSS } from "./css";
 import { RasterFoot, RasterHead, rasterNavItems } from "./Chrome";
 import {
@@ -33,7 +33,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * Sichtbares. Beginnt die Startseite mit dem Foto-Einstieg „bleed", liegt
  * der Kopf über dem Foto (Rahmen `rs-frame`). Handy-Leiste auf allen Seiten.
  */
-export const RASTER_MODULE: PackModule = {
+export const RASTER_MODULE: SiteModule = {
   id: "raster",
   css: RASTER_CSS,
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {

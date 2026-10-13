@@ -4,7 +4,7 @@ import {
   contrastRatio,
   mix,
   rgbToHex,
-} from "../../../../../../shared/stylePacks/colorMath";
+} from "../../../../../../shared/designSystems/colorMath";
 import { orderedSections } from "../../engine";
 import { systemShows } from "../shared";
 import {

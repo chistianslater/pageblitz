@@ -2,7 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { menuVisible } from "../../artDirection/entryGastro";
+import { menuVisible } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import { hasSection, rowPrice, useSlot, newTabIfMaps } from "../shared";
 import { klarHref } from "./facts";

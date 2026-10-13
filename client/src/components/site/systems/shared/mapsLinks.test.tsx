@@ -10,7 +10,7 @@ import { RELEASED_SYSTEMS } from "../../../../../../shared/designSystems/registr
 import {
   SHOWCASES,
   systemShowcaseDoc,
-} from "../../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../../shared/showcases/blueprintShowcase";
 import { isMapsHref, mapsHref, newTabIfMaps } from "./contact";
 
 /**

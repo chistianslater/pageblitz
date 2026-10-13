@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getPackPool, hasDirectPackMatch } from "./index";
+import { getPackPool, hasDirectPackMatch } from "../stylePacks/index";
 import type { PackId } from "../siteContract/types";
 import { CATEGORY_ALIAS_TARGETS } from "./categoryAliases";
 

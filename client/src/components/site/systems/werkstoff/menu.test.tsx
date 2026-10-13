@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { WerkstoffHead, WERKSTOFF_MENU_JS } from "./Chrome";
 import { RASTER_MENU_JS } from "../raster/Chrome";
 import { SystemContext } from "../SystemContext";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import type { NavItem } from "../../engine";
 import { werkstoffDoc } from "./testkit";
 

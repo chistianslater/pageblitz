@@ -11,7 +11,7 @@ import { getSystem } from "../../../../../shared/designSystems/registry";
 import {
   findShowcase,
   systemShowcaseDoc,
-} from "../../../../../shared/stylePacks/blueprintShowcase";
+} from "../../../../../shared/showcases/blueprintShowcase";
 
 /**
  * Freie Galeriefotos in allen Systemen (Abnahme 2026-10-12): Ohne

@@ -3,7 +3,7 @@ import type {
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
 import { RASTER } from "../../../../../../shared/designSystems/raster";
-import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+import { formatHeroRating } from "../shared/heroFacts";
 import { NUMBERED, type SystemSection } from "../shared";
 import { REFERENCE_COLUMN_REM, clampAt, wordWidthEm } from "./fit";
 

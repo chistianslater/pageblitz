@@ -6,7 +6,7 @@ import { RASTER } from "../../shared/designSystems/raster";
 import {
   findShowcase,
   systemShowcaseDoc,
-} from "../../shared/stylePacks/blueprintShowcase";
+} from "../../shared/showcases/blueprintShowcase";
 
 const origin = "https://x.pageblitz.de";
 const rasterDoc = (palette?: string) =>

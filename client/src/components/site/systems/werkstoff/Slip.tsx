@@ -1,5 +1,5 @@
 import React from "react";
-import { telHref } from "../../artDirection/heroFacts";
+import { telHref } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, contactOf } from "../shared";
 import { brandParts, branchOf, nameOf, todayStatus, visibleDoc } from "./facts";

@@ -2,7 +2,7 @@ import type { PackId } from "../siteContract/types";
 import { designSeed } from "../siteContract/designProfile";
 import { artPalette } from "./artDirection";
 import { getColorWorld } from "./colorWorlds";
-import { ensureTextContrast, mix } from "./colorMath";
+import { ensureTextContrast, mix } from "../designSystems/colorMath";
 import {
   pickPackAccent,
   pickPackColorWorld,

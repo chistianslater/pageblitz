@@ -1,5 +1,5 @@
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
-import { coversToday, isPlaceholderHours } from "../../artDirection/heroFacts";
+import { coversToday, isPlaceholderHours } from "./heroFacts";
 import { isRoundTheClock } from "./entryFacts";
 
 /**

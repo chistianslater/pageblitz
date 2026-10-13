@@ -1,5 +1,5 @@
 import React from "react";
-import type { PackModule } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { WERKSTOFF_CSS } from "./css";
 import { WerkstoffFoot, WerkstoffHead, werkstoffNavItems } from "./Chrome";
 import {
@@ -31,7 +31,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * Heller Grund überall; dunkel ist nur der Fuß. Handy-Leiste auf allen
  * Seiten.
  */
-export const WERKSTOFF_MODULE: PackModule = {
+export const WERKSTOFF_MODULE: SiteModule = {
   id: "werkstoff",
   css: WERKSTOFF_CSS,
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {

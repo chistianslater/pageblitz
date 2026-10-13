@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { isImbissCategory } from "./imbiss";
 import { pickArtTheme } from "./artThemes";
 import { getConstitution, toCssVars } from "./index";
-import { contrastRatio } from "./colorMath";
+import { contrastRatio } from "../designSystems/colorMath";
 
 describe("Imbiss-Erkennung", () => {
   test.each([

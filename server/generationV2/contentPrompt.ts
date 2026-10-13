@@ -16,7 +16,7 @@ export interface ContentPromptArgs {
    * Reine Faktenquelle, nie wörtlich als eigene Aussage übernehmen.
    */
   reviewExcerpts?: string[];
-  /** Zeilen aus dem Branchen-Bauplan (shared/stylePacks/blueprints.ts). */
+  /** Zeilen aus dem Branchen-Bauplan (shared/blueprints/blueprints.ts). */
   blueprintLines?: string[];
   /**
    * Googles Editorial Summary des Places (Spec §2.1) — kurzer redaktioneller

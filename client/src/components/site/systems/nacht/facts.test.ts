@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
-import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
+import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import {
   dockPair,
   entryFigure,

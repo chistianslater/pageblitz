@@ -3,7 +3,7 @@ import {
   coversToday,
   isPlaceholderHours,
   shortHours,
-} from "../../artDirection/heroFacts";
+} from "../shared/heroFacts";
 import { groupOpeningHours } from "../../../../../../shared/onboardingV2/openingHours";
 import { isRoundTheClock } from "../shared";
 

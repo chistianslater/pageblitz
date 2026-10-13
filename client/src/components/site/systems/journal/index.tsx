@@ -1,5 +1,5 @@
 import React from "react";
-import type { PackModule } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { JOURNAL_CSS } from "./css";
 import { JournalFoot, JournalHead, journalNavItems } from "./Chrome";
 import { renderJournalSection, type JournalSection } from "./sections";
@@ -16,7 +16,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
     item.href.startsWith("#") ? { ...item, href: prefix + item.href } : item
   );
 
-export const JOURNAL_MODULE: PackModule = {
+export const JOURNAL_MODULE: SiteModule = {
   id: "journal",
   css: JOURNAL_CSS,
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {

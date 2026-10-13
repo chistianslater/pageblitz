@@ -14,7 +14,7 @@ import {
   searchStockPhotos,
   type StockPhoto,
 } from "../_core/stockPhotos";
-import type { BlueprintId } from "../../shared/stylePacks/blueprints";
+import type { BlueprintId } from "../../shared/blueprints/blueprints";
 import { designSeed } from "../../shared/siteContract/designProfile";
 import { CATEGORY_ENGLISH } from "./categoryEnglish";
 import { categoryKey } from "./industryFamily";

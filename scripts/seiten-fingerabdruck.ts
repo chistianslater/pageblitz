@@ -32,7 +32,7 @@ import { renderSiteHtml } from "../server/ssr/renderSite";
 import {
   SHOWCASES,
   systemShowcaseDoc,
-} from "../shared/stylePacks/blueprintShowcase";
+} from "../shared/showcases/blueprintShowcase";
 import { RELEASED_SYSTEMS, getSystem } from "../shared/designSystems/registry";
 import { withDesignSystem } from "../shared/designSystems/apply";
 import { getFixture } from "../shared/siteContract/fixtures";

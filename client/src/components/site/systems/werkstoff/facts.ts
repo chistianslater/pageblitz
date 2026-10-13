@@ -2,12 +2,12 @@ import type {
   SectionOf,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import {
   coversToday,
   isPlaceholderHours,
   telHref,
-} from "../../artDirection/heroFacts";
+} from "../shared/heroFacts";
 import { stripMarks } from "../../richText";
 import {
   addressLine,

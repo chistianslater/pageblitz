@@ -1,5 +1,5 @@
 import React from "react";
-import type { PackModule } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
 import {
@@ -30,7 +30,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * (rhythm.ts); das Laufband steht direkt nach dem Einstieg, der Fuß auf dem
  * tiefen Feld, das Dock auf allen Seiten.
  */
-export const PLAKAT_MODULE: PackModule = {
+export const PLAKAT_MODULE: SiteModule = {
   id: "plakat",
   css: PLAKAT_CSS,
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {

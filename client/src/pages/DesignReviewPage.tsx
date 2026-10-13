@@ -14,7 +14,7 @@ import {
   SHOWCASES,
   type Showcase,
   type ShowcaseEntry,
-} from "@shared/stylePacks/blueprintShowcaseList";
+} from "@shared/showcases/blueprintShowcaseList";
 
 type Viewport = "desktop" | "mobile";
 

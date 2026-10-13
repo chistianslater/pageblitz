@@ -2,8 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { coversToday } from "../../artDirection/heroFacts";
-import { menuVisible } from "../../artDirection/entryGastro";
+import { coversToday, menuVisible } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import {
   hasSection,

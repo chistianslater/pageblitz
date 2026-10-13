@@ -3,7 +3,7 @@ import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { useSystem } from "../SystemContext";
 import { legalParts, versalEszett, type SystemSection } from "../shared";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { PlakatEntry } from "./Entry";
 import type { Field } from "./rhythm";
 import {

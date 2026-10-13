@@ -6,7 +6,7 @@ import type { DesignSystemId } from "../../shared/designSystems/types";
 import { withDesignSystem } from "../../shared/designSystems/apply";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { SYSTEM_MODULES } from "../../client/src/components/site/systems/registry";
-import type { PackModule } from "../../client/src/components/site/packRegistry";
+import type { SiteModule } from "../../client/src/components/site/siteModule";
 
 const LIVE: DesignSystemId[] = ["journal", "raster", "werkstoff", "plakat", "klar"];
 const OPTS = { origin: "https://pageblitz.de", slug: "test" };
@@ -47,8 +47,8 @@ describe("SSR: Schema nur für Systeme, die es setzen", () => {
 
 describe("SSR: Nacht-Seite (Stub-Modul bis N2)", () => {
   // Nacht hat noch kein Render-Modul; ein Stub prüft nur Kopf und Hülle.
-  const stub: PackModule = {
-    ...(SYSTEM_MODULES.klar as PackModule),
+  const stub: SiteModule = {
+    ...(SYSTEM_MODULES.klar as SiteModule),
   };
   beforeAll(() => {
     SYSTEM_MODULES.nacht = stub;

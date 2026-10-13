@@ -2,9 +2,8 @@ import type {
   SectionOf,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
-import { coversToday } from "../../artDirection/heroFacts";
-import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
+import { coversToday, formatHeroRating } from "../shared/heroFacts";
 import { stripMarks } from "../../richText";
 import {
   brandParts,

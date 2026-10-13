@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { contrastRatio } from "./colorMath";
+import { contrastRatio } from "../designSystems/colorMath";
 import { toCssVars } from "./toCssVars";
 import { getConstitution } from "./index";
 import { PACK_IDS } from "../siteContract/packIds";

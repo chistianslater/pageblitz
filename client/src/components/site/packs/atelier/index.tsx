@@ -25,7 +25,8 @@ import {
   SECTION_ANCHORS,
   type NavItem,
 } from "../../engine";
-import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { PACK_MODULES } from "../../packRegistry";
+import type { SiteModule } from "../../siteModule";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 import { ReviewAuthor, ReviewStars, REVIEW_READONLY } from "../../googleReview";
@@ -526,7 +527,7 @@ const AtelierPage: React.FC<{
   );
 };
 
-const ATELIER_MODULE: PackModule = {
+const ATELIER_MODULE: SiteModule = {
   id: "atelier",
   css: ATELIER_CSS,
   Page: AtelierPage,

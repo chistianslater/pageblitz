@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { coversToday } from "../../artDirection/heroFacts";
+import { coversToday } from "../shared/heroFacts";
 import type { SystemSection } from "../shared";
 import {
   galleryGroups,

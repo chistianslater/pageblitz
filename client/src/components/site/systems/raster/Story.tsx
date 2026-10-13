@@ -2,7 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
+import { pickReviewQuote } from "../shared/heroFacts";
 import { galleryIsStock } from "../../PhotoCredits";
 import { useSystem } from "../SystemContext";
 import { figureNumbers } from "../shared";

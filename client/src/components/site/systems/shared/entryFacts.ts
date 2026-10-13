@@ -6,8 +6,8 @@ import {
   coversToday,
   isPlaceholderHours,
   shortHours,
-} from "../../artDirection/heroFacts";
-import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+  formatHeroRating,
+} from "./heroFacts";
 
 /**
  * Einstiegs-Fakten, die alle Designsysteme (rev 3) teilen (aus Raster

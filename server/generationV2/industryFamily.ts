@@ -2,7 +2,7 @@
  * Branchenfamilie bei der Erzeugung bestimmen (2026-10-06, Betreiber: „Wir
  * müssen alle Branchen, die es in Google gibt, abdecken"). Drei Stufen:
  * 1. Nachschlagetabelle aller ~4.080 Google-Kategorien (deutsch + englisch),
- * 2. Stichwörter in Kategorie und Name (shared/stylePacks/blueprints.ts),
+ * 2. Stichwörter in Kategorie und Name (shared/blueprints/blueprints.ts),
  * 3. KI-Branchenschlüssel aus `classifyIndustry`, der ohnehin läuft.
  * Die Familie landet im Dokument (`blueprintFamily`), damit die Seite die
  * große Tabelle nicht im Browser braucht.
@@ -10,7 +10,7 @@
 import {
   keywordFamily,
   type BlueprintId,
-} from "../../shared/stylePacks/blueprints";
+} from "../../shared/blueprints/blueprints";
 import { CATEGORY_FAMILIES } from "./categoryFamilies";
 
 /** Schlüssel aus `classifyIndustry` → Familie. */

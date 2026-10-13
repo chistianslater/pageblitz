@@ -9,7 +9,7 @@ import { isReleased } from "../shared/designSystems/registry";
 import type { DesignSystemId } from "../shared/designSystems/types";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../shared/siteContract/types";
-import { blueprintFor } from "../shared/stylePacks/blueprints";
+import { blueprintFor } from "../shared/blueprints/blueprints";
 
 /** Standard-Ziele: 504, 558–607 ohne 593, 613. */
 export const DEFAULT_IDS_SPEC = "504,558-592,594-607,613";

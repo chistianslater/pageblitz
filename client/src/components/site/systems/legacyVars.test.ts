@@ -3,7 +3,7 @@ import { legacyPackVars } from "./legacyVars";
 import { systemCssVars } from "../../../../../shared/designSystems/toCss";
 import { JOURNAL } from "../../../../../shared/designSystems/journal";
 import { RASTER } from "../../../../../shared/designSystems/raster";
-import { contrastRatio } from "../../../../../shared/stylePacks/colorMath";
+import { contrastRatio } from "../../../../../shared/designSystems/colorMath";
 
 const vars = (def: typeof JOURNAL, palette: string) =>
   legacyPackVars(systemCssVars(def, palette));
