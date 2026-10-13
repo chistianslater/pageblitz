@@ -27,6 +27,7 @@ const PageblitzCookieBanner = lazy(
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const PageblitzImpressum = lazy(() => import("./pages/PageblitzImpressum"));
 const PageblitzDatenschutz = lazy(() => import("./pages/PageblitzDatenschutz"));
+const PageblitzAGB = lazy(() => import("./pages/PageblitzAGB"));
 
 // ── Lazy-loaded pages (not needed on first paint) ─────────────────────────────
 // StartPage/SitePage/LegalPage waren bis Task 6 eager importiert und zwangen
@@ -207,6 +208,7 @@ function Router() {
         <Route path="/" component={LandingPage} />
         <Route path="/impressum" component={PageblitzImpressum} />
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
+        <Route path="/agb" component={PageblitzAGB} />
         <Route path="/start" component={StartPage} />
         {/* Interne System-Übersicht — seit 2026-08-31 nur für Admins
             (Betreiber: „auf jeden Fall hinter Admin-Login"). */}

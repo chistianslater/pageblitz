@@ -3258,7 +3258,7 @@ ${cityLinksHtml}
 
 <footer>
   <div class="container">
-    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a></p>
+    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a> · <a href="https://pageblitz.de/agb">AGB</a></p>
   </div>
 </footer>
 
@@ -3412,7 +3412,7 @@ export function generateOverviewHTML(): string {
 
 <footer>
   <div class="container">
-    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a></p>
+    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a> · <a href="https://pageblitz.de/agb">AGB</a></p>
   </div>
 </footer>
 

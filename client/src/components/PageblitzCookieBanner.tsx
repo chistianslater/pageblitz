@@ -42,7 +42,9 @@ export default function PageblitzCookieBanner() {
   // dunklen Token-Scope (.pb-cookie-dark in index.css), ueberall sonst
   // (Dashboard, helle Seiten) bleibt er hell.
   const isDarkLanding =
-    location === "/impressum" || location === "/datenschutz";
+    location === "/impressum" ||
+    location === "/datenschutz" ||
+    location === "/agb";
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);

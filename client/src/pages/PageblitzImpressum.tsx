@@ -153,6 +153,7 @@ export default function PageblitzImpressum() {
           <div className="flex gap-6">
             <span className="text-white/60">Impressum</span>
             <Link href="/datenschutz" className="hover:text-white/80 transition-colors">Datenschutz</Link>
+            <Link href="/agb" className="hover:text-white/80 transition-colors">AGB</Link>
           </div>
         </div>
       </footer>

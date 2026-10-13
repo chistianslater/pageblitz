@@ -683,6 +683,15 @@ async function startServer() {
       })
     );
     app.get(
+      "/agb",
+      spaRouteMeta({
+        title: "AGB | Pageblitz",
+        description:
+          "Allgemeine Geschäftsbedingungen von Pageblitz: Leistungen, Tarife, Laufzeit, Kündigung und Haftung — Angebot nur für Unternehmer.",
+        canonicalPath: "/agb",
+      })
+    );
+    app.get(
       "/start",
       spaRouteMeta({
         title: "Website jetzt erstellen — in 3 Minuten | Pageblitz",

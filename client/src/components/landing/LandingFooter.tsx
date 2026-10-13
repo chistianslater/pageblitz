@@ -122,6 +122,14 @@ export function LandingFooter() {
             </a>
           </li>
           <li>
+            <a
+              href="/agb"
+              className="text-lp-muted transition-colors hover:text-lp-ink"
+            >
+              AGB
+            </a>
+          </li>
+          <li>
             <button
               type="button"
               onClick={() =>

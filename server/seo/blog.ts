@@ -124,7 +124,7 @@ ${opts.schema}
 ${opts.body}
 <footer class="site"><div class="wrap">
   <span>© Pageblitz · <a href="/blog">Blog</a></span>
-  <span><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></span>
+  <span><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/agb">AGB</a></span>
 </div></footer>
 </body>
 </html>`;
