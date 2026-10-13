@@ -243,7 +243,7 @@ export default function BuildStory() {
               </div>
               <img
                 className="build-site-image"
-                src="/landing/salon-noir.webp"
+                src="/showcases/friseur.webp"
                 alt="Beispiel eines fertigen Website-Entwurfs"
                 style={{
                   clipPath: "inset(0 var(--build-clip, 100%) 0 0)",

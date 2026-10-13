@@ -3,42 +3,46 @@
  * React-Landing (Klarstart) und den Server-Prerender (server/seo/homePage.ts),
  * damit beide wortgleich bleiben (siehe shared/landingFeatures.ts).
  *
- * Links zeigen direkt auf die System-Demos (`/demo/system/<System>/<Beispiel>`,
- * je Beispiel das Hauptsystem — dieselben Ziele wie der 301 der alten
- * Pack-Demo, siehe `legacyDemoTarget` in server/ssr/routes.ts). `image` ist
- * noch das alte Showroom-Bild unter `client/public/landing/<image>.webp`;
- * neue Bilder aus den System-Beispielen kommen nach Freigabe [E4]. Das
- * Raster-Bild zeigt noch ein Architekturbüro, Text und Link nennen das
- * Ziel (Steuerberater) wahrheitsgemäß.
+ * Drei Beispielbetriebe in drei deutlich verschiedenen Systemen (hell
+ * redaktionell, dunkel, farbig-laut), je im Hauptsystem ihrer Branche.
+ * Links zeigen direkt auf die System-Demos (`/demo/system/<System>/<Beispiel>`),
+ * Bilder sind Aufnahmen genau dieser Demos (`client/public/showcases/<id>.webp`,
+ * erzeugt von scripts/branchen-screenshots.ts, 2026-10-13).
  */
+import { showcaseImagePath } from "./seoShowcases";
+
 export interface ShowroomItem {
   label: string;
   /** Name im Bild (Beispielwebsite). */
   name: string;
-  /** Bild `client/public/landing/<image>.webp` (alter Fixture-Schlüssel). */
-  image: "salon-noir" | "gusto" | "raster";
+  /** Beispielbetrieb (SHOWCASES[].id). */
+  showcase: string;
+  /** Designsystem, in dem das Beispiel gezeigt wird (sein Hauptsystem). */
+  systemName: string;
+  /** Aufnahme `client/public/showcases/<showcase>.webp` (1200×833). */
+  image: string;
   href: string;
 }
 
+const item = (
+  label: string,
+  name: string,
+  showcase: string,
+  system: string,
+  systemName: string
+): ShowroomItem => ({
+  label,
+  name,
+  showcase,
+  systemName,
+  image: showcaseImagePath(showcase),
+  href: `/demo/system/${system}/${showcase}`,
+});
+
 export const LANDING_SHOWROOM: readonly ShowroomItem[] = [
-  {
-    label: "Salon & Beauty",
-    name: "NOIR Haarstudio",
-    image: "salon-noir",
-    href: "/demo/system/journal/friseur",
-  },
-  {
-    label: "Restaurant & Café",
-    name: "Trattoria Lucia",
-    image: "gusto",
-    href: "/demo/system/nacht/restaurant",
-  },
-  {
-    label: "Steuerberatung",
-    name: "Roth & Weber Steuerberater",
-    image: "raster",
-    href: "/demo/system/raster/steuerberater",
-  },
+  item("Salon & Beauty", "NOIR Haarstudio", "friseur", "journal", "Journal"),
+  item("Restaurant & Café", "Trattoria Lucia", "restaurant", "nacht", "Nacht"),
+  item("Fitness & Kurse", "Studio Puls", "training", "plakat", "Plakat"),
 ];
 
 /** Satz unter der Branchenwahl: was Kund:innen am Design wirklich wählen. */

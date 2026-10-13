@@ -3,10 +3,10 @@ import { ArrowDown, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Logo, StartForm, DemoLink, Price, Questions, Footer } from "./shared";
 import { LANDING_SHOWROOM } from "@shared/landingShowroom";
 
-/** System-Demo zum alten Showroom-Bild (Links ohne Umweg über den 301). */
-const demoHref = (image: string): string =>
-  LANDING_SHOWROOM.find(item => item.image === image)?.href ??
-  LANDING_SHOWROOM[0].href;
+/** Showroom-Beispiele: Salon groß, die beiden anderen als Paar. */
+const [SALON, ...PAIR] = LANDING_SHOWROOM;
+/** Überschriften des Paars, in der Reihenfolge von LANDING_SHOWROOM. */
+const PAIR_TITLES = ["Lust auf einen Besuch.", "Volle Kurse, klare Ansage."];
 export default function Auftritt() {
   return (
     <div className="concept concept-bold" id="top">
@@ -115,53 +115,40 @@ export default function Auftritt() {
                   Deine Arbeit im Mittelpunkt. Mit Bildern, die zeigen, was
                   deinen Stil ausmacht.
                 </p>
-                <DemoLink href={demoHref("salon-noir")}>Salon-Website entdecken</DemoLink>
+                <DemoLink href={SALON.href}>Salon-Website entdecken</DemoLink>
               </div>
               <a
-                href={demoHref("salon-noir")}
+                href={SALON.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Salon-Demo öffnen"
               >
                 <img
-                  src="/landing/salon-noir.webp"
+                  src={SALON.image}
                   width="1200"
                   height="833"
-                  alt="Pageblitz Salon-Website"
+                  alt={`Pageblitz-Beispielwebsite ${SALON.name} im Design ${SALON.systemName}`}
                   loading="lazy"
                 />
               </a>
             </article>
             <div className="bold-demo-pair">
-              {[
-                {
-                  id: "gusto",
-                  label: "02 / GASTRONOMIE",
-                  title: "Lust auf einen Besuch.",
-                },
-                {
-                  id: "raster",
-                  label: "03 / ARCHITEKTUR",
-                  title: "Raum für deine Arbeit.",
-                },
-              ].map(d => (
-                <article key={d.id}>
-                  <a
-                    href={demoHref(d.id)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+              {PAIR.map((d, i) => (
+                <article key={d.showcase}>
+                  <a href={d.href} target="_blank" rel="noopener noreferrer">
                     <img
-                      src={`/landing/${d.id}.webp`}
-                      alt={`Beispielwebsite ${d.id}`}
+                      src={d.image}
+                      alt={`Pageblitz-Beispielwebsite ${d.name} im Design ${d.systemName}`}
                       loading="lazy"
                       width="1200"
                       height="833"
                     />
                   </a>
-                  <span className="bold-index">{d.label}</span>
-                  <h3>{d.title}</h3>
-                  <DemoLink href={demoHref(d.id)}>Website ansehen</DemoLink>
+                  <span className="bold-index">
+                    0{i + 2} / {d.label.toUpperCase()}
+                  </span>
+                  <h3>{PAIR_TITLES[i]}</h3>
+                  <DemoLink href={d.href}>Website ansehen</DemoLink>
                 </article>
               ))}
             </div>

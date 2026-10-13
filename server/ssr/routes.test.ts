@@ -18,6 +18,7 @@ import {
 } from "../../shared/designSystems/apply";
 import { restoreDoc } from "../onboardingV2/versions";
 import { LANDING_SHOWROOM } from "../../shared/landingShowroom";
+import { findShowcase } from "../../shared/showcases/blueprintShowcase";
 
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
@@ -30,6 +31,7 @@ import {
   invalidateSsrCache,
   legacyDemoTarget,
   registerSsrRoutes,
+  systemDemoPath,
 } from "./routes";
 import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
 
@@ -467,10 +469,12 @@ describe("SSR routes", () => {
       expect(raster.headers.location).toBe("/demo/system/raster/steuerberater");
     });
 
-    test("Showroom-Links der Startseite = Ziele der alten Showroom-Demos und rendern", async () => {
+    test("Showroom-Links der Startseite = Hauptsystem-Demo des Beispiels und rendern", async () => {
       const app = buildAppWithFallback();
       for (const item of LANDING_SHOWROOM) {
-        expect(item.href).toBe(legacyDemoTarget(item.image));
+        const showcase = findShowcase(item.showcase);
+        expect(showcase, item.showcase).toBeDefined();
+        expect(item.href).toBe(systemDemoPath(showcase!));
         const res = await request(app).get(item.href);
         expect(res.status, item.href).toBe(200);
       }

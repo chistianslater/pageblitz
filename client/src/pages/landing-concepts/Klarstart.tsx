@@ -302,8 +302,8 @@ export default function Klarstart() {
               >
                 <img
                   key={item.image}
-                  src={`/landing/${item.image}.webp`}
-                  alt={`Pageblitz-Beispielwebsite ${item.name}`}
+                  src={item.image}
+                  alt={`Pageblitz-Beispielwebsite ${item.name} im Design ${item.systemName}`}
                   width="1200"
                   height="833"
                 />
