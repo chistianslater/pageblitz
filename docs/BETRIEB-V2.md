@@ -241,6 +241,15 @@ brauchbare Anschrift aus der Kampagne, ohne dass die Zeile verschwindet —
 die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 `./scripts/migration-einspielen.sh drizzle/0035_postkarten_zurueckstellen.sql`.
 
+### Migration 0040 — Abo-Laufzeit (Preismodell 2026-10-13, additiv)
+
+`drizzle/0040_abo_laufzeit.sql`: `subscriptions` bekommt `termStartedAt`,
+`currentTermEnd`, `cancelRequestedAt`, `cancelEffectiveAt` (alle Unix-
+Sekunden, NULL-bar). Bestandszeilen bleiben NULL — ein laufendes Jahres-Abo
+bekommt seinen Laufzeitbeginn mit der nächsten bezahlten Rechnung. Additiv,
+**vor** dem Deploy des neuen Codes einspielen (der Code liest die Spalten):
+`./scripts/migration-einspielen.sh drizzle/0040_abo_laufzeit.sql`.
+
 ### Rollback nach „Packs entfernen“ (2026-10-13)
 
 **Rollback vor Freundlich (Release 2026-10-13):** Code bis einschließlich
@@ -470,6 +479,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `APP_BASE_URL` / `APP_URL` / `BASE_URL` | Basis-URL für Links (E-Mails, Redirects) |
 | `STRIPE_SECRET_KEY` | Stripe-API |
 | `STRIPE_WEBHOOK_SECRET` | Signaturprüfung `handleCheckoutCompleted` |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | optional: feste Kundenportal-Konfiguration ohne Kündigen (sonst legt der Server sie selbst an, siehe „Preise & Laufzeit“) |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Transaktions-/Lifecycle-Mails |
 | `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` / `R2_PUBLIC_URL` | Objekt-Storage (Cloudflare R2, S3-kompatibel — nicht AWS S3) |
 | `GOOGLE_PLACES_API_KEY` | GMB-Suche / Orts-Autocomplete |
@@ -660,6 +670,100 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   Abrechnungswahrheit. Bewusst nicht in B6 behoben (Transaktion/`SELECT …
   FOR UPDATE` oder optimistische Version wären der Fix); Hinweis steht auch
   als Kommentar an `commitAddOnFlags` (`server/onboardingV2/addOnFlags.ts`).
+
+### Preise & Laufzeit (seit 2026-10-13)
+
+**Regeln (Betreiber-Entscheidung 2026-10-13):**
+
+- **Jahrestarif:** 19,90 €/Monat, monatlich abgebucht, **12 Monate
+  Mindestlaufzeit** ab der ersten Zahlung nach den 7 Testtagen. Verlängert
+  sich automatisch um 12 Monate, wenn nicht spätestens **1 Monat vor
+  Laufzeitende** gekündigt wird. Frühere Kündigung → Ende zum AKTUELLEN
+  Laufzeitende (nicht sofort); Kündigung im letzten Monat → Ende zum
+  NÄCHSTEN Laufzeitende. Fristtag zählt ganz (Kalendertag Europe/Berlin).
+- **Monatstarif:** 24,90 €/Monat, monatlich zum Ende des Abrechnungsmonats
+  kündbar.
+- **Testtage:** Kündigung in den 7 Tagen kostet nichts (Ende zum Testende).
+- **Extras (Add-ons):** gleicher Monatspreis in beiden Tarifen, **keine eigene
+  Laufzeit** — jederzeit im Studio ab-/zubuchbar (anteilig), auch im
+  Jahrestarif; sie enden spätestens mit dem Basis-Abo. Begründung: Die
+  Laufzeit sichert den Basisumsatz; Extras an 12 Monate zu binden hieße
+  Laufzeit je Item zu führen und senkt die Bereitschaft, sie auszuprobieren.
+- **Wechsel:** Monat → Jahr jederzeit im Konto (gilt ab der nächsten
+  Abbuchung, ohne Verrechnung; die 12 Monate starten mit dieser Zahlung).
+  Jahr → Monat bietet die App nicht an — nur zum Laufzeitende über den
+  Support (manuell in Stripe: Basis-Position auf 24,90 €, Metadaten
+  `tariff=monthly`, `termMonths=0`; in der DB `billingInterval=monthly`,
+  `termStartedAt`/`currentTermEnd` auf NULL).
+- Alle Preise brutto **inkl. 19 % MwSt.** (Regelbesteuerung).
+
+**Wo was steht:** Zahlen nur in `shared/pricing.ts`; alle Texte (Landing,
+SEO, Studio, Checkout, Konto, Postkarte, Chat-Prompts, llms.txt, JSON-LD)
+aus `shared/pricingText.ts`; Datumslogik in `shared/pricingTerm.ts`;
+Stripe-Seite in `server/subscriptionTerm.ts`. `server/pricingLiterals.test.ts`
+schlägt an, wenn irgendwo sonst „19,90"/„24,90"/1990/2490 steht.
+`client/index.html` bekommt Meta-Texte und JSON-LD-Offers über das
+Vite-Plugin `pageblitz-pricing-html`.
+
+**Technik:**
+
+- Checkout (`server/onboardingV2/checkout.ts`, einziger Pfad): Basis-
+  Position monatlich zum Tarifpreis, `subscription_data.metadata`
+  `{tariff, termMonths, websiteId}`, `trial_period_days` = 7,
+  Laufzeittext am Bezahl-Knopf (`custom_text.submit`).
+- Webhook `invoice.paid` → erste Zahlung > 0 € setzt `termStartedAt` /
+  `currentTermEnd` (+ Stripe-Metadatum `termStartedAt`), jede Zahlung ab
+  Laufzeitende rollt `currentTermEnd` um 12 Monate.
+- Kündigen im Konto (`customer.cancelSubscription`) setzt in Stripe
+  `cancel_at` = Laufzeitende (Jahrestarif, `proration_behavior: none`) bzw.
+  `cancel_at_period_end` (Monat/Test). `customer.withdrawCancellation` nimmt
+  zurück, `customer.switchToYearly` wechselt.
+- `customer.subscription.updated`: `cancel_at` → Status „canceling“; eine
+  Kündigung von außen (Portal, Dashboard), die vor dem Laufzeitende enden
+  würde, wird auf das Laufzeitende zurückgesetzt. **Kulanz** (Betreiber will
+  bewusst früher beenden): an der Subscription in Stripe das Metadatum
+  `cancelOverride = 1` setzen, DANN `cancel_at` ändern — sonst setzt der
+  Webhook es zurück.
+- Kundenportal: `createBillingPortalSession` nutzt eine eigene
+  Portal-Konfiguration mit `subscription_cancel` und `subscription_update`
+  **aus** (nur Zahlungsdaten, Adresse, Rechnungen). Der Server sucht sie
+  per Metadatum `pageblitz=pageblitz-laufzeit-v1` oder legt sie beim ersten
+  Portal-Aufruf an; alternativ fest per `STRIPE_PORTAL_CONFIGURATION_ID`.
+
+**Vor Go-live in Stripe prüfen (Dashboard):**
+
+1. Webhook-Endpunkt `/api/stripe/webhook` abonniert zusätzlich
+   **`invoice.paid`** (bisher: `checkout.session.completed`,
+   `customer.subscription.updated`/`deleted`, `invoice.payment_failed`).
+2. Standard-Kundenportal (Settings → Billing → Customer portal): Kündigen
+   ebenfalls **ausschalten** — als zweite Absicherung, falls irgendwo ein
+   Portal-Link ohne unsere Konfiguration entsteht.
+3. Steuer: Stripe rechnet nichts auf (`tax_behavior: inclusive`). Auf den
+   Rechnungen muss die USt. ausgewiesen sein — Stripe Tax bzw. ein fester
+   Steuersatz 19 % inklusive an den Preisen/Rechnungseinstellungen, USt-ID
+   und Firmendaten im Rechnungs-Branding hinterlegen.
+4. Optional: Erinnerungsmail vor Testende und vor Verlängerung (Settings →
+   Billing → Subscriptions and emails) — die Startseiten-FAQ verspricht
+   keine Erinnerung mehr.
+5. Migration 0040 auf Prod eingespielt (siehe §3).
+
+**In Stripe-Testmodus prüfen:** mit `sk_test_…` lokal starten,
+`stripe listen --forward-to localhost:3000/api/stripe/webhook`, im Studio
+Jahrestarif auschecken (Testkarte 4242 4242 4242 4242), dann mit einer
+**Test Clock** (Dashboard → Billing → Test clocks: Kunde + Abo an eine Uhr
+hängen) die Zeit vorstellen: nach Testende → `invoice.paid` → im Konto
+„Läuft bis …, Kündigung bis …“; kündigen → Stripe zeigt „Cancels on“ =
+Laufzeitende; Uhr über die Frist hinaus vorstellen und erneut kündigen →
+Ende = nächstes Laufzeitende; Portal öffnen → kein Kündigen-Knopf.
+
+**AGB:** Die Laufzeit-, Verlängerungs- und Kündigungsregeln oben MÜSSEN in den
+AGB stehen (Betreiber lässt sie extern erstellen) — und im Checkout auf die
+AGB verwiesen werden (Stripe: Settings → Public details → Terms of service
+URL, dann `consent_collection.terms_of_service` im Checkout aktivieren). Die
+App enthält bewusst keinen Rechtstext. Hinweis: Für Verbraucher gelten seit
+2022 Grenzen bei automatischer Verlängerung (§ 309 Nr. 9 BGB); Pageblitz
+richtet sich an Betriebe — ob B2C-Kunden ausgeschlossen werden, gehört in
+die AGB-Prüfung.
 
 ### GMB-Wahrheit & Erstgenerierung (seit Plan B7)
 

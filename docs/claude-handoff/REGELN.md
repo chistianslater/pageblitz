@@ -9,8 +9,10 @@ Diese Liste ist verbindlich. Nicht „aus Kulanz“ umgehen.
   `shared/designSystems/types.ts`. Die 20 **Textstimmen**
   (`shared/siteContract/packIds.ts`, `shared/textVoices/`) steuern nur Texte;
   keine Stimmen-ID umbenennen, das Feld `stylePackId` bleibt (Rollback).
-- **Preise und Add-on-Namen** nur aus `shared/pricing.ts`. Landing, Checkout,
-  SEO-Prerender und Copy müssen dieselbe Zahl zeigen.
+- **Preise und Add-on-Namen** nur aus `shared/pricing.ts`, Preistexte nur aus
+  `shared/pricingText.ts` (nie „19,90" ohne Laufzeit, kein „jederzeit
+  kündbar" für den Jahrestarif). Landing, Checkout, SEO-Prerender und Copy
+  müssen dieselbe Zahl zeigen; `server/pricingLiterals.test.ts` wacht.
 - **Keine erfundenen Testimonials**, Kundenzahlen oder Bewertungen
   (`Testimonials.tsx` rendert absichtlich nichts, solange die Liste leer ist).
 - Google-Bewertungen auf Kundenseiten bleiben **read-only**.

@@ -18,8 +18,12 @@ Live-Vorschau same-origin `/preview-ssr/<token>`.
 
 ## Preise (einzige Quelle)
 
-Nur `shared/pricing.ts`: Basis **19,90 €**/Monat jährlich bzw. **24,90 €**
-monatlich. Keine erfundenen Preise, keine erfundenen Testimonials.
+Nur `shared/pricing.ts`: Jahrestarif **19,90 €**/Monat bei 12 Monaten
+Laufzeit (monatlich abgebucht, Verlängerung um 12 Monate, 1 Monat Frist),
+Monatstarif **24,90 €**/Monat monatlich kündbar, alles inkl. 19 % MwSt.
+Texte nur aus `shared/pricingText.ts` (Wächter: `server/pricingLiterals.test.ts`),
+Regeln in `docs/BETRIEB-V2.md` „Preise & Laufzeit“. Keine erfundenen Preise,
+keine erfundenen Testimonials.
 
 ## 7 Designsysteme — kein 8.
 
