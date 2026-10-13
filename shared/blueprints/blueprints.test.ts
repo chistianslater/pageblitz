@@ -444,3 +444,41 @@ describe("Weinstube & Co. sind Gastro-Restaurant (2026-10-12)", () => {
     expect(blueprintFor("Heurekas Nachhilfe", "").id).not.toBe("gastro");
   });
 });
+
+/**
+ * Klempner & Gärtner (2026-10-13): „Klempner", „Gärtner",
+ * „Landschaftsgärtner" landeten im Standard (Raster), obwohl
+ * „Sanitärinstallateur" und „Garten- und Landschaftsbau" Handwerk sind.
+ * Nur über die Kategorie — beides sind auch Familiennamen.
+ */
+describe("Klempner und Gärtner sind Handwerk", () => {
+  it("erkennt die Gewerke in der Kategorie", () => {
+    for (const category of [
+      "Klempner",
+      "Klempnerei",
+      "Gärtner",
+      "Gaertner",
+      "Landschaftsgärtner",
+      "Friedhofsgärtner",
+      "Gartenbau",
+      "Garten- und Landschaftsbau",
+      "Sanitärinstallateur",
+    ])
+      expect(blueprintFor(category, "Muster").id, category).toBe("trade");
+  });
+
+  it("Nachbarn bleiben, was sie waren", () => {
+    expect(blueprintFor("Klempnerbedarf", "Muster").id).not.toBe("trade");
+    expect(blueprintFor("Gärtnerei", "Muster").id).toBe("standard");
+    expect(blueprintFor("Gärtnerei & Baumschule", "Muster").id).toBe(
+      "standard"
+    );
+    expect(blueprintFor("Gartencenter", "Muster").id).toBe("retail");
+  });
+
+  it("Familiennamen im Betriebsnamen machen kein Handwerk", () => {
+    expect(blueprintFor("Zahnarzt", "Praxis Dr. Gärtner").id).toBe("health");
+    expect(blueprintFor("Steuerberater", "Kanzlei Klempner").id).toBe("advice");
+    expect(blueprintFor("Café", "Café Gärtner").id).toBe("gastro");
+  });
+});

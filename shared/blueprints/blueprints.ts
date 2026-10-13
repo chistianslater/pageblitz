@@ -175,6 +175,17 @@ function beautyBlueprint(category: string, name: string): Blueprint {
 const TRADE =
   /tischler|schreiner|zimmerei|zimmerer|maler|lackier|elektr(?!onik)|sanitär|sanitaer|heizung|klima|installat|dachdeck|bauunternehm|generalunternehm|baufirma|bauges|maurer|fliesen|parkett|bodenleger|trockenbau|stuckat|glaserei|schlosser|metallbau|landschaftsbau|gartenbau|zaunbau|rollladen|rolladen|handwerk|sanierung|schornstein|ofenbau|kaminbau|küchenbau|treppenbau|dachdecker|gerüstbau|estrich|gebäudereinig|reinigung|umzug|entrümpel|hausmeister|schädling|garten(pflege|service)|baumpflege|landschaftspflege|winterdienst|plumber|electrician|roofer|painter|carpenter|contractor|cleaning|landscap|mover/i;
 
+/**
+ * Gewerke, die zugleich Familiennamen sind (2026-10-13): nur in der
+ * Kategorie, nie im Namen („Praxis Dr. Gärtner" bleibt Praxis). Die
+ * Gärtnerei (Pflanzenverkauf) und Klempnerbedarf (Handel) bleiben draußen.
+ */
+const TRADE_CATEGORY = /klempner(?!bedarf)|g(?:ä|ae)rtner(?!ei|bedarf)/i;
+
+function isTrade(category: string, name: string): boolean {
+  return TRADE.test(`${category} ${name}`) || TRADE_CATEGORY.test(category);
+}
+
 function tradeBlueprint(category: string, name: string): Blueprint {
   const text = `${category} ${name}`;
   const emergency = /elektr|sanitär|sanitaer|heizung|installat|notdienst/i.test(
@@ -238,7 +249,8 @@ export function tradeLabel(
   category: string | undefined,
   businessName = ""
 ): string | undefined {
-  if (!category || TRADE.test(category)) return category;
+  if (!category || TRADE.test(category) || TRADE_CATEGORY.test(category))
+    return category;
   const word = businessName
     .split(/\s+/)
     .find(w => TRADE.test(w) && /^[A-ZÄÖÜ]/.test(w));
@@ -436,7 +448,7 @@ export function keywordFamily(
   if (isKidsLessons(category)) return "courses";
   if (isPediatric(category)) return "health";
   if (BEAUTY_KEYS.test(designIndustryKey(category))) return "beauty";
-  if (TRADE.test(`${category} ${businessName}`)) return "trade";
+  if (isTrade(category, businessName)) return "trade";
   if (
     GASTRO_KEYS.test(designIndustryKey(category)) ||
     GASTRO_TEXT.test(category)

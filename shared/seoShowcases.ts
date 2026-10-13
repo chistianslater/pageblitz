@@ -36,9 +36,7 @@ export const SEO_SHOWCASES: Readonly<Record<string, SeoShowcaseRef | null>> = {
   baeckerei: ref("baeckerei", "werkstoff", "Bäckerei"),
   handwerk: ref("schreinerei", "werkstoff", "Handwerker"),
   maler: ref("schreinerei", "werkstoff", "Malerbetrieb"),
-  // Google-Kategorie „Sanitärinstallateur"; das blanke Wort „Klempner"
-  // erkennt der Bauplan (noch) nicht als Handwerk (siehe Bericht).
-  klempner: ref("schreinerei", "werkstoff", "Sanitärinstallateur"),
+  klempner: ref("schreinerei", "werkstoff", "Klempner"),
   reinigung: ref("schreinerei", "werkstoff", "Reinigungsservice"),
   hausreinigung: ref("schreinerei", "werkstoff", "Hausreinigung"),
   elektriker: ref("elektro", "werkstoff", "Elektriker"),
@@ -58,7 +56,9 @@ export const SEO_SHOWCASES: Readonly<Record<string, SeoShowcaseRef | null>> = {
   innenarchitekt: ref("makler", "raster", "Innenarchitekt"),
   "kfz-werkstatt": ref("werkstatt", "raster", "Kfz-Werkstatt"),
   schluesseldienst: ref("schluesseldienst", "raster", "Schlüsseldienst"),
-  gaertner: ref("gaertnerei", "raster", "Gärtner"),
+  // Gärtner/Landschaftsgärtner sind Handwerk (Werkstoff); die Gärtnerei
+  // (Pflanzenverkauf, Beispiel „gaertnerei") bleibt Raster — daher Schreinerei.
+  gaertner: ref("schreinerei", "werkstoff", "Gärtner"),
   fotograf: ref("fotografie", "journal", "Fotograf"),
   fotostudio: ref("fotografie", "journal", "Fotostudio"),
   musikschule: ref("musikschule", "freundlich", "Musikschule"),
