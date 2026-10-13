@@ -9,6 +9,7 @@ import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import { KLAR } from "../../../../../../shared/designSystems/klar";
 import { NACHT } from "../../../../../../shared/designSystems/nacht";
+import { FREUNDLICH } from "../../../../../../shared/designSystems/freundlich";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { blueprintFor } from "../../../../../../shared/blueprints/blueprints";
 import { SECTION_ANCHORS, type NavItem } from "../../engine";
@@ -314,5 +315,29 @@ describe("Nacht-Schriften", () => {
     const ofl = readFileSync(resolve(dir, "OFL.txt"), "utf8");
     expect(ofl).toContain("Gilda Display: Copyright 2012 The Gilda Display Project Authors");
     expect(ofl).toContain("Jost: Copyright 2020 The Jost Project Authors");
+  });
+});
+
+describe("Freundlich-Schriften", () => {
+  test("Bricolage Grotesque und Instrument Sans je latin + latin-ext; latin-ext nur per unicode-range", () => {
+    const rules = systemFontFaces(FREUNDLICH).split("\n");
+    expect(rules).toHaveLength(4);
+    expect(rules.filter(r => r.includes('font-family:"Bricolage Grotesque"'))).toHaveLength(2);
+    expect(rules.filter(r => r.includes('font-family:"Instrument Sans"'))).toHaveLength(2);
+    for (const r of rules) {
+      expect(r).toContain("font-display:swap");
+      expect(r.includes("latin-ext")).toBe(r.includes("unicode-range:"));
+      expect(r).not.toContain("font-stretch");
+    }
+    expect(rules.find(r => r.includes("bricolage-latin-wght"))).toContain("font-weight:500 800");
+    expect(rules.find(r => r.includes("instrument-sans-latin-wght"))).toContain("font-weight:400 700");
+  });
+  test("alle vier Dateien liegen unter public/fonts/systems, OFL-Hinweise vorhanden", () => {
+    const dir = resolve(__dirname, "../../../../../public/fonts/systems");
+    for (const f of [...FREUNDLICH.fonts.display.files, ...FREUNDLICH.fonts.text.files])
+      expect(existsSync(resolve(dir, f.file)), f.file).toBe(true);
+    const ofl = readFileSync(resolve(dir, "OFL.txt"), "utf8");
+    expect(ofl).toContain("Bricolage Grotesque: Copyright 2022 The Bricolage Grotesque Project Authors");
+    expect(ofl).toContain("Instrument Sans: Copyright 2022 The Instrument Sans Project Authors");
   });
 });

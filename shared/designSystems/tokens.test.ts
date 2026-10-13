@@ -5,6 +5,7 @@ import { WERKSTOFF } from "./werkstoff";
 import { PLAKAT } from "./plakat";
 import { KLAR } from "./klar";
 import { NACHT } from "./nacht";
+import { FREUNDLICH } from "./freundlich";
 import { DESIGN_SYSTEMS, RELEASED_SYSTEMS, isReleased, systemHasMotion } from "./registry";
 import { assertSafeImageFilter } from "./toCss";
 import type { DesignSystemDef } from "./types";
@@ -445,6 +446,142 @@ describe("Schema und Schein nur, wo das System sie setzt", () => {
         palettes: [{ ...p0, glow: [bad, "#000000"] }, rest[0], rest[1]],
       };
       expect(() => systemCssVars(def, p0.id)).toThrow();
+    }
+  });
+});
+
+describe("Freundlich-Tokens", () => {
+  test("drei Paletten Wald, Himmel, Beere mit Kartenfläche, Band, Knopfkante, vier Pastellen", () => {
+    expect(FREUNDLICH.id).toBe("freundlich");
+    expect(FREUNDLICH.palettes.map(p => p.id)).toEqual(["wald", "himmel", "beere"]);
+    for (const p of FREUNDLICH.palettes) {
+      expect(p.surface).toBeTruthy();
+      expect(p.band).toBeTruthy();
+      expect(p.edge).toBeTruthy();
+      expect(p.tints).toHaveLength(4);
+      expect(new Set(p.tints!.map(t => t.id)).size).toBe(4);
+      expect(p.fields).toBeUndefined();
+      expect(p.glow).toBeUndefined();
+    }
+  });
+  test("helles Papier ohne Schema, Form mit Wolkenkante", () => {
+    expect(FREUNDLICH.scheme).toBeUndefined();
+    expect(FREUNDLICH.shape).toEqual({
+      radius: { s: "12px", m: "20px", l: "28px", pill: "999px" },
+      press: "4px", tile: "3px", tilt: "1.5deg", edge: "cloud",
+    });
+    expect(FREUNDLICH.freeGalleryBeyondShown).toBe(true);
+  });
+  test("registriert, aber NICHT freigeschaltet und ohne Bewegung (bis F4/F5)", () => {
+    expect(DESIGN_SYSTEMS.freundlich).toBe(FREUNDLICH);
+    expect(isReleased("freundlich")).toBe(false);
+    expect(RELEASED_SYSTEMS).not.toContain("freundlich");
+    expect(systemHasMotion("freundlich")).toBe(false);
+  });
+  test("Schriftskala: neun Kernstufen plus figure und data, keine Versalien, Laufweite ≥ −0,04 em", () => {
+    expect(Object.keys(FREUNDLICH.type).sort()).toEqual(
+      ["body", "data", "display", "figure", "h2", "h3", "kicker", "lede", "link", "mark", "small"]
+    );
+    for (const t of Object.values(FREUNDLICH.type)) {
+      expect(t!.upper).toBeUndefined();
+      expect(parseFloat(t!.track)).toBeGreaterThanOrEqual(-0.04);
+    }
+    expect(FREUNDLICH.type.body.size).toMatch(/^clamp\(1\.125rem,/);
+    expect(FREUNDLICH.type.small.size).toBe("1rem");
+  });
+  // Fließtext Ziel ≥ 7 : 1, Text auf Pastell immer Tinte (Endwerte, Systemblatt).
+  test.each(FREUNDLICH.palettes.map(p => [p.id, p] as const))("Kontrast %s", (_id, p) => {
+    expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.ink, p.surface!)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.surface!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.ink, p.band!)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.band!)).toBeGreaterThanOrEqual(4.5);
+    // Hauptknopf hebt sich ab: über die Fläche selbst oder über Rand/Kante.
+    expect(
+      Math.max(contrastRatio(p.signal!, p.paper), contrastRatio(p.edge!, p.paper))
+    ).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(p.edge!, p.paper)).toBeGreaterThanOrEqual(3);
+    for (const t of p.tints!) {
+      expect(t.ink).toBe(p.ink);
+      expect(contrastRatio(t.ink, t.bg)).toBeGreaterThanOrEqual(7);
+      expect(contrastRatio(t.muted, t.bg)).toBeGreaterThanOrEqual(4.5);
+      // Links und Fokus (Akzent) auch auf Pastell lesbar.
+      expect(contrastRatio(p.accent, t.bg)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+  test("Himmel: Sonne braucht die Tintenkante (Sonne gegen Papier < 3 : 1)", () => {
+    const himmel = getPalette(FREUNDLICH, "himmel");
+    expect(contrastRatio(himmel.signal!, himmel.paper)).toBeLessThan(3);
+    expect(himmel.edge).toBe(himmel.ink);
+  });
+  test("genau zwei Preloads: Bricolage und Instrument Sans (latin), latin-ext nie", () => {
+    const all = [...FREUNDLICH.fonts.display.files, ...FREUNDLICH.fonts.text.files];
+    expect(FREUNDLICH.preload).toEqual(["bricolage-latin-wght.woff2", "instrument-sans-latin-wght.woff2"]);
+    for (const f of FREUNDLICH.preload) expect(all.map(x => x.file)).toContain(f);
+    expect(all.filter(x => x.unicodeRange).map(x => x.file)).toEqual([
+      "bricolage-latin-ext-wght.woff2",
+      "instrument-sans-latin-ext-wght.woff2",
+    ]);
+  });
+  test("CSS-Variablen: Band, Knopfkante, Pastelle, Form, Bildfilter, keine Steuerzeichen", () => {
+    const v = systemCssVars(FREUNDLICH, "beere");
+    expect(v["--sys-paper"]).toBe("#f7f0ea");
+    expect(v["--sys-surface"]).toBe("#ffffff");
+    expect(v["--sys-band"]).toBe("#eee3da");
+    expect(v["--sys-edge-color"]).toBe("#7d2a1f");
+    expect(v["--sys-tint-1-bg"]).toBe("#f7d4de");
+    expect(v["--sys-tint-4-edge"]).toBe("#b8a24b");
+    expect(v["--sys-tint-3-muted"]).toBe("#4a3b62");
+    expect(v["--sys-tint-2-ink"]).toBe("#2b1627");
+    expect(v["--sys-radius-s"]).toBe("12px");
+    expect(v["--sys-radius-m"]).toBe("20px");
+    expect(v["--sys-radius-l"]).toBe("28px");
+    expect(v["--sys-radius-pill"]).toBe("999px");
+    expect(v["--sys-press"]).toBe("4px");
+    expect(v["--sys-tile"]).toBe("3px");
+    expect(v["--sys-tilt"]).toBe("1.5deg");
+    expect(v["--sys-edge"]).toBe("cloud");
+    expect(v["--sys-font-display"]).toContain("Bricolage Grotesque");
+    expect(v["--sys-font-text"]).toContain("Instrument Sans");
+    expect(v["--sys-image-filter"]).toBe(FREUNDLICH.imageFilter);
+    expect(v["--sys-scheme"]).toBeUndefined();
+    for (const p of FREUNDLICH.palettes)
+      expect(Object.values(systemCssVars(FREUNDLICH, p.id)).every(x => !/[;{}]/.test(x))).toBe(true);
+  });
+});
+
+describe("Form, Band, Knopfkante und Pastelle nur, wo das System sie setzt", () => {
+  const SHAPE_KEYS = /^--sys-(band|edge|edge-color|tint-\d-(bg|ink|muted|edge)|radius-(s|m|l|pill)|press|tile|tilt)$/;
+  test.each([JOURNAL, RASTER, WERKSTOFF, PLAKAT, KLAR, NACHT])("$id ohne Form-/Pastell-Variablen", def => {
+    expect(def.shape).toBeUndefined();
+    for (const p of def.palettes) {
+      expect(p.band).toBeUndefined();
+      expect(p.edge).toBeUndefined();
+      expect(p.tints).toBeUndefined();
+      const keys = Object.keys(systemCssVars(def, p.id));
+      expect(keys.filter(k => SHAPE_KEYS.test(k))).toEqual([]);
+    }
+  });
+  test("Band, Kante, Pastell und Form mit ; { } werden abgewiesen", () => {
+    const [p0, p1, p2] = FREUNDLICH.palettes;
+    const t = p0.tints!;
+    for (const bad of ["#fff;color:red", "x}body{", "a{b"]) {
+      const withPalette = (p: typeof p0): DesignSystemDef => ({ ...FREUNDLICH, palettes: [p, p1, p2] });
+      expect(() => systemCssVars(withPalette({ ...p0, band: bad }), p0.id)).toThrow();
+      expect(() => systemCssVars(withPalette({ ...p0, edge: bad }), p0.id)).toThrow();
+      expect(() =>
+        systemCssVars(withPalette({ ...p0, tints: [{ ...t[0], edge: bad }, t[1], t[2], t[3]] }), p0.id)
+      ).toThrow();
+      expect(() =>
+        systemCssVars({ ...FREUNDLICH, shape: { ...FREUNDLICH.shape!, tilt: bad } }, p0.id)
+      ).toThrow();
+      expect(() =>
+        systemCssVars({ ...FREUNDLICH, shape: { ...FREUNDLICH.shape!, radius: { ...FREUNDLICH.shape!.radius, m: bad } } }, p0.id)
+      ).toThrow();
     }
   });
 });

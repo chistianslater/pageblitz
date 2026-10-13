@@ -42,6 +42,27 @@ export function systemCssVars(def: DesignSystemDef, paletteId?: string): Record<
     vars[`--sys-field-${i + 1}-ink`] = assertSafeCssValue(f.ink);
     vars[`--sys-field-${i + 1}-muted`] = assertSafeCssValue(f.muted);
   });
+  // Wechselfläche, Knopfkante und Pastelle nur in Systemen, die sie führen (Freundlich).
+  if (p.band !== undefined) vars["--sys-band"] = assertSafeCssValue(p.band);
+  if (p.edge !== undefined) vars["--sys-edge-color"] = assertSafeCssValue(p.edge);
+  p.tints?.forEach((t, i) => {
+    vars[`--sys-tint-${i + 1}-bg`] = assertSafeCssValue(t.bg);
+    vars[`--sys-tint-${i + 1}-ink`] = assertSafeCssValue(t.ink);
+    vars[`--sys-tint-${i + 1}-muted`] = assertSafeCssValue(t.muted);
+    vars[`--sys-tint-${i + 1}-edge`] = assertSafeCssValue(t.edge);
+  });
+  // Form nur in Systemen, die sie führen (Freundlich).
+  if (def.shape) {
+    const s = def.shape;
+    vars["--sys-radius-s"] = assertSafeCssValue(s.radius.s);
+    vars["--sys-radius-m"] = assertSafeCssValue(s.radius.m);
+    vars["--sys-radius-l"] = assertSafeCssValue(s.radius.l);
+    vars["--sys-radius-pill"] = assertSafeCssValue(s.radius.pill);
+    vars["--sys-press"] = assertSafeCssValue(s.press);
+    vars["--sys-tile"] = assertSafeCssValue(s.tile);
+    vars["--sys-tilt"] = assertSafeCssValue(s.tilt);
+    vars["--sys-edge"] = s.edge;
+  }
   // Optionale Stufen (figure, data) fehlen in Systemen ohne sie — dann keine Variablen.
   for (const [step, t] of Object.entries(def.type)) {
     if (!t) continue;

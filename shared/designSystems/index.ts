@@ -8,6 +8,7 @@ export { WERKSTOFF } from "./werkstoff";
 export { PLAKAT } from "./plakat";
 export { KLAR } from "./klar";
 export { NACHT } from "./nacht";
+export { FREUNDLICH } from "./freundlich";
 export * from "./assignment";
 export * from "./apply";
 export { displayName } from "./displayName";

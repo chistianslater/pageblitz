@@ -4,6 +4,7 @@ import { WERKSTOFF } from "./werkstoff";
 import { PLAKAT } from "./plakat";
 import { KLAR } from "./klar";
 import { NACHT } from "./nacht";
+import { FREUNDLICH } from "./freundlich";
 import type { DesignSystemDef, DesignSystemId } from "./types";
 
 export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = {
@@ -18,6 +19,8 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   klar: KLAR,
   // Nacht: abgenommen und freigeschaltet (siehe RELEASED_SYSTEMS).
   nacht: NACHT,
+  // Freundlich: registriert, NICHT freigeschaltet (bis zur Abnahme, Task F5).
+  freundlich: FREUNDLICH,
 };
 
 /**

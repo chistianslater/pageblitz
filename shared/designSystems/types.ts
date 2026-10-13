@@ -1,5 +1,5 @@
 export const DESIGN_SYSTEM_IDS = [
-  "journal", "raster", "plakat", "nacht", "werkstoff", "klar",
+  "journal", "raster", "plakat", "nacht", "werkstoff", "klar", "freundlich",
 ] as const;
 export type DesignSystemId = (typeof DESIGN_SYSTEM_IDS)[number];
 
@@ -30,6 +30,30 @@ export type TypeSpec = {
 /** Farbfeld (Plakat): Fläche mit eigener Schrift- und Nebenfarbe. */
 export type PaletteField = { id: string; bg: string; ink: string; muted: string };
 
+/**
+ * Pastell (Freundlich): helle Rollenfarbe mit eigener Schrift-, Neben- und
+ * Kantenfarbe (Druckkante von Kacheln, Rand von Pillen). Text darauf ist
+ * immer Tinte.
+ */
+export type PaletteTint = { id: string; bg: string; ink: string; muted: string; edge: string };
+
+/**
+ * Form (Freundlich): Radien, Druckkanten, Kippwinkel und Abschnittskante.
+ * Ausgegeben als `--sys-radius-s|m|l|pill`, `--sys-press`, `--sys-tile`,
+ * `--sys-tilt`, `--sys-edge`.
+ */
+export type SystemShape = {
+  radius: { s: string; m: string; l: string; pill: string };
+  /** Druckkante unter Knöpfen (Versatz nach unten). */
+  press: string;
+  /** Kante unter Kacheln und Pillen. */
+  tile: string;
+  /** Kippwinkel für Fotos und Zettel (am Handy gerade, im System-CSS). */
+  tilt: string;
+  /** Übergang zwischen Flächen: gerade oder Wolkenkante. */
+  edge: "straight" | "cloud";
+};
+
 export type SystemPalette = {
   id: string;
   name: string;
@@ -53,6 +77,15 @@ export type SystemPalette = {
    * Deckkraft im System-CSS. Nur ausgegeben, wenn gesetzt.
    */
   glow?: readonly [string, string];
+  /** Wechselfläche zwischen Abschnitten (Freundlich), `--sys-band`. Nur ausgegeben, wenn gesetzt. */
+  band?: string;
+  /**
+   * Rand/Druckkante des Hauptknopfs (Freundlich), `--sys-edge-color`.
+   * Pflicht, wenn `signal` gegen `paper` unter 3 : 1 bleibt (Himmel: Sonne).
+   */
+  edge?: string;
+  /** Genau vier Pastelle (Freundlich), `--sys-tint-1..4-bg|ink|muted|edge`. */
+  tints?: readonly [PaletteTint, PaletteTint, PaletteTint, PaletteTint];
 };
 
 export type FontFile = {
@@ -86,6 +119,11 @@ export type DesignSystemDef = {
    * Ohne Angabe bleibt alles wie bisher (helle Systeme, byte-gleich).
    */
   scheme?: "light" | "dark";
+  /**
+   * Form (Freundlich): Radien, Druckkanten, Kippwinkel, Wolkenkante.
+   * Ohne Angabe keine Form-Variablen (andere Systeme byte-gleich).
+   */
+  shape?: SystemShape;
   /**
    * Freie Galeriefotos (ohne Galerie-Extra) zählen erst nach den Fotos,
    * die die Seite vor der Galerie schon zeigt (Einstieg, Angebotsfotos,

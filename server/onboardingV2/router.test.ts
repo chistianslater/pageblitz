@@ -651,8 +651,11 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     const zero = await caller().getStyleCandidates({ token: "tok" });
     expect(zero.candidates.map(c => c.id)).toEqual([alt1, alt2]);
     const one = await caller().getStyleCandidates({ token: "tok", round: 1 });
+    // Nur freigeschaltete Systeme (Freundlich ist bis F5 registriert, aber nicht frei).
     expect(one.candidates.map(c => c.id)).toEqual(
-      DESIGN_SYSTEM_IDS.filter(id => !(triple as readonly string[]).includes(id))
+      DESIGN_SYSTEM_IDS.filter(
+        id => ALL_SYSTEMS.includes(id) && !(triple as readonly string[]).includes(id)
+      )
     );
   });
 
