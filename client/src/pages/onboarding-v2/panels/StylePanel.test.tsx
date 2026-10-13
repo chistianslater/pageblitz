@@ -51,7 +51,7 @@ describe("StyleCandidateList (nur Systeme)", () => {
       />
     );
     expect(html).toContain(
-      `/preview-ssr/${token}?system=journal&amp;palette=papier&amp;v=7`
+      `/preview-ssr/${token}?system=journal&amp;palette=papier&amp;studio=1&amp;v=7`
     );
     expect(html).not.toContain("pack=");
     expect(html).toContain('role="radiogroup"');

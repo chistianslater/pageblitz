@@ -18,7 +18,10 @@ import {
 } from "../../shared/designSystems/apply";
 import { restoreDoc } from "../onboardingV2/versions";
 import { LANDING_SHOWROOM } from "../../shared/landingShowroom";
-import { findShowcase } from "../../shared/showcases/blueprintShowcase";
+import {
+  findShowcase,
+  systemShowcaseDoc,
+} from "../../shared/showcases/blueprintShowcase";
 
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
@@ -1039,6 +1042,40 @@ describe("SSR routes", () => {
       const res = await request(app).get("/preview-ssr/abcdefghabcdefgh");
       expect(res.status).toBe(200);
       expect(res.text).toContain('data-welcome="Willkommen in der Vorschau!"');
+    });
+
+    test("Vorschau-Platzhalter (gestrichelte Kästen) nur im Studio (?studio=1), nicht im neuen Tab (2026-10-13)", async () => {
+      const base = systemShowcaseDoc(findShowcase("kosmetik")!, "klar");
+      const doc = {
+        ...base,
+        sections: base.sections.filter(
+          s => s.type !== "team" && s.type !== "pricelist"
+        ),
+        addOns: { ...base.addOns, pricelist: false, team: false },
+      };
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: doc,
+      });
+      const app = buildAppWithFallback();
+      const studio = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?studio=1&v=3"
+      );
+      expect(studio.status).toBe(200);
+      expect(studio.text).toContain("Nur in deiner Vorschau");
+      expect(studio.text).toContain('<aside class="kl-slot"');
+      // „In neuem Tab öffnen" (previewPath) trägt keinen Parameter — die
+      // Seite sieht aus wie live.
+      const fullscreen = await request(app).get("/preview-ssr/abcdefghabcdefgh");
+      expect(fullscreen.status).toBe(200);
+      expect(fullscreen.text).not.toContain("Nur in deiner Vorschau");
+      expect(fullscreen.text).not.toContain('<aside class="kl-slot"');
+      // Nur der exakte Wert schaltet den Studio-Modus.
+      const bogus = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?studio=%3Cx%3E"
+      );
+      expect(bogus.text).not.toContain("Nur in deiner Vorschau");
     });
 
     test("?reveal=1 → Einblendungs-CSS im HTML; ohne Parameter nicht (Zeitmaschine, Task 4)", async () => {

@@ -157,6 +157,10 @@ export function buildPreviewSrc(args: {
   }
   if (args.versionId) params.set("version", String(args.versionId));
   if (args.reveal) params.set("reveal", "1");
+  // Studio-Ansicht (2026-10-13): nur hier zeigt der Server die
+  // gestrichelten Platzhalter für fehlende Extras. previewPath (neuer Tab)
+  // bleibt ohne — dort sieht die Seite aus wie live.
+  params.set("studio", "1");
   params.set("v", String(args.version)); // Cache-Bust nach jedem Patch (Server ist ohnehin no-store)
   return `${previewPath(args.token, args.pageSlug)}?${params.toString()}`;
 }

@@ -25,12 +25,20 @@ describe("PreviewFrame helpers", () => {
     );
   });
 
+  test("Studio-iframe trägt ?studio=1, „In neuem Tab öffnen“ nicht (2026-10-13)", () => {
+    expect(buildPreviewSrc({ token: "tok", version: 3 })).toContain(
+      "studio=1"
+    );
+    expect(previewPath("tok")).not.toContain("studio");
+    expect(previewPath("tok", "leistungen")).not.toContain("?");
+  });
+
   test("buildPreviewSrc hängt ?version= für einen Verlaufs-Stand an (2026-09-03)", () => {
     expect(buildPreviewSrc({ token: "tok", version: 3 })).toBe(
-      "/preview-ssr/tok?v=3"
+      "/preview-ssr/tok?studio=1&v=3"
     );
     expect(buildPreviewSrc({ token: "tok", version: 3, versionId: 17 })).toBe(
-      "/preview-ssr/tok?version=17&v=3"
+      "/preview-ssr/tok?version=17&studio=1&v=3"
     );
     expect(
       buildPreviewSrc({
@@ -39,7 +47,7 @@ describe("PreviewFrame helpers", () => {
         pageSlug: "leistungen",
         reveal: true,
       })
-    ).toBe("/preview-ssr/tok/leistungen?reveal=1&v=1");
+    ).toBe("/preview-ssr/tok/leistungen?reveal=1&studio=1&v=1");
   });
 
   test("buildPreviewSrc: nur noch ?system=&palette= als Override", () => {
@@ -50,10 +58,10 @@ describe("PreviewFrame helpers", () => {
         system: "journal",
         palette: "salbei",
       })
-    ).toBe("/preview-ssr/tok?system=journal&palette=salbei&v=2");
+    ).toBe("/preview-ssr/tok?system=journal&palette=salbei&studio=1&v=2");
     expect(
       buildPreviewSrc({ token: "tok", version: 2, system: "journal" })
-    ).toBe("/preview-ssr/tok?system=journal&v=2");
+    ).toBe("/preview-ssr/tok?system=journal&studio=1&v=2");
   });
 
   test("Google-Bewertungen hinter data-pb-readonly gelten als gesperrt", () => {
