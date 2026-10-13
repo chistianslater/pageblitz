@@ -41,6 +41,16 @@ function trefferLaenge(text: string, keywords: string[]): number {
   return beste;
 }
 
+/** Wie trefferLaenge, aber jedes Schlagwort nur als ganzes Wort („kita", nicht „Nikita"). */
+function ganzwortLaenge(text: string, keywords: string[]): number {
+  let beste = 0;
+  for (const kw of keywords) {
+    const k = normalisiert(kw).trim();
+    if (k && text.includes(` ${k} `) && k.length > beste) beste = k.length;
+  }
+  return beste;
+}
+
 /**
  * Beste Bildergruppe für eine Branche. Die Kategorie aus dem Google-Profil
  * wiegt schwerer als der Firmenname, und das längste treffende Schlagwort
@@ -92,7 +102,10 @@ function ohneSchwache(text: string): string {
 
 /** Treffer eines Satzes; schwache Stichworte nur, wenn `schwach`. */
 function treffer(text: string, satz: IndustryImageSet, schwach: boolean): number {
-  const stark = trefferLaenge(text, satz.keywords);
+  const stark = Math.max(
+    trefferLaenge(text, satz.keywords),
+    ganzwortLaenge(text, satz.wholeWords ?? [])
+  );
   return schwach
     ? Math.max(stark, trefferLaenge(text, satz.weakKeywords ?? []))
     : stark;

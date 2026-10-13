@@ -30,6 +30,11 @@ export interface IndustryImageSet {
    */
   strictRefine?: boolean;
   /**
+   * Schlagworte, die nur als ganzes Wort zählen, egal wie lang (Freundlich
+   * F1: „kita" steckt in „Nikita"). Zählen wie normale Schlagworte.
+   */
+  wholeWords?: string[];
+  /**
    * Abend- und Dunkelmotive (Nacht N1): Gastraum am Abend, angerichteter
    * Teller auf dunklem Grund, Weinregal/Bar, Salon mit warmem Licht,
    * Boutique-Zimmer mit Lampenlicht. Nur für Systeme mit dunklem Papier —
@@ -448,14 +453,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "psycholog",
       "psychotherap",
       "dermatologie",
-      "tierarzt",
-      "tierarztpraxis",
-      "tierärzt",
-      "tierpraxis",
-      "kleintierpraxis",
-      "tierklinik",
-      "tiermedizin",
-      "veterinär",
     ],
     hero: [
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
@@ -546,7 +543,8 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
 
   // ── Arztpraxis & Allgemeinmedizin (2026-10-12, Klar K1) ─────────
   // Ärztin/Arzt im Gespräch, Sprechzimmer, Wartebereich — keine
-  // Blutdruck-Klischees. Tierarzt/Psychotherapie bleiben bei „medizin".
+  // Blutdruck-Klischees. Psychotherapie bleibt bei „medizin", Tierarzt hat
+  // seit Freundlich F1 einen eigenen Satz (`tierarzt`).
   praxis: {
     keywords: [
       // Kein nacktes „praxis“ (Nacht N0): Fußpflege-, Logopädie-, Hebammen-,
@@ -753,7 +751,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "education",
       "coaching",
       "coach",
-      "nachhilfe",
       "tutor",
       "kurs",
       "course",
@@ -764,9 +761,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "weiterbildung",
       "training",
       "fahrschule",
-      "musikschule",
       "sprachschule",
-      "kinderbetreuung",
     ],
     hero: [
       "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1400&q=85&auto=format&fit=crop",
@@ -979,6 +974,296 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1769988037967-053235c08171?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1764795849986-d7f7f2f16cec?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1477120206578-46b3ca98a4e2?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+
+  // ════ Freundlich F1 (2026-10-13): Bildsätze der Zielbranchen ════
+  // Warm, hell, im Browser gesichtet (Kontaktbogen je Satz) und per HTTP 200
+  // geprüft (1400er und 800er Zuschnitt). Schlagworte als ganze Fachwörter —
+  // „Tierarzt" schlägt „arzt" (Praxis), „Hundepension" bleibt beim Hotel-Satz.
+  // ── Kita, Kindergarten, Krippe, Tagesmutter ──
+  // Helle Gruppenräume, Spielzeug, Malen, Spielplatz — Kinder nur von hinten, unscharf oder in Händen, keine Gesichter in Nahaufnahme.
+  kita: {
+    wholeWords: ["kita", "kitas"],
+    keywords: [
+      "kindertagesstätte",
+      "kindertagesstaette",
+      "kindergarten",
+      "kinderkrippe",
+      "krippe",
+      "kinderhaus",
+      "kindertagespflege",
+      "tagespflegestelle",
+      "großtagespflege",
+      "tagesmutter",
+      "tagesmütter",
+      "tagesvater",
+      "tageseltern",
+      "kinderbetreuung",
+      "day care",
+      "daycare",
+      "child care",
+      "childcare",
+      "preschool",
+      "nursery school",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1567746455504-cb3213f8f5b8?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1763310225537-f7161d5c93e9?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631512700403-ee66a05fd497?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1786667395574-8121327f52c8?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1578349035260-9f3d4042f1f7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1560130958-0ea787c275de?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1558576997-a29a7b11a56c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1567405258710-35a7015252c0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1642379831546-67d5e2bf8bcc?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1728268934722-8d328b063b34?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596997000103-e597b3ca50df?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Nachhilfe & Lernstudio ──
+  // Hausaufgaben, Hände mit Stift, Lernplatz am Fenster, Lernraum — keine Kindergesichter.
+  nachhilfe: {
+    keywords: [
+      "nachhilfe",
+      "nachhilfeinstitut",
+      "nachhilfeschule",
+      "lernstudio",
+      "lernförderung",
+      "lernzentrum",
+      "hausaufgabenbetreuung",
+      "hausaufgabenhilfe",
+      "schülerhilfe",
+      "tutoring",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1613186420419-868111e7ac07?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1589884629000-60c572c6ba7a?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1585432959315-d9342fd58eb6?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1601397922721-4326ae07bbc5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1560785477-d43d2b34e0df?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1588451658762-573f563865a7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1707246719682-6841358980c0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1621356986575-05811227a42e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1601642964568-1917224f4e4d?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Musikschule & Musikunterricht ──
+  // Unterricht am Klavier und an der Gitarre, Kinderhände auf Tasten, Instrumente im hellen Raum.
+  musikschule: {
+    keywords: [
+      "musikschule",
+      "musikunterricht",
+      "musiklehrer",
+      "musikpädagog",
+      "klavierunterricht",
+      "gitarrenunterricht",
+      "gesangsunterricht",
+      "instrumentalunterricht",
+      "früherziehung",
+      "music school",
+      "music lesson",
+      "music teacher",
+      "music instructor",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1696522732406-065ef560da8c?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1758524944402-1903b38f848f?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1519076976365-9c64dbd98317?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1636464808108-644053e72420?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1599866193011-348f9eb29868?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1564528183203-ec84690e06a8?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1711048421235-3fcb9dcf82f7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1614355013870-f3916bc15ced?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1556379118-7034d926d258?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1526142684086-7ebd69df27a5?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Hundesalon & Hundefriseur ──
+  // Schneiden, Föhnen, Baden, Bürsten, frisch gepflegte Hunde — kein Maulkorb, kein Schwarzweiß.
+  hundesalon: {
+    keywords: [
+      "hundesalon",
+      "hundefriseur",
+      "hundefrisör",
+      "tierfriseur",
+      "hundepflege",
+      "hundepflegesalon",
+      "katzensalon",
+      "dog groom",
+      "pet groom",
+    ],
+    refines: ["friseur"],
+    hero: [
+      "https://images.unsplash.com/photo-1719464454959-9cf304ef4774?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1528846104175-4fd300ee59da?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1630841257082-0792caf642ae?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1611173622933-91942d394b04?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1625321171045-1fea4ac688e9?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1597603413826-cd1c06b05222?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1675430426271-d74b542f21e4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1727510190155-51abda425a82?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1576033008321-bc748ab54838?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1601299583228-1a74f6152ba7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1651502829291-785542414770?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Eisdiele, Eiscafé, Gelateria ──
+  // Eistheke, Kugeln in der Waffel, Becher, Sommer — keine Markennamen, kein Ladenschild.
+  eisdiele: {
+    keywords: [
+      "eisdiele",
+      "eiscafé",
+      "eiscafe",
+      "eissalon",
+      "eisladen",
+      "eismanufaktur",
+      "eiskonditorei",
+      "gelateria",
+      "gelato",
+      "speiseeis",
+      "softeis",
+      "ice cream",
+      "frozen yogurt",
+    ],
+    refines: ["cafe"],
+    hero: [
+      "https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1572837663132-76c0ccd9cb6f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1717853411695-c9f844e1df46?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1560801619-01d71da0f70c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1636696301991-3e176a6b77dc?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1629385701021-fcd568a743e8?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1718810125230-e8e2271354f5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1629385744299-74b9cf013f52?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1593558159516-d0be2a960c52?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1621693129587-48dd0d0aa740?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1695217862908-7c7875423256?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Hebamme & Geburtshaus ──
+  // Babybauch, Hände, Babyfüße, Kinderzimmer, Hebamme bei der Untersuchung zu Hause — keine Klinik, keine Babygesichter in Nahaufnahme.
+  hebamme: {
+    keywords: [
+      "hebamme",
+      "hebammen",
+      "hebammenpraxis",
+      "geburtshaus",
+      "geburtsvorbereitung",
+      "rückbildung",
+      "wochenbett",
+      "stillberatung",
+      "midwife",
+      "birth center",
+    ],
+    refines: ["medizin"],
+    strictRefine: true,
+    hero: [
+      "https://images.unsplash.com/photo-1550964271-3804324b5ff8?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1586102728466-46b99b3bc411?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1615766553246-9147b6d50e90?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1586688406974-932bae2ec688?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1625238967691-b36b2d852b33?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1570919887593-3555c02d7a74?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600397905180-3764c3ce025b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1580301762395-21ce84d00bc6?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1544268211-ba72491bf350?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1575304180743-49fb3fba066e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1546908244-5e40b5e4f413?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1677682693104-bc4758db3b45?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Tierarzt & Tierklinik ──
+  // Untersuchung am Tisch, Tierärztin mit Katze, Welpe auf dem Arm — keine OP, keine Instrumente, kein Praxisschild.
+  tierarzt: {
+    keywords: [
+      "tierarzt",
+      "tierarztpraxis",
+      "tierärzt",
+      "tierpraxis",
+      "kleintierpraxis",
+      "tierklinik",
+      "tiermedizin",
+      "veterinär",
+      "veterinar",
+      "tierheilprakti",
+      "tierphysiotherap",
+      "animal hospital",
+    ],
+    refines: ["medizin"],
+    strictRefine: true,
+    hero: [
+      "https://images.unsplash.com/photo-1630438994394-3deff7a591bf?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1700665537650-1bf37979aae0?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1700665537604-412e89a285c3?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1657672733246-9c942ace6195?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1643213641079-1e60ef170910?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596272875729-ed2ff7d6d9c5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1725409796872-8b41e8eca929?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1728013274420-ed02b1f58887?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1719752585472-ddc1cc7edbf6?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1730677769210-7b5a39d0635e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631307495039-3f9e947c2070?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+  // ── Tierbedarf & Zoohandlung ──
+  // Hund im hellen Laden, Regale mit Futter und Zubehör, Spielzeug, Futterschalen, Hundebett — keine Ketten-Logos.
+  tierbedarf: {
+    keywords: [
+      "tierbedarf",
+      "heimtierbedarf",
+      "haustierbedarf",
+      "hundebedarf",
+      "katzenbedarf",
+      "zoohandlung",
+      "zoofachhandel",
+      "zoofachgeschäft",
+      "zoofachmarkt",
+      "zooladen",
+      "zoogeschäft",
+      "tierhandlung",
+      "tierhandel",
+      "tierfutter",
+      "tiernahrung",
+      "pet store",
+      "pet shop",
+      "pet supply",
+      "pet supplies",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1516453734593-8d198ae84bcf?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1733451629760-d5fc1c818698?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1581888227599-779811939961?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1626204451832-91eb35617cc6?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1605371924599-2d0365da1ae0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1588099140103-eb7e0ae84d00?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1589924749359-9697080c3577?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1745252777945-d430ecf54580?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1679689384991-35f609124c37?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1636272181093-a7b3f01cf995?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1651571479382-2ec05e291a33?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1615427911942-911cca0ae4f1?w=800&q=80&auto=format&fit=crop",
     ],
   },
 

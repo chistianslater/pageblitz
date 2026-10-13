@@ -462,7 +462,8 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
   });
 
   test("keine Übernahme fremder Gesundheitsbranchen", () => {
-    // Tierarzt, Heilpraktiker, Psychotherapie, Apotheke bleiben bei „medizin“.
+    // Heilpraktiker, Psychotherapie, Apotheke bleiben bei „medizin“;
+    // Tierärzte haben seit Freundlich F1 einen eigenen Satz — nie den Praxis-Satz.
     for (const k of [
       "Tierarzt",
       "Tierärztin",
@@ -470,6 +471,9 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
       "Tierärztliche Praxis",
       "Kleintierpraxis",
       "Tierklinik",
+    ])
+      expect(gruppe(k, "Am Park"), k).toBe("tierarzt");
+    for (const k of [
       "Heilpraktiker",
       "Heilpraktikerin",
       "Heilpraktikerpraxis",
@@ -484,9 +488,10 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
       "Klinik",
     ])
       expect(gruppe(k, "Am Park"), k).toBe("medizin");
-    for (const k of ["Tierarzt", "Heilpraktiker", "Psychotherapie", "Apotheke"])
+    for (const k of ["Heilpraktiker", "Psychotherapie", "Apotheke"])
       expect(gruppe(k, "Am Park", "medizin"), `${k} (KI medizin)`).toBe("medizin");
-    expect(gruppe("", "Tierarztpraxis am Park")).toBe("medizin");
+    expect(gruppe("Tierarzt", "Am Park", "medizin")).toBe("tierarzt");
+    expect(gruppe("", "Tierarztpraxis am Park")).toBe("tierarzt");
     expect(gruppe("", "Praxis für Psychotherapie Meier")).toBe("medizin");
   });
 
@@ -532,9 +537,9 @@ describe("Verfeinerungen nach KI-Schlüssel bleiben wie vor Klar K1", () => {
   });
 
   test.each([
-    ["Tierarzt", "medizin"],
-    ["Tierärztin", "medizin"],
-    ["Tierarztpraxis", "medizin"],
+    ["Tierarzt", "tierarzt"],
+    ["Tierärztin", "tierarzt"],
+    ["Tierarztpraxis", "tierarzt"],
     ["Heilpraktiker", "medizin"],
     ["Psychotherapie", "medizin"],
     ["Apotheke", "medizin"],
@@ -758,3 +763,92 @@ describe("Tierpensionen bleiben beim bisherigen Satz (2026-10-12)", () => {
   });
 });
 
+
+describe("Bildsätze der Freundlich-Zielbranchen (F1, 2026-10-13)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+  const NEU = ["kita", "nachhilfe", "musikschule", "hundesalon", "eisdiele", "hebamme", "tierarzt", "tierbedarf"];
+  const motiv = (u: string) => new URL(u).pathname;
+
+  test.each(NEU)("%s: 8–12 geprüfte Unsplash-Fotos, keine Doppel, kein Motiv aus einem anderen Satz", key => {
+    const satz = INDUSTRY_IMAGES[key];
+    const alle = [...satz.hero, ...(satz.gallery ?? [])];
+    expect(alle.length).toBeGreaterThanOrEqual(8);
+    expect(alle.length).toBeLessThanOrEqual(12);
+    expect(new Set(alle.map(motiv)).size).toBe(alle.length);
+    for (const u of satz.hero)
+      expect(u).toMatch(/^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=1400&q=85&auto=format&fit=crop$/);
+    for (const u of satz.gallery ?? [])
+      expect(u).toMatch(/^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=800&q=80&auto=format&fit=crop$/);
+    for (const [other, s] of Object.entries(INDUSTRY_IMAGES)) {
+      if (other === key) continue;
+      const fremd = new Set([...s.hero, ...(s.gallery ?? []), ...(s.about ?? []), ...(s.evening ?? [])].map(motiv));
+      for (const u of alle) expect(fremd.has(motiv(u)), `${key} ↔ ${other}: ${u}`).toBe(false);
+    }
+  });
+
+  test.each([
+    ["Kita", "kita"],
+    ["Kindertagesstätte", "kita"],
+    ["Kindergarten", "kita"],
+    ["Waldkindergarten", "kita"],
+    ["Kinderkrippe", "kita"],
+    ["Tagesmutter", "kita"],
+    ["day care center", "kita"],
+    ["Nachhilfe", "nachhilfe"],
+    ["Nachhilfeinstitut", "nachhilfe"],
+    ["Lernstudio", "nachhilfe"],
+    ["tutoring service", "nachhilfe"],
+    ["Musikschule", "musikschule"],
+    ["Musikunterricht", "musikschule"],
+    ["music school", "musikschule"],
+    ["Hundesalon", "hundesalon"],
+    ["Hundefriseur", "hundesalon"],
+    ["dog groomer", "hundesalon"],
+    ["Eisdiele", "eisdiele"],
+    ["Eiscafé", "eisdiele"],
+    ["Gelateria", "eisdiele"],
+    ["ice cream shop", "eisdiele"],
+    ["Hebamme", "hebamme"],
+    ["Hebammenpraxis", "hebamme"],
+    ["Geburtshaus", "hebamme"],
+    ["Tierarzt", "tierarzt"],
+    ["Tierklinik", "tierarzt"],
+    ["veterinary care", "tierarzt"],
+    ["Tierbedarf", "tierbedarf"],
+    ["Zoohandlung", "tierbedarf"],
+    ["pet store", "tierbedarf"],
+  ])("%s → %s", (kategorie, satz) => {
+    expect(gruppe(kategorie, "Am Markt")).toBe(satz);
+  });
+
+  test("KI-Schlüssel weichen der genaueren Kategorie", () => {
+    expect(gruppe("Hebamme", "Mondschein", "medizin")).toBe("hebamme");
+    expect(gruppe("Tierklinik", "Am Deich", "medizin")).toBe("tierarzt");
+    expect(gruppe("Hundesalon", "Fellfreunde", "friseur")).toBe("hundesalon");
+    expect(gruppe("Eiscafé", "Venezia", "cafe")).toBe("eisdiele");
+  });
+
+  test("keine Kaperung der Nachbarn", () => {
+    expect(gruppe("Arzt", "Dr. Weber")).toBe("praxis");
+    expect(gruppe("Kinderarzt", "Dr. Weber")).toBe("praxis");
+    expect(gruppe("Arzt", "Dr. Weber", "medizin")).toBe("praxis");
+    expect(gruppe("Zahnarzt", "Dr. Weber")).toBe("zahnarzt");
+    expect(gruppe("Café", "Café Muster")).toBe("cafe");
+    expect(gruppe("Café", "Café Muster", "cafe")).toBe("cafe");
+    expect(gruppe("Friseur", "Salon Lindner")).toBe("friseur");
+    expect(gruppe("Friseur", "Salon Lindner", "friseur")).toBe("friseur");
+    expect(gruppe("Fitnessstudio", "Kraft")).toBe("fitness");
+    expect(gruppe("Fahrschule", "Gas")).toBe("education");
+    expect(gruppe("Sprachschule", "Lingua")).toBe("education");
+    for (const k of ["Hundepension", "Tierpension", "Hunde-Pension"])
+      expect(gruppe(k, "Waldhof"), k).toBe("hospitality");
+    // „Tagespflege" (Senioren) ist keine Kita.
+    expect(gruppe("Tagespflege", "Haus Linde")).not.toBe("kita");
+    // „Kita" ist kein Schlagwort (vier Buchstaben stecken in „Nikita").
+    expect(gruppe("Kosmetik", "Nikita")).not.toBe("kita");
+    expect(gruppe("", "Kita Pusteblume")).toBe("kita");
+  });
+});
