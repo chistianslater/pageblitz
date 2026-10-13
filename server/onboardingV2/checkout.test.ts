@@ -157,6 +157,41 @@ describe("createStudioCheckoutSession", () => {
     expect(call.customer_email).toBe("kunde@x.de");
   });
 
+  test("Steuersatz (STRIPE_TAX_RATE_ID) als default_tax_rates der Subscription — gilt für Basis, Add-ons und spätere Items; Beträge bleiben brutto", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(
+      { ...baseArgs, addOns: { gallery: true, team: true } },
+      stripe,
+      {
+        STRIPE_TAX_RATE_ID: "txr_ust19",
+        STRIPE_PRICE_ADDON_GALLERY: "price_gallery_live",
+      }
+    );
+    const call = create.mock.calls[0][0];
+    expect(call.subscription_data.default_tax_rates).toEqual(["txr_ust19"]);
+    // Bruttopreise unverändert: 19,90 € Basis inkl. USt., nicht 19,90 + 19 %.
+    expect(call.line_items[0].price_data.unit_amount).toBe(
+      PLANS.yearly.centsPerMonth
+    );
+    expect(call.line_items[0].price_data.tax_behavior).toBe("inclusive");
+    expect(call.line_items[2].price_data.unit_amount).toBe(addonPrice("team"));
+    expect(call.line_items[2].price_data.tax_behavior).toBe("inclusive");
+    expect(call.metadata.totalAmount).toBe(
+      calcTotalCents("yearly", { gallery: true, team: true }).toString()
+    );
+  });
+
+  test("ohne STRIPE_TAX_RATE_ID läuft der Checkout trotzdem (kein default_tax_rates)", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { stripe, create } = fakeStripe();
+    const result = await createStudioCheckoutSession(baseArgs, stripe, {});
+    expect(result.url).toBe("https://stripe/s");
+    expect(create.mock.calls[0][0].subscription_data).not.toHaveProperty(
+      "default_tax_rates"
+    );
+    warn.mockRestore();
+  });
+
   test("wirft Fehler, wenn Stripe keine URL zurückgibt", async () => {
     const { stripe } = fakeStripe({ url: null });
     await expect(

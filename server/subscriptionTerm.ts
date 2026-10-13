@@ -28,6 +28,7 @@ import {
   type CancellationResult,
 } from "../shared/pricingTerm";
 import { resolveAddOnPriceIds } from "./stripeAddons";
+import { taxRateIds } from "./stripeTax";
 import type { Subscription } from "../drizzle/schema";
 
 /** Metadaten-Schlüssel an der Stripe-Subscription. */
@@ -515,10 +516,8 @@ export async function switchToYearly(
   const stripeSub = await deps.stripe.subscriptions.retrieve(
     record.stripeSubscriptionId
   );
-  const base = findBaseItem(
-    stripeSub?.items?.data ?? [],
-    deps.env ?? process.env
-  );
+  const env = deps.env ?? process.env;
+  const base = findBaseItem(stripeSub?.items?.data ?? [], env);
   if (!base) {
     throw new SubscriptionActionError(
       "Die Basis-Position des Abos ist nicht eindeutig — bitte melde dich beim Support."
@@ -528,6 +527,7 @@ export async function switchToYearly(
     typeof base.price.product === "string"
       ? base.price.product
       : base.price.product?.id;
+  const taxRates = taxRateIds(env);
   await deps.stripe.subscriptions.update(record.stripeSubscriptionId, {
     items: [
       {
@@ -539,8 +539,12 @@ export async function switchToYearly(
           recurring: { interval: "month" },
           tax_behavior: "inclusive",
         },
+        ...(taxRates.length > 0 ? { tax_rates: taxRates } : {}),
       },
     ],
+    // USt. 19 % inklusive auch für Alt-Abos ohne Steuersatz nachziehen
+    // (server/stripeTax.ts) — Beträge bleiben brutto.
+    ...(taxRates.length > 0 ? { default_tax_rates: taxRates } : {}),
     proration_behavior: "none",
     metadata: {
       ...subscriptionMetadataFor("yearly"),

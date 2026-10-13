@@ -173,6 +173,22 @@ describe("syncSubscriptionAddOns", () => {
     expect(del).not.toHaveBeenCalled();
   });
 
+  test("neue Add-on-Items tragen den Steuersatz (STRIPE_TAX_RATE_ID) — auch bei Alt-Abos ohne default_tax_rates", async () => {
+    const { stripe, create } = fakeStripe([]);
+    await syncSubscriptionAddOns(
+      "sub_1",
+      { gallery: true },
+      { stripe, env: { ...fullEnv, STRIPE_TAX_RATE_ID: "txr_ust19" } }
+    );
+    expect(create).toHaveBeenCalledWith({
+      subscription: "sub_1",
+      price: "price_gallery",
+      quantity: 1,
+      proration_behavior: "create_prorations",
+      tax_rates: ["txr_ust19"],
+    });
+  });
+
   test("Stripe-Fehler werden durchgereicht (Aufrufer entscheidet: BAD_REQUEST, Flags unverändert)", async () => {
     const { stripe, create } = fakeStripe([]);
     create.mockRejectedValue(new Error("card_declined"));

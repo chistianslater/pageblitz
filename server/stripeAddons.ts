@@ -6,6 +6,7 @@ import {
   type AddOnFlags,
   type AddOnKey,
 } from "../shared/pricing";
+import { taxRateIds } from "./stripeTax";
 
 /**
  * Stripe-Sync der Add-ons NACH dem Checkout (Plan B6 Task 6, Spec §2.2/§5.3):
@@ -35,6 +36,7 @@ export interface StripeAddOnsClient {
       price: string;
       quantity: number;
       proration_behavior: "create_prorations";
+      tax_rates?: string[];
     }): Promise<unknown>;
     del(
       id: string,
@@ -134,6 +136,9 @@ export async function syncSubscriptionAddOns(
   }
 
   const stripe = deps.stripe ?? getDefaultClient();
+  // Explizit am Item, damit auch Alt-Abos ohne default_tax_rates die USt.
+  // ausweisen (server/stripeTax.ts).
+  const taxRates = taxRateIds(env);
   const { data: items } = await stripe.subscriptionItems.list({
     subscription: stripeSubscriptionId,
     limit: 100,
@@ -152,6 +157,7 @@ export async function syncSubscriptionAddOns(
         price: priceId,
         quantity: 1,
         proration_behavior: "create_prorations",
+        ...(taxRates.length > 0 ? { tax_rates: taxRates } : {}),
       });
       added.push(key);
     } else if (addOns[key] === false && existing) {

@@ -13,6 +13,7 @@ import {
 import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 import { resolveAddOnPriceIds } from "../stripeAddons";
 import { B2B_META_KEY, subscriptionMetadataFor } from "../subscriptionTerm";
+import { taxRateIds } from "../stripeTax";
 
 /**
  * Stripe-Checkout für das Studio (Spec B2 Task 7) — seit 2026-10-13 der
@@ -88,6 +89,9 @@ export async function createStudioCheckoutSession(
   }, {});
   const priceIds = resolveAddOnPriceIds(env);
   const termsUrl = env.STRIPE_TERMS_URL?.trim() || null;
+  // USt. 19 % inklusive (server/stripeTax.ts) — fehlt die Env, wird
+  // trotzdem verkauft (einmalige Warnung im Log).
+  const taxRates = taxRateIds(env);
   const missing = ADDON_KEYS.filter(key => addOns[key] && !priceIds[key]);
   if (missing.length > 0) {
     console.warn(
@@ -122,6 +126,8 @@ export async function createStudioCheckoutSession(
     ],
     subscription_data: {
       trial_period_days: TRIAL_DAYS,
+      // Subscription-weit: gilt für Basis, Add-ons und spätere Items.
+      ...(taxRates.length > 0 ? { default_tax_rates: taxRates } : {}),
       metadata: {
         ...subscriptionMetadataFor(args.billingInterval),
         websiteId: args.websiteId.toString(),

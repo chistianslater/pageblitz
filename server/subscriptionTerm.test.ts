@@ -599,6 +599,31 @@ describe("switchToYearly", () => {
     );
   });
 
+  test("Tarifwechsel setzt den Steuersatz an Basis-Position und Subscription (Bruttobetrag 19,90 € bleibt)", async () => {
+    const d = {
+      updateSubscription: vi.fn(),
+      stripe: {
+        subscriptions: {
+          retrieve: vi
+            .fn()
+            .mockResolvedValue({ status: "active", items: { data: items } }),
+          update: vi.fn().mockResolvedValue({}),
+        },
+      },
+      now: () => 1000,
+      env: { STRIPE_TAX_RATE_ID: "txr_ust19" },
+    };
+    await switchToYearly(
+      row({ billingInterval: "monthly", termStartedAt: null, currentTermEnd: null }),
+      d
+    );
+    const params = d.stripe.subscriptions.update.mock.calls[0][1];
+    expect(params.default_tax_rates).toEqual(["txr_ust19"]);
+    expect(params.items[0].tax_rates).toEqual(["txr_ust19"]);
+    expect(params.items[0].price_data.unit_amount).toBe(1990);
+    expect(params.items[0].price_data.tax_behavior).toBe("inclusive");
+  });
+
   test("bereits Jahrestarif / gekündigt → Fehler, kein Stripe-Write", async () => {
     const d = {
       updateSubscription: vi.fn(),

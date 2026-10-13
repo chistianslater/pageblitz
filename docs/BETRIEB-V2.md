@@ -480,6 +480,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `STRIPE_SECRET_KEY` | Stripe-API |
 | `STRIPE_WEBHOOK_SECRET` | Signaturprüfung `handleCheckoutCompleted` |
 | `STRIPE_TERMS_URL` | optional: AGB-URL — erst wenn gesetzt, verlangt der Checkout die AGB-Zustimmung (`consent_collection.terms_of_service`); dieselbe URL in Stripe → Public details eintragen |
+| `STRIPE_TAX_RATE_ID` | Stripe-Tax-Rate „Pageblitz – USt. 19 % (inklusive)“ (`txr_1UQ7JeBdezH7rtSBjZQgFf8l`) — an Checkout (`default_tax_rates`), neuen Add-on-Items und Tarifwechsel; fehlt sie, wird trotzdem verkauft, aber ohne ausgewiesene USt. (einmalige Warnung `[steuer]` im Log) |
 | `STRIPE_PORTAL_CONFIGURATION_ID` | optional: feste Kundenportal-Konfiguration ohne Kündigen (sonst legt der Server sie selbst an, siehe „Preise & Laufzeit“) |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Transaktions-/Lifecycle-Mails |
 | `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` / `R2_PUBLIC_URL` | Objekt-Storage (Cloudflare R2, S3-kompatibel — nicht AWS S3) |
@@ -719,6 +720,17 @@ Vite-Plugin `pageblitz-pricing-html`.
   Position monatlich zum Tarifpreis, `subscription_data.metadata`
   `{tariff, termMonths, websiteId}`, `trial_period_days` = 7,
   Laufzeittext am Bezahl-Knopf (`custom_text.submit`).
+- **USt. (seit 2026-10-13):** fester Steuersatz aus `STRIPE_TAX_RATE_ID`
+  (`server/stripeTax.ts`), Tax-Rate „Pageblitz – USt. 19 % (inklusive)“,
+  DE, inklusive. Checkout setzt ihn als `subscription_data.default_tax_rates`
+  (gilt für Basis, Add-ons und spätere Items); `syncSubscriptionAddOns`
+  hängt ihn an neue Add-on-Items (`tax_rates`), `switchToYearly` an die
+  Basis-Position und als `default_tax_rates` an die Subscription — so
+  bekommen auch Alt-Abos ohne Satz die USt. Die Beträge bleiben brutto
+  (19,90 / 24,90 € inkl. 19 %), weil Satz UND Preise inklusive sind. Nur
+  Pageblitz-Pfade — der Stripe-Account ist mit anderen Produkten geteilt,
+  also KEINEN Account-Standard-Steuersatz setzen. Fehlt die Env: Checkout
+  läuft, Log warnt einmal `[steuer] STRIPE_TAX_RATE_ID ist nicht gesetzt`.
 - Webhook `invoice.paid` → erste Zahlung > 0 € setzt `termStartedAt` /
   `currentTermEnd` (+ Stripe-Metadatum `termStartedAt`), jede Zahlung ab
   Laufzeitende rollt `currentTermEnd` um 12 Monate. Laufzeitenden zählen vom
@@ -751,10 +763,10 @@ Vite-Plugin `pageblitz-pricing-html`.
 2. Standard-Kundenportal (Settings → Billing → Customer portal): Kündigen
    ebenfalls **ausschalten** — als zweite Absicherung, falls irgendwo ein
    Portal-Link ohne unsere Konfiguration entsteht.
-3. Steuer: Stripe rechnet nichts auf (`tax_behavior: inclusive`). Auf den
-   Rechnungen muss die USt. ausgewiesen sein — Stripe Tax bzw. ein fester
-   Steuersatz 19 % inklusive an den Preisen/Rechnungseinstellungen, USt-ID
-   und Firmendaten im Rechnungs-Branding hinterlegen.
+3. Steuer: Stripe rechnet nichts auf (`tax_behavior: inclusive`). Die USt.
+   weist der feste Steuersatz aus `STRIPE_TAX_RATE_ID` aus (siehe Technik
+   oben) — Env auf dem VPS setzen. USt-ID und Firmendaten im
+   Rechnungs-Branding hinterlegen.
 4. Optional: Erinnerungsmail vor Testende und vor Verlängerung (Settings →
    Billing → Subscriptions and emails) — die Startseiten-FAQ verspricht
    keine Erinnerung mehr.
