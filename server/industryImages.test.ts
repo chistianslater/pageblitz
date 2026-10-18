@@ -168,14 +168,20 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
 
   test("kein neues Motiv steckt schon in einem anderen Satz", () => {
     const neu = new Set(
-      ["baeckerei", "schreinerei", "laden"].flatMap(k => [
-        ...INDUSTRY_IMAGES[k].hero,
-        ...(INDUSTRY_IMAGES[k].gallery ?? []),
-      ]).map(motiv)
+      ["baeckerei", "schreinerei", "laden"]
+        .flatMap(k => [
+          ...INDUSTRY_IMAGES[k].hero,
+          ...(INDUSTRY_IMAGES[k].gallery ?? []),
+        ])
+        .map(motiv)
     );
     for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
       if (["baeckerei", "schreinerei", "laden"].includes(key)) continue;
-      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+      for (const url of [
+        ...satz.hero,
+        ...(satz.gallery ?? []),
+        ...(satz.about ?? []),
+      ])
         expect(neu.has(motiv(url)), `${key}: ${url}`).toBe(false);
     }
   });
@@ -188,6 +194,50 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
     expect(gruppe("Backstube", "Brotzeit")).toBe("baeckerei");
     // Der KI-Schlüssel „baeckerei" kennt classifyIndustry schon lange.
     expect(gruppe("Irgendwas", "Betrieb", "baeckerei")).toBe("baeckerei");
+  });
+
+  test("Maler und Landschaftsgärtner bekommen eigene Sätze (2026-10-18)", () => {
+    expect(gruppe("Malerbetrieb")).toBe("maler");
+    expect(gruppe("Maler und Lackierer", "Kowalski")).toBe("maler");
+    expect(gruppe("Painter")).toBe("maler");
+    expect(gruppe("Garten- und Landschaftsbau")).toBe("gaertner");
+    expect(gruppe("Landschaftsgärtner", "Grünwerk")).toBe("gaertner");
+    expect(gruppe("Gärtner")).toBe("gaertner");
+    // Pflanzenverkauf bleibt beim Natur-Satz („gärtnerei" ist länger).
+    expect(gruppe("Gärtnerei")).toBe("nature");
+    expect(gruppe("Baumschule")).toBe("nature");
+  });
+
+  test("eigene Sätze der SEO-Branchen (2026-10-18)", () => {
+    const erwartet: [string, string][] = [
+      ["Nagelstudio", "nagelstudio"],
+      ["Nail Salon", "nagelstudio"],
+      ["Klempner", "sanitaer"],
+      ["Sanitär- und Heizungsinstallation", "sanitaer"],
+      ["Gebäudereinigung", "reinigung"],
+      ["Reinigungsservice", "reinigung"],
+      ["Hausreinigung", "hausreinigung"],
+      ["Apotheke", "apotheke"],
+      ["Ergotherapie", "ergotherapie"],
+      ["Ergotherapeutin", "ergotherapie"],
+      ["Logopädie", "logopaedie"],
+      ["Architekturbüro", "architekt"],
+      ["Innenarchitektin", "innenarchitekt"],
+      ["Yogastudio", "yoga"],
+      ["Pilatesstudio", "pilates"],
+      ["Fahrschule", "fahrschule"],
+      ["Reisebüro", "reisebuero"],
+    ];
+    for (const [kategorie, satz] of erwartet)
+      expect(gruppe(kategorie), kategorie).toBe(satz);
+    // Nachbarn bleiben, wo sie waren.
+    expect(gruppe("Friseursalon")).toBe("friseur");
+    expect(gruppe("Physiotherapie")).toBe("physio");
+    expect(gruppe("Fitnessstudio")).toBe("fitness");
+    expect(gruppe("Elektroinstallation")).toBe("handwerk");
+    // Textil- und chemische Reinigung sind keine Gebäudereinigung.
+    expect(gruppe("Textilreinigung")).not.toBe("reinigung");
+    expect(gruppe("Chemische Reinigung")).not.toBe("reinigung");
   });
 
   test("Schreiner und Tischler bekommen den Schreinerei-Satz", () => {
@@ -211,8 +261,10 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
   test("ein allgemeiner KI-Schlüssel weicht dem genaueren Satz der Kategorie", () => {
     expect(gruppe("Schreinerei", "Brandt", "handwerk")).toBe("schreinerei");
     expect(gruppe("Bäckerei-Café", "Lohmann", "cafe")).toBe("baeckerei");
+    // Maler hat seit 2026-10-18 einen eigenen Satz.
+    expect(gruppe("Malerbetrieb", "Brandt", "handwerk")).toBe("maler");
     // ohne genaueren Treffer bleibt der Schlüssel
-    expect(gruppe("Malerbetrieb", "Brandt", "handwerk")).toBe("handwerk");
+    expect(gruppe("Dachdecker", "Brandt", "handwerk")).toBe("handwerk");
     expect(gruppe("Café", "Lohmann", "cafe")).toBe("cafe");
     // ein fremder Satz der Kategorie überstimmt den Schlüssel nicht
     expect(gruppe("Schreinerei", "Brandt", "restaurant")).toBe("restaurant");
@@ -224,7 +276,6 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
     expect(gruppe("Barbier", "Aland Barber Shop")).toBe("barbier");
     expect(gruppe("Café", "Kaffeehaus Mitte")).toBe("cafe");
     expect(gruppe("Restaurant", "Zum Brotkorb")).toBe("restaurant");
-    expect(gruppe("Malerbetrieb")).toBe("handwerk");
     expect(gruppe("Elektriker", "Holzmann Elektro")).toBe("handwerk");
     expect(gruppe("Dachdecker")).toBe("handwerk");
     expect(gruppe("Zimmerer")).toBe("handwerk");
@@ -269,7 +320,11 @@ describe("Bildsätze Barbier und Imbiss (Plakat P1)", () => {
     );
     for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
       if (NEU.includes(key)) continue;
-      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+      for (const url of [
+        ...satz.hero,
+        ...(satz.gallery ?? []),
+        ...(satz.about ?? []),
+      ])
         expect(neu.has(motiv(url)), `${key}: ${url}`).toBe(false);
     }
   });
@@ -317,9 +372,13 @@ describe("Bildsätze Barbier und Imbiss (Plakat P1)", () => {
 
   test("Gyros/Falafel nur als Imbiss-Kompositum, nie Restaurant überstimmen", () => {
     // KI-Schlüssel restaurant + „Gyros Restaurant": bleibt Restaurant.
-    expect(gruppe("Gyros Restaurant", "Olympia", "restaurant")).toBe("restaurant");
+    expect(gruppe("Gyros Restaurant", "Olympia", "restaurant")).toBe(
+      "restaurant"
+    );
     expect(gruppe("Griechisches Restaurant", "Gyros Haus")).toBe("restaurant");
-    expect(gruppe("Falafel Restaurant", "Beirut", "restaurant")).toBe("restaurant");
+    expect(gruppe("Falafel Restaurant", "Beirut", "restaurant")).toBe(
+      "restaurant"
+    );
     expect(gruppe("Restaurant", "Gyros Haus")).toBe("restaurant");
     // Kompositum mit Imbiss bleibt Imbiss.
     expect(gruppe("Gyros Imbiss", "Olympia")).toBe("imbiss");
@@ -328,11 +387,17 @@ describe("Bildsätze Barbier und Imbiss (Plakat P1)", () => {
   });
 
   test("Takeaway/Fast Food überstimmen Restaurant und Pizzeria nicht", () => {
-    expect(gruppe("Restaurant & Takeaway", "Bosporus", "restaurant")).toBe("restaurant");
-    expect(gruppe("Fast Food Restaurant", "Bun", "restaurant")).toBe("restaurant");
+    expect(gruppe("Restaurant & Takeaway", "Bosporus", "restaurant")).toBe(
+      "restaurant"
+    );
+    expect(gruppe("Fast Food Restaurant", "Bun", "restaurant")).toBe(
+      "restaurant"
+    );
     expect(gruppe("Pizza Fast Food", "Da Mario")).not.toBe("imbiss");
     expect(gruppe("Pizzeria Takeaway", "Da Mario")).not.toBe("imbiss");
-    expect(gruppe("Pizzeria", "Da Mario Takeaway", "restaurant")).not.toBe("imbiss");
+    expect(gruppe("Pizzeria", "Da Mario Takeaway", "restaurant")).not.toBe(
+      "imbiss"
+    );
     expect(gruppe("Restaurant", "Fast Food Eck")).toBe("restaurant");
     // Ohne anderen Treffer reichen sie weiter.
     expect(gruppe("Takeaway", "Bei Ali")).toBe("imbiss");
@@ -392,7 +457,11 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
     );
     for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
       if (NEU.includes(key)) continue;
-      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+      for (const url of [
+        ...satz.hero,
+        ...(satz.gallery ?? []),
+        ...(satz.about ?? []),
+      ])
         expect(neu.has(motiv(url)), `${key}: ${url}`).toBe(false);
     }
   });
@@ -423,8 +492,7 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
       "Physiotherapiepraxis",
       "Praxis für Physiotherapie",
       "Krankengymnastik",
-      "Ergotherapie",
-      "Ergotherapeutin",
+      // Ergotherapie: eigener Satz seit 2026-10-18 (Test „eigene Sätze der SEO-Branchen").
       "Manuelle Therapie",
       "Osteopathie",
       "Massagepraxis",
@@ -484,12 +552,14 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
       "Psychotherapeutische Praxis",
       "Praxis für Psychotherapie",
       "Psychologische Praxis",
-      "Apotheke",
+      // Apotheke: eigener Satz seit 2026-10-18.
       "Klinik",
     ])
       expect(gruppe(k, "Am Park"), k).toBe("medizin");
-    for (const k of ["Heilpraktiker", "Psychotherapie", "Apotheke"])
-      expect(gruppe(k, "Am Park", "medizin"), `${k} (KI medizin)`).toBe("medizin");
+    for (const k of ["Heilpraktiker", "Psychotherapie"])
+      expect(gruppe(k, "Am Park", "medizin"), `${k} (KI medizin)`).toBe(
+        "medizin"
+      );
     expect(gruppe("Tierarzt", "Am Park", "medizin")).toBe("tierarzt");
     expect(gruppe("", "Tierarztpraxis am Park")).toBe("tierarzt");
     expect(gruppe("", "Praxis für Psychotherapie Meier")).toBe("medizin");
@@ -497,14 +567,19 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
 
   test("Kosmetik, Fitness, Massage und Nachbarn bleiben, wo sie waren", () => {
     expect(gruppe("Kosmetikstudio", "Beauty Boutique")).toBe("friseur");
-    expect(istNeutralesSet(getIndustryImages("Kosmetik", "Haut & Sinn"))).toBe(true);
+    expect(istNeutralesSet(getIndustryImages("Kosmetik", "Haut & Sinn"))).toBe(
+      true
+    );
     expect(gruppe("Fitness")).toBe("fitness");
     expect(gruppe("Fitnessstudio", "Fitness First")).toBe("fitness");
-    expect(gruppe("Yoga", "Atem")).toBe("fitness");
+    // Yoga: eigener Satz seit 2026-10-18.
+    expect(gruppe("Yoga", "Atem")).toBe("yoga");
     expect(gruppe("Personal Trainer", "Kraft")).toBe("fitness");
     expect(gruppe("Fitness", "Kraft", "fitness")).toBe("fitness");
     expect(istNeutralesSet(getIndustryImages("Massage", "Ruhepol"))).toBe(true);
-    expect(istNeutralesSet(getIndustryImages("Thai Massage", "Ruhepol"))).toBe(true);
+    expect(istNeutralesSet(getIndustryImages("Thai Massage", "Ruhepol"))).toBe(
+      true
+    );
     expect(gruppe("Rechtsanwalt")).toBe("legal");
     expect(gruppe("Steuerberater")).toBe("legal");
     expect(gruppe("Friseur")).toBe("friseur");
@@ -542,7 +617,7 @@ describe("Verfeinerungen nach KI-Schlüssel bleiben wie vor Klar K1", () => {
     ["Tierarztpraxis", "tierarzt"],
     ["Heilpraktiker", "medizin"],
     ["Psychotherapie", "medizin"],
-    ["Apotheke", "medizin"],
+    ["Apotheke", "apotheke"],
     ["Zahnarzt", "zahnarzt"],
     ["Zahnarztpraxis", "zahnarzt"],
     ["Physiotherapie", "physio"],
@@ -554,7 +629,7 @@ describe("Verfeinerungen nach KI-Schlüssel bleiben wie vor Klar K1", () => {
 
   test("Physio verfeinert auch fitness, Yoga bleibt fitness", () => {
     expect(gruppe("Physiotherapie", "fitness")).toBe("physio");
-    expect(gruppe("Yoga", "fitness")).toBe("fitness");
+    expect(gruppe("Yoga", "fitness")).toBe("yoga");
   });
 });
 
@@ -585,7 +660,9 @@ describe("Praxis-Satz nur für Ärzte, nicht für jede „Praxis“ (Nacht N0)",
     "Praxis",
   ])("%s bekommt keine Arztpraxis-Fotos", k => {
     expect(gruppe(k, "Am Markt"), k).not.toBe("praxis");
-    expect(gruppe(k, "Am Markt", "medizin"), `${k} (KI medizin)`).not.toBe("praxis");
+    expect(gruppe(k, "Am Markt", "medizin"), `${k} (KI medizin)`).not.toBe(
+      "praxis"
+    );
     expect(gruppe("", k), `${k} (nur Name)`).not.toBe("praxis");
   });
 
@@ -600,7 +677,9 @@ describe("Praxis-Satz nur für Ärzte, nicht für jede „Praxis“ (Nacht N0)",
       "Kinderarztpraxis",
     ]) {
       expect(gruppe(k, "Dr. Weber"), k).toBe("praxis");
-      expect(gruppe(k, "Dr. Weber", "medizin"), `${k} (KI medizin)`).toBe("praxis");
+      expect(gruppe(k, "Dr. Weber", "medizin"), `${k} (KI medizin)`).toBe(
+        "praxis"
+      );
     }
     expect(gruppe("", "Gemeinschaftspraxis am Ring")).toBe("praxis");
   });
@@ -628,10 +707,17 @@ describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
       MIT_ABEND.flatMap(k => INDUSTRY_IMAGES[k].evening ?? []).map(motiv)
     );
     expect(abend.size).toBe(
-      MIT_ABEND.reduce((n, k) => n + (INDUSTRY_IMAGES[k].evening ?? []).length, 0)
+      MIT_ABEND.reduce(
+        (n, k) => n + (INDUSTRY_IMAGES[k].evening ?? []).length,
+        0
+      )
     );
     for (const [key, satz] of Object.entries(INDUSTRY_IMAGES))
-      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+      for (const url of [
+        ...satz.hero,
+        ...(satz.gallery ?? []),
+        ...(satz.about ?? []),
+      ])
         expect(abend.has(motiv(url)), `${key}: ${url}`).toBe(false);
   });
 
@@ -653,9 +739,15 @@ describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
       ["Pension", "pension"],
       ["Boutique Hotel", "hospitality"],
     ] as const) {
-      expect(getIndustryImages(kategorie, "Abendrot"), kategorie).toBe(INDUSTRY_IMAGES[key]);
+      expect(getIndustryImages(kategorie, "Abendrot"), kategorie).toBe(
+        INDUSTRY_IMAGES[key]
+      );
       const stock = buildStockFallbackImages(kategorie, "Abendrot");
-      for (const url of [stock.hero, stock.about, ...(stock.gallery ?? [])].filter(Boolean))
+      for (const url of [
+        stock.hero,
+        stock.about,
+        ...(stock.gallery ?? []),
+      ].filter(Boolean))
         expect(abend.has(motiv(url!)), `${kategorie}: ${url}`).toBe(false);
     }
   });
@@ -668,7 +760,9 @@ describe("buildStockFallbackImages: Abendmotive für Nacht (N2+N3)", () => {
     for (const branche of ["Restaurant", "Friseur", "Bar", "Pension"]) {
       const satz = getIndustryImages(branche, "Weinberg");
       const hell = buildStockFallbackImages(branche, "Weinberg");
-      expect(buildStockFallbackImages(branche, "Weinberg", undefined, {})).toEqual(hell);
+      expect(
+        buildStockFallbackImages(branche, "Weinberg", undefined, {})
+      ).toEqual(hell);
       const abend = buildStockFallbackImages(branche, "Weinberg", undefined, {
         evening: true,
       });
@@ -684,7 +778,9 @@ describe("buildStockFallbackImages: Abendmotive für Nacht (N2+N3)", () => {
   test("Satz ohne Abendmotive: Wunsch ändert nichts", () => {
     const hell = buildStockFallbackImages("Schreinerei", "Brandt");
     expect(
-      buildStockFallbackImages("Schreinerei", "Brandt", undefined, { evening: true })
+      buildStockFallbackImages("Schreinerei", "Brandt", undefined, {
+        evening: true,
+      })
     ).toEqual(hell);
   });
 });
@@ -712,7 +808,9 @@ describe("Bildsatz Pension (einfache Unterkunft, 2026-10-12)", () => {
     ]) {
       expect(gruppe(k, "Haus am See"), k).toBe("pension");
       // KI sagt „hotel" (Unterkunft allgemein): der genauere Satz gewinnt.
-      expect(gruppe(k, "Haus am See", "hotel"), `${k} (KI hotel)`).toBe("pension");
+      expect(gruppe(k, "Haus am See", "hotel"), `${k} (KI hotel)`).toBe(
+        "pension"
+      );
     }
     expect(gruppe("", "Pension Sonnenhang")).toBe("pension");
   });
@@ -731,7 +829,11 @@ describe("Bildsatz Pension (einfache Unterkunft, 2026-10-12)", () => {
 
   test("8–12 geprüfte Fotos, keine Doppel, Abendmotive eigen", () => {
     const satz = INDUSTRY_IMAGES.pension;
-    const alle = [...new Set([...satz.hero, ...(satz.gallery ?? [])].map(u => new URL(u).pathname))];
+    const alle = [
+      ...new Set(
+        [...satz.hero, ...(satz.gallery ?? [])].map(u => new URL(u).pathname)
+      ),
+    ];
     expect(alle.length).toBeGreaterThanOrEqual(8);
     expect(alle.length).toBeLessThanOrEqual(12);
     for (const [key, other] of Object.entries(INDUSTRY_IMAGES)) {
@@ -763,31 +865,54 @@ describe("Tierpensionen bleiben beim bisherigen Satz (2026-10-12)", () => {
   });
 });
 
-
 describe("Bildsätze der Freundlich-Zielbranchen (F1, 2026-10-13)", () => {
   const gruppe = (kategorie: string, name = "", key?: string) => {
     const satz = getIndustryImages(kategorie, name, key);
     return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
   };
-  const NEU = ["kita", "nachhilfe", "musikschule", "hundesalon", "eisdiele", "hebamme", "tierarzt", "tierbedarf"];
+  const NEU = [
+    "kita",
+    "nachhilfe",
+    "musikschule",
+    "hundesalon",
+    "eisdiele",
+    "hebamme",
+    "tierarzt",
+    "tierbedarf",
+  ];
   const motiv = (u: string) => new URL(u).pathname;
 
-  test.each(NEU)("%s: 8–12 geprüfte Unsplash-Fotos, keine Doppel, kein Motiv aus einem anderen Satz", key => {
-    const satz = INDUSTRY_IMAGES[key];
-    const alle = [...satz.hero, ...(satz.gallery ?? [])];
-    expect(alle.length).toBeGreaterThanOrEqual(8);
-    expect(alle.length).toBeLessThanOrEqual(12);
-    expect(new Set(alle.map(motiv)).size).toBe(alle.length);
-    for (const u of satz.hero)
-      expect(u).toMatch(/^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=1400&q=85&auto=format&fit=crop$/);
-    for (const u of satz.gallery ?? [])
-      expect(u).toMatch(/^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=800&q=80&auto=format&fit=crop$/);
-    for (const [other, s] of Object.entries(INDUSTRY_IMAGES)) {
-      if (other === key) continue;
-      const fremd = new Set([...s.hero, ...(s.gallery ?? []), ...(s.about ?? []), ...(s.evening ?? [])].map(motiv));
-      for (const u of alle) expect(fremd.has(motiv(u)), `${key} ↔ ${other}: ${u}`).toBe(false);
+  test.each(NEU)(
+    "%s: 8–12 geprüfte Unsplash-Fotos, keine Doppel, kein Motiv aus einem anderen Satz",
+    key => {
+      const satz = INDUSTRY_IMAGES[key];
+      const alle = [...satz.hero, ...(satz.gallery ?? [])];
+      expect(alle.length).toBeGreaterThanOrEqual(8);
+      expect(alle.length).toBeLessThanOrEqual(12);
+      expect(new Set(alle.map(motiv)).size).toBe(alle.length);
+      for (const u of satz.hero)
+        expect(u).toMatch(
+          /^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=1400&q=85&auto=format&fit=crop$/
+        );
+      for (const u of satz.gallery ?? [])
+        expect(u).toMatch(
+          /^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=800&q=80&auto=format&fit=crop$/
+        );
+      for (const [other, s] of Object.entries(INDUSTRY_IMAGES)) {
+        if (other === key) continue;
+        const fremd = new Set(
+          [
+            ...s.hero,
+            ...(s.gallery ?? []),
+            ...(s.about ?? []),
+            ...(s.evening ?? []),
+          ].map(motiv)
+        );
+        for (const u of alle)
+          expect(fremd.has(motiv(u)), `${key} ↔ ${other}: ${u}`).toBe(false);
+      }
     }
-  });
+  );
 
   test.each([
     ["Kita", "kita"],
@@ -841,7 +966,8 @@ describe("Bildsätze der Freundlich-Zielbranchen (F1, 2026-10-13)", () => {
     expect(gruppe("Friseur", "Salon Lindner")).toBe("friseur");
     expect(gruppe("Friseur", "Salon Lindner", "friseur")).toBe("friseur");
     expect(gruppe("Fitnessstudio", "Kraft")).toBe("fitness");
-    expect(gruppe("Fahrschule", "Gas")).toBe("education");
+    // Fahrschule: eigener Satz seit 2026-10-18.
+    expect(gruppe("Fahrschule", "Gas")).toBe("fahrschule");
     expect(gruppe("Sprachschule", "Lingua")).toBe("education");
     for (const k of ["Hundepension", "Tierpension", "Hunde-Pension"])
       expect(gruppe(k, "Waldhof"), k).toBe("hospitality");

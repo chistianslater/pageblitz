@@ -44,12 +44,36 @@ describe("SEO_SHOWCASES", () => {
     });
   }
 
-  it("seoShowcaseFor liefert Demo-Link und Bild, null bleibt Attrappe", () => {
+  it("seoShowcaseFor liefert Demo-Link und Bild, Unbekanntes bleibt Attrappe", () => {
     const f = seoShowcaseFor("friseur")!;
     expect(f.href).toBe("/demo/system/journal/friseur");
     expect(f.image).toBe("/showcases/friseur.webp");
     expect(f.imageMobile).toBe("/showcases/friseur-mobil.webp");
-    expect(seoShowcaseFor("reisebuero")).toBeUndefined();
+    expect(seoShowcaseFor("reisebuero")?.href).toBe(
+      "/demo/system/raster/reisebuero"
+    );
     expect(seoShowcaseFor("gibtsnicht")).toBeUndefined();
+  });
+
+  // Betreiber-Befund 2026-10-18: Die Gärtner-Seite zeigte die Schreinerei.
+  // Ein Beispiel teilen sich nur Branchen, die fachlich dasselbe sind.
+  it("keine Branchenseite leiht sich das Beispiel einer fremden Branche", () => {
+    const geteilt: Record<string, string[]> = {
+      schreinerei: ["handwerk"],
+      steuerberater: ["buchhaltung", "steuerberater"],
+      fotografie: ["fotograf", "fotostudio"],
+    };
+    const nachBeispiel = new Map<string, string[]>();
+    for (const [slug, r] of Object.entries(SEO_SHOWCASES)) {
+      if (!r) continue;
+      nachBeispiel.set(r.showcase, [
+        ...(nachBeispiel.get(r.showcase) ?? []),
+        slug,
+      ]);
+    }
+    for (const [showcase, slugs] of nachBeispiel) {
+      if (slugs.length === 1 && !geteilt[showcase]) continue;
+      expect(slugs.sort(), showcase).toEqual(geteilt[showcase] ?? [slugs[0]]);
+    }
   });
 });
