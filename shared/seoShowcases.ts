@@ -30,47 +30,45 @@ const ref = (
 
 export const SEO_SHOWCASES: Readonly<Record<string, SeoShowcaseRef | null>> = {
   friseur: ref("friseur", "journal", "Friseursalon"),
-  nagelstudio: ref("friseur", "journal", "Nagelstudio"),
+  nagelstudio: ref("nagelstudio", "journal", "Nagelstudio"),
   kosmetik: ref("kosmetik", "journal", "Kosmetikstudio"),
   restaurant: ref("restaurant", "nacht", "Restaurant"),
   baeckerei: ref("baeckerei", "werkstoff", "Bäckerei"),
   handwerk: ref("schreinerei", "werkstoff", "Handwerker"),
-  maler: ref("schreinerei", "werkstoff", "Malerbetrieb"),
-  klempner: ref("schreinerei", "werkstoff", "Klempner"),
-  reinigung: ref("schreinerei", "werkstoff", "Reinigungsservice"),
-  hausreinigung: ref("schreinerei", "werkstoff", "Hausreinigung"),
+  maler: ref("maler", "werkstoff", "Malerbetrieb"),
+  klempner: ref("sanitaer", "werkstoff", "Klempner"),
+  reinigung: ref("reinigung", "werkstoff", "Reinigungsservice"),
+  hausreinigung: ref("hausreinigung", "werkstoff", "Hausreinigung"),
   elektriker: ref("elektro", "werkstoff", "Elektriker"),
   zahnarzt: ref("zahnarzt", "klar", "Zahnarzt"),
-  arzt: ref("zahnarzt", "klar", "Arztpraxis"),
-  apotheke: ref("zahnarzt", "klar", "Apotheke"),
+  arzt: ref("hausarzt", "klar", "Arztpraxis"),
+  apotheke: ref("apotheke", "klar", "Apotheke"),
   physiotherapie: ref("physio", "klar", "Physiotherapeut"),
-  ergotherapie: ref("physio", "klar", "Ergotherapie"),
-  logopaedie: ref("physio", "klar", "Logopädie"),
+  ergotherapie: ref("ergotherapie", "klar", "Ergotherapie"),
+  logopaedie: ref("logopaedie", "klar", "Logopädie"),
   steuerberater: ref("steuerberater", "raster", "Steuerberater"),
   buchhaltung: ref("steuerberater", "raster", "Buchhaltungsbüro"),
   rechtsanwalt: ref("kanzlei", "raster", "Rechtsanwalt"),
   immobilien: ref("makler", "raster", "Immobilienmakler"),
-  // Makler statt IT/Kanzlei: gleiches System (Raster), aber das einzige
-  // Raster-Beispiel mit Gebäude-Motiv — passt zu Architekturbüros.
-  architekt: ref("makler", "raster", "Architekt"),
-  innenarchitekt: ref("makler", "raster", "Innenarchitekt"),
+  architekt: ref("architekt", "raster", "Architekt"),
+  innenarchitekt: ref("innenarchitekt", "raster", "Innenarchitekt"),
   "kfz-werkstatt": ref("werkstatt", "raster", "Kfz-Werkstatt"),
   schluesseldienst: ref("schluesseldienst", "raster", "Schlüsseldienst"),
   // Gärtner/Landschaftsgärtner sind Handwerk (Werkstoff); die Gärtnerei
-  // (Pflanzenverkauf, Beispiel „gaertnerei") bleibt Raster — daher Schreinerei.
-  gaertner: ref("schreinerei", "werkstoff", "Gärtner"),
+  // (Pflanzenverkauf, Beispiel „gaertnerei") bleibt Raster — eigenes
+  // Beispiel „gaertner" (Garten- und Landschaftsbau, 2026-10-18).
+  gaertner: ref("gaertner", "werkstoff", "Gärtner"),
   fotograf: ref("fotografie", "journal", "Fotograf"),
   fotostudio: ref("fotografie", "journal", "Fotostudio"),
   musikschule: ref("musikschule", "freundlich", "Musikschule"),
   fitness: ref("training", "plakat", "Fitnessstudio"),
-  yogastudio: ref("training", "plakat", "Yogastudio"),
-  pilates: ref("training", "plakat", "Pilatesstudio"),
-  fahrschule: ref("training", "plakat", "Fahrschule"),
+  yogastudio: ref("yoga", "plakat", "Yogastudio"),
+  pilates: ref("pilates", "plakat", "Pilatesstudio"),
+  fahrschule: ref("fahrschule", "plakat", "Fahrschule"),
   hundesalon: ref("fellfreunde", "freundlich", "Hundesalon"),
-  tierarzt: ref("fellfreunde", "freundlich", "Tierarzt"),
-  hebamme: ref("pusteblume", "freundlich", "Hebamme"),
-  // Raster wie Beratung, aber kein Beispiel mit Reise-Bezug: Attrappe.
-  reisebuero: null,
+  tierarzt: ref("tierarzt", "freundlich", "Tierarzt"),
+  hebamme: ref("hebamme", "freundlich", "Hebamme"),
+  reisebuero: ref("reisebuero", "raster", "Reisebüro"),
 };
 
 /** Maße der Bilder (scripts/branchen-screenshots.ts). */

@@ -362,7 +362,8 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     services: [
       {
         title: "Vorsorge und Zahnreinigung",
-        description: "Untersuchung, professionelle Reinigung, Röntgen nur wenn nötig.",
+        description:
+          "Untersuchung, professionelle Reinigung, Röntgen nur wenn nötig.",
       },
       {
         title: "Füllungen und Wurzelbehandlung",
@@ -370,7 +371,8 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       },
       {
         title: "Zahnersatz",
-        description: "Kronen, Brücken, Prothesen. Kostenplan vorab schriftlich.",
+        description:
+          "Kronen, Brücken, Prothesen. Kostenplan vorab schriftlich.",
       },
       {
         title: "Für Angstpatienten",
@@ -662,24 +664,56 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         {
           name: "Vorspeisen",
           items: [
-            { name: "Saibling aus dem Pfälzerwald", description: "Rote Bete, Meerrettich, Dill", price: "14,50" },
-            { name: "Kürbissuppe", description: "geröstete Kerne, Kürbiskernöl", price: "9,00" },
-            { name: "Kalbstatar", description: "Eigelb, Kapern, Brioche", price: "16,00" },
+            {
+              name: "Saibling aus dem Pfälzerwald",
+              description: "Rote Bete, Meerrettich, Dill",
+              price: "14,50",
+            },
+            {
+              name: "Kürbissuppe",
+              description: "geröstete Kerne, Kürbiskernöl",
+              price: "9,00",
+            },
+            {
+              name: "Kalbstatar",
+              description: "Eigelb, Kapern, Brioche",
+              price: "16,00",
+            },
           ],
         },
         {
           name: "Hauptgänge",
           items: [
-            { name: "Lammrücken vom Hof Berger", description: "Bohnen, Rosmarinjus", price: "32,00" },
-            { name: "Zander", description: "Rieslingkraut, Speck, Kartoffelschaum", price: "28,00" },
-            { name: "Pilzrisotto", description: "Bergkäse, Petersilienöl", price: "22,00" },
+            {
+              name: "Lammrücken vom Hof Berger",
+              description: "Bohnen, Rosmarinjus",
+              price: "32,00",
+            },
+            {
+              name: "Zander",
+              description: "Rieslingkraut, Speck, Kartoffelschaum",
+              price: "28,00",
+            },
+            {
+              name: "Pilzrisotto",
+              description: "Bergkäse, Petersilienöl",
+              price: "22,00",
+            },
           ],
         },
         {
           name: "Zum Schluss",
           items: [
-            { name: "Zwetschgen", description: "Mandel, Sauerrahmeis", price: "11,00" },
-            { name: "Käse vom Hof Wolf", description: "Feigensenf, Früchtebrot", price: "14,00" },
+            {
+              name: "Zwetschgen",
+              description: "Mandel, Sauerrahmeis",
+              price: "11,00",
+            },
+            {
+              name: "Käse vom Hof Wolf",
+              description: "Feigensenf, Früchtebrot",
+              price: "14,00",
+            },
           ],
         },
       ],
@@ -694,7 +728,8 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     faq: [
       {
         question: "Vegetarisch und vegan",
-        answer: "Jeder Gang auch ohne Fleisch, bitte bei der Reservierung sagen.",
+        answer:
+          "Jeder Gang auch ohne Fleisch, bitte bei der Reservierung sagen.",
       },
       {
         question: "Hunde",
@@ -742,12 +777,28 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         "Schnitt, Farbe und Balayage für Menschen, die tagsüber keine Zeit haben. Termine bis 21 Uhr, mitten im Nordend.",
     },
     services: [
-      { title: "Damenschnitt", description: "Waschen, Schnitt, Föhnen", price: "ab 58 €" },
+      {
+        title: "Damenschnitt",
+        description: "Waschen, Schnitt, Föhnen",
+        price: "ab 58 €",
+      },
       { title: "Herrenschnitt", description: "mit Nackenrasur", price: "36 €" },
-      { title: "Farbe", description: "Ansatz oder ganze Länge", price: "ab 72 €" },
-      { title: "Balayage", description: "frei gemalte Strähnen, mit Pflege", price: "ab 140 €" },
+      {
+        title: "Farbe",
+        description: "Ansatz oder ganze Länge",
+        price: "ab 72 €",
+      },
+      {
+        title: "Balayage",
+        description: "frei gemalte Strähnen, mit Pflege",
+        price: "ab 140 €",
+      },
       { title: "Föhnen und Styling", description: "", price: "28 €" },
-      { title: "Hochsteckfrisur", description: "Hochzeit, Abend, Probetermin", price: "ab 65 €" },
+      {
+        title: "Hochsteckfrisur",
+        description: "Hochzeit, Abend, Probetermin",
+        price: "ab 65 €",
+      },
     ],
     about:
       "Ein kleiner Salon im Nordend mit drei Plätzen und ruhigem Licht. Wir schneiden, färben und malen Balayage für Menschen, die tagsüber arbeiten — darum sind wir dienstags bis freitags bis 21 Uhr da.\n\nJeder Termin beginnt mit einem Gespräch über Haar, Alltag und Pflege. Was wir empfehlen, lässt sich zu Hause halten.",
@@ -793,10 +844,26 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         "Sechs Zimmer, ein Steg, Frühstück bis halb elf. Familiengeführt seit 1987, fünf Minuten vom Dampfersteg.",
     },
     services: [
-      { title: "Seezimmer", description: "2 Personen · Balkon zum See", price: "ab 145 €/Nacht" },
-      { title: "Turmzimmer", description: "2 Personen · Rundumblick, 3. Stock", price: "ab 165 €/Nacht" },
-      { title: "Gartenzimmer", description: "2 Personen · Hund erlaubt", price: "ab 118 €/Nacht" },
-      { title: "Bootshaus-Suite", description: "2 Personen · eigener Steg", price: "ab 220 €/Nacht" },
+      {
+        title: "Seezimmer",
+        description: "2 Personen · Balkon zum See",
+        price: "ab 145 €/Nacht",
+      },
+      {
+        title: "Turmzimmer",
+        description: "2 Personen · Rundumblick, 3. Stock",
+        price: "ab 165 €/Nacht",
+      },
+      {
+        title: "Gartenzimmer",
+        description: "2 Personen · Hund erlaubt",
+        price: "ab 118 €/Nacht",
+      },
+      {
+        title: "Bootshaus-Suite",
+        description: "2 Personen · eigener Steg",
+        price: "ab 220 €/Nacht",
+      },
     ],
     about:
       "Familiengeführt seit 1987: sechs Zimmer direkt am Ammersee, ein eigener Steg und ein Garten bis ans Wasser.\n\nMorgens gibt es Frühstück bis halb elf, regional und auf Wunsch glutenfrei. Zum Dampfersteg sind es fünf Minuten zu Fuß.",
@@ -850,10 +917,26 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         "Zwölf Kinder, vier Erzieherinnen und ein Garten mit Apfelbaum. Wir nehmen uns Zeit fürs Ankommen.",
     },
     services: [
-      { title: "Eingewöhnung", description: "Nach dem Berliner Modell, zwei bis drei Wochen, immer mit Mama oder Papa." },
-      { title: "Tagesablauf", description: "Frühstück um 8:30, Morgenkreis, Spielen, Mittag um 11:30, Schlafen." },
-      { title: "Essen", description: "Bio-Mittagessen aus der Küche nebenan, vegetarisch an drei Tagen." },
-      { title: "Draußen", description: "Jeden Tag in den Garten, bei jedem Wetter. Matschhosen haben wir." },
+      {
+        title: "Eingewöhnung",
+        description:
+          "Nach dem Berliner Modell, zwei bis drei Wochen, immer mit Mama oder Papa.",
+      },
+      {
+        title: "Tagesablauf",
+        description:
+          "Frühstück um 8:30, Morgenkreis, Spielen, Mittag um 11:30, Schlafen.",
+      },
+      {
+        title: "Essen",
+        description:
+          "Bio-Mittagessen aus der Küche nebenan, vegetarisch an drei Tagen.",
+      },
+      {
+        title: "Draußen",
+        description:
+          "Jeden Tag in den Garten, bei jedem Wetter. Matschhosen haben wir.",
+      },
     ],
     about:
       "Seit 2011 betreuen wir in Findorff zwölf Kinder zwischen einem und drei Jahren, in einer Altbauwohnung mit Garten.\n\nWir sind klein, damit jedes Kind gesehen wird — und damit ihr als Eltern immer wisst, wen ihr morgens anruft.",
@@ -868,9 +951,18 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     process: {
       headline: "So läuft es ab",
       steps: [
-        { title: "Kennenlernen", text: "Ihr schaut euch um, wir erzählen vom Alltag. Kinder dürfen mit." },
-        { title: "Anmeldung", text: "Ihr bekommt Bescheid, ob ein Platz frei wird, und den Vertrag." },
-        { title: "Eingewöhnung", text: "Mit euch, in kleinen Schritten, bis euer Kind sich wohlfühlt." },
+        {
+          title: "Kennenlernen",
+          text: "Ihr schaut euch um, wir erzählen vom Alltag. Kinder dürfen mit.",
+        },
+        {
+          title: "Anmeldung",
+          text: "Ihr bekommt Bescheid, ob ein Platz frei wird, und den Vertrag.",
+        },
+        {
+          title: "Eingewöhnung",
+          text: "Mit euch, in kleinen Schritten, bis euer Kind sich wohlfühlt.",
+        },
       ],
     },
     team: {
@@ -882,18 +974,41 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       ],
     },
     faq: [
-      { question: "Wie läuft die Eingewöhnung?", answer: "Nach dem Berliner Modell: die ersten Tage eine Stunde mit euch, dann werden die Zeiten länger. Rechnet mit zwei bis drei Wochen." },
-      { question: "Was kostet ein Platz?", answer: "Das richtet sich nach dem Einkommen und der Betreuungszeit. Wir rechnen es euch gern aus." },
-      { question: "Was muss mitgebracht werden?", answer: "Wechselkleidung, Hausschuhe, Matschhose und ein Kuscheltier." },
+      {
+        question: "Wie läuft die Eingewöhnung?",
+        answer:
+          "Nach dem Berliner Modell: die ersten Tage eine Stunde mit euch, dann werden die Zeiten länger. Rechnet mit zwei bis drei Wochen.",
+      },
+      {
+        question: "Was kostet ein Platz?",
+        answer:
+          "Das richtet sich nach dem Einkommen und der Betreuungszeit. Wir rechnen es euch gern aus.",
+      },
+      {
+        question: "Was muss mitgebracht werden?",
+        answer: "Wechselkleidung, Hausschuhe, Matschhose und ein Kuscheltier.",
+      },
     ],
     addFaq: true,
     google: false,
     reviews: [
-      { author: "Jana K.", text: "Nach drei Wochen wollte unsere Tochter am liebsten dort übernachten." },
-      { author: "Mehmet und Sara", text: "Klein, herzlich und immer ehrlich zu uns Eltern." },
-      { author: "Familie Ott", text: "Die Eingewöhnung war entspannter als gedacht." },
+      {
+        author: "Jana K.",
+        text: "Nach drei Wochen wollte unsere Tochter am liebsten dort übernachten.",
+      },
+      {
+        author: "Mehmet und Sara",
+        text: "Klein, herzlich und immer ehrlich zu uns Eltern.",
+      },
+      {
+        author: "Familie Ott",
+        text: "Die Eingewöhnung war entspannter als gedacht.",
+      },
     ],
-    cta: { headline: "Ein Platz für euer Kind?", ctaText: "Kennenlernen anfragen" },
+    cta: {
+      headline: "Ein Platz für euer Kind?",
+      ctaText: "Kennenlernen anfragen",
+    },
     ctaAt: "end",
   },
   fellfreunde: {
@@ -916,32 +1031,74 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         "Waschen, schneiden, Krallen kürzen. In Ruhe, ohne Käfig, mit Zeit zum Schnuppern.",
     },
     services: [
-      { title: "Waschen und Föhnen", description: "Mildes Shampoo, warm geföhnt, Ohren sauber.", price: "ab 35 €" },
-      { title: "Schneiden", description: "Rassetypisch oder pflegeleicht, ganz wie ihr wollt.", price: "ab 55 €" },
-      { title: "Krallen und Pfoten", description: "Kürzen, Fell zwischen den Ballen, Pfotenbalsam.", price: "12 €" },
-      { title: "Welpen-Kennenlernen", description: "Zwanzig Minuten Salon schnuppern, ohne Schere.", price: "20 €" },
+      {
+        title: "Waschen und Föhnen",
+        description: "Mildes Shampoo, warm geföhnt, Ohren sauber.",
+        price: "ab 35 €",
+      },
+      {
+        title: "Schneiden",
+        description: "Rassetypisch oder pflegeleicht, ganz wie ihr wollt.",
+        price: "ab 55 €",
+      },
+      {
+        title: "Krallen und Pfoten",
+        description: "Kürzen, Fell zwischen den Ballen, Pfotenbalsam.",
+        price: "12 €",
+      },
+      {
+        title: "Welpen-Kennenlernen",
+        description: "Zwanzig Minuten Salon schnuppern, ohne Schere.",
+        price: "20 €",
+      },
     ],
     about:
       "Ein kleiner Salon in Gohlis mit zwei Tischen, einer Wanne und viel Zeit. Wir arbeiten ohne Boxen und ohne Zeitdruck — jeder Hund darf erst ankommen.\n\nÄngstliche Hunde planen wir mit mehr Pausen ein. Wenn es nicht geht, hören wir auf.",
     process: {
       headline: "So läuft es ab",
       steps: [
-        { title: "Ankommen und schnuppern", text: "Euer Hund lernt uns kennen, bevor irgendwas passiert." },
-        { title: "Pflege in Ruhe", text: "Pausen, wenn er sie braucht. Keine Box, kein Zeitdruck." },
-        { title: "Abholen mit Foto", text: "Ihr bekommt ein Foto, sobald er fertig und trocken ist." },
+        {
+          title: "Ankommen und schnuppern",
+          text: "Euer Hund lernt uns kennen, bevor irgendwas passiert.",
+        },
+        {
+          title: "Pflege in Ruhe",
+          text: "Pausen, wenn er sie braucht. Keine Box, kein Zeitdruck.",
+        },
+        {
+          title: "Abholen mit Foto",
+          text: "Ihr bekommt ein Foto, sobald er fertig und trocken ist.",
+        },
       ],
     },
     faq: [
-      { question: "Mein Hund ist ängstlich. Geht das?", answer: "Ja. Wir planen mehr Zeit ein, machen Pausen und brechen ab, wenn es nicht geht. Das Kennenlernen kostet nichts extra." },
-      { question: "Wie lange dauert es?", answer: "Je nach Fell eine bis drei Stunden. Wir rufen an, wenn er fertig ist." },
-      { question: "Muss ich dableiben?", answer: "Nein. Ihr könnt ihn bringen und später abholen." },
+      {
+        question: "Mein Hund ist ängstlich. Geht das?",
+        answer:
+          "Ja. Wir planen mehr Zeit ein, machen Pausen und brechen ab, wenn es nicht geht. Das Kennenlernen kostet nichts extra.",
+      },
+      {
+        question: "Wie lange dauert es?",
+        answer:
+          "Je nach Fell eine bis drei Stunden. Wir rufen an, wenn er fertig ist.",
+      },
+      {
+        question: "Muss ich dableiben?",
+        answer: "Nein. Ihr könnt ihn bringen und später abholen.",
+      },
     ],
     addFaq: true,
     drop: ["pricelist"],
     google: { rating: 4.9, reviewCount: 86 },
     reviews: [
-      { author: "Katrin L.", text: "Unser ängstlicher Balu geht inzwischen freiwillig rein. Das sagt alles." },
-      { author: "Thomas R.", text: "Pudelschnitt wie gewünscht, und sie haben sich Zeit genommen." },
+      {
+        author: "Katrin L.",
+        text: "Unser ängstlicher Balu geht inzwischen freiwillig rein. Das sagt alles.",
+      },
+      {
+        author: "Thomas R.",
+        text: "Pudelschnitt wie gewünscht, und sie haben sich Zeit genommen.",
+      },
       { author: "Anja B.", text: "Endlich ein Salon ohne Käfige." },
     ],
     cta: { headline: "Termin für euren Hund?", ctaText: "Termin anfragen" },
@@ -972,10 +1129,26 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         {
           name: "Eis und mehr",
           items: [
-            { name: "Eis in der Waffel", description: "Zwanzig Sorten, mindestens drei vegan.", price: "1,90 € je Kugel" },
-            { name: "Becher", description: "Erdbeer, Spaghetti-Eis, Joghurt-Mango.", price: "ab 6,50 €" },
-            { name: "Eistorten", description: "Auf Bestellung, drei Tage vorher.", price: "ab 32 €" },
-            { name: "Kaffee", description: "Siebträger, Affogato mit einer Kugel.", price: "ab 2,40 €" },
+            {
+              name: "Eis in der Waffel",
+              description: "Zwanzig Sorten, mindestens drei vegan.",
+              price: "1,90 € je Kugel",
+            },
+            {
+              name: "Becher",
+              description: "Erdbeer, Spaghetti-Eis, Joghurt-Mango.",
+              price: "ab 6,50 €",
+            },
+            {
+              name: "Eistorten",
+              description: "Auf Bestellung, drei Tage vorher.",
+              price: "ab 32 €",
+            },
+            {
+              name: "Kaffee",
+              description: "Siebträger, Affogato mit einer Kugel.",
+              price: "ab 2,40 €",
+            },
           ],
         },
       ],
@@ -983,16 +1156,35 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     about:
       "Seit 2014 rühren wir jeden Morgen am Maschsee-Ufer frisch, mit Milch vom Hof Lindemann und Früchten der Saison.\n\nDrinnen sind zwanzig Plätze, draußen die Terrasse am Wasser. Mindestens drei Sorten sind immer vegan.",
     faq: [
-      { question: "Habt ihr bei Regen geöffnet?", answer: "Ja, drinnen sind zwanzig Plätze. Nur bei Sturm schließen wir die Terrasse." },
-      { question: "Gibt es laktosefreie Sorten?", answer: "Ja, alle Sorbets und drei Sorten auf Hafermilch." },
-      { question: "Kann ich Eistorten bestellen?", answer: "Ja, drei Tage vorher per Telefon oder im Laden." },
+      {
+        question: "Habt ihr bei Regen geöffnet?",
+        answer:
+          "Ja, drinnen sind zwanzig Plätze. Nur bei Sturm schließen wir die Terrasse.",
+      },
+      {
+        question: "Gibt es laktosefreie Sorten?",
+        answer: "Ja, alle Sorbets und drei Sorten auf Hafermilch.",
+      },
+      {
+        question: "Kann ich Eistorten bestellen?",
+        answer: "Ja, drei Tage vorher per Telefon oder im Laden.",
+      },
     ],
     addFaq: true,
     google: { rating: 4.7, reviewCount: 312 },
     reviews: [
-      { author: "Lukas F.", text: "Das Pistazieneis schmeckt wie in Bologna, ehrlich." },
-      { author: "Selin Y.", text: "Netter Service, auch wenn die Schlange lang ist." },
-      { author: "Maren und Ole", text: "Die vegane Schoko ist besser als die normale." },
+      {
+        author: "Lukas F.",
+        text: "Das Pistazieneis schmeckt wie in Bologna, ehrlich.",
+      },
+      {
+        author: "Selin Y.",
+        text: "Netter Service, auch wenn die Schlange lang ist.",
+      },
+      {
+        author: "Maren und Ole",
+        text: "Die vegane Schoko ist besser als die normale.",
+      },
     ],
     cta: { headline: "Bis gleich am Ufer.", ctaText: "Route planen" },
     ctaAt: "end",
@@ -1018,7 +1210,10 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     },
     services: [
       { title: "Haarschnitt", description: "Waschen, Schnitt, Styling." },
-      { title: "Skin Fade", description: "Maschine bis auf die Haut, Übergang von Hand." },
+      {
+        title: "Skin Fade",
+        description: "Maschine bis auf die Haut, Übergang von Hand.",
+      },
       { title: "Bart", description: "Kontur, Länge, Öl." },
       { title: "Rasur", description: "Klinge und zwei heiße Tücher." },
     ],
@@ -1090,7 +1285,8 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       },
       {
         question: "Gibt es vegetarisch?",
-        answer: "Halloumi im Brot, Pide mit Käse und Lahmacun ohne Fleisch auf Nachfrage.",
+        answer:
+          "Halloumi im Brot, Pide mit Käse und Lahmacun ohne Fleisch auf Nachfrage.",
       },
     ],
     addFaq: true,
@@ -1123,11 +1319,31 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         "Kleine Gruppen, feste Trainer, ein Raum in der Altstadt. Die erste Stunde kostet nichts.",
     },
     services: [
-      { title: "Kraftzirkel", description: "45 Minuten, Langhantel und Kettlebell.", price: "ab 12 €" },
-      { title: "Rücken fit", description: "30 Minuten, in der Mittagspause.", price: "ab 9 €" },
-      { title: "Yoga Flow", description: "60 Minuten, Matten sind da.", price: "ab 14 €" },
-      { title: "Boxen", description: "60 Minuten, Handschuhe leihen wir.", price: "ab 14 €" },
-      { title: "Probetraining", description: "Einmal, ohne Vertrag.", price: "0 €" },
+      {
+        title: "Kraftzirkel",
+        description: "45 Minuten, Langhantel und Kettlebell.",
+        price: "ab 12 €",
+      },
+      {
+        title: "Rücken fit",
+        description: "30 Minuten, in der Mittagspause.",
+        price: "ab 9 €",
+      },
+      {
+        title: "Yoga Flow",
+        description: "60 Minuten, Matten sind da.",
+        price: "ab 14 €",
+      },
+      {
+        title: "Boxen",
+        description: "60 Minuten, Handschuhe leihen wir.",
+        price: "ab 14 €",
+      },
+      {
+        title: "Probetraining",
+        description: "Einmal, ohne Vertrag.",
+        price: "0 €",
+      },
     ],
     about:
       "Ein Raum, drei Trainer, höchstens zwölf Leute pro Kurs. Wir kennen deinen Namen und merken, wenn du fehlst.",
@@ -1231,6 +1447,1525 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         text: "Unser alter Esstisch sieht aus wie neu. Ehrliche Beratung, saubere Arbeit.",
       },
     ],
+  },
+  maler: {
+    addFaq: true,
+    contact: {
+      street: "Castroper Straße 148",
+      zip: "44791",
+      city: "Bochum",
+      phone: "0234 555 2760",
+      email: "info@maler-kowalski.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "7:00 – 16:30" },
+      { day: "Fr", hours: "7:00 – 13:00" },
+    ],
+    hero: {
+      headline: "Farbe, die hält.",
+      subheadline:
+        "Wände, Decken und Fassaden in Bochum. Sauber abgedeckt, pünktlich fertig.",
+    },
+    services: [
+      {
+        title: "Innenanstrich",
+        description: "Wände und Decken streichen, Risse vorher ausbessern.",
+      },
+      {
+        title: "Fassade",
+        description:
+          "Reinigen, grundieren, streichen. Mit Gerüst aus einer Hand.",
+      },
+      {
+        title: "Tapezieren",
+        description: "Raufaser, Vlies oder Mustertapete, Ecken auf Stoß.",
+      },
+      {
+        title: "Spachteltechnik",
+        description: "Glatte Wände in Q3/Q4 oder Kalkputz mit Struktur.",
+      },
+    ],
+    process: {
+      headline: "Vom Besichtigen bis zur Übergabe",
+      steps: [
+        {
+          title: "Besichtigung",
+          text: "Wir schauen uns die Räume an und beraten zu Farbe und Untergrund.",
+        },
+        {
+          title: "Angebot",
+          text: "Du bekommst einen festen Preis und einen Termin.",
+        },
+        {
+          title: "Ausführung",
+          text: "Wir decken ab, streichen und räumen danach wieder auf.",
+        },
+      ],
+    },
+    about:
+      "Wir sind ein Meisterbetrieb in Bochum-Grumme: ein Malermeister, drei Gesellen, ein Azubi.\n\nWir arbeiten mit Farben ohne Lösemittel und kleben lieber einmal mehr ab. Nach uns ist der Raum fertig, nicht nur gestrichen.",
+    faq: [
+      {
+        question: "Was kostet ein Zimmer streichen?",
+        answer:
+          "Das hängt von Fläche und Untergrund ab. Nach der Besichtigung bekommst du einen festen Preis.",
+      },
+      {
+        question: "Muss ich die Möbel selbst rausräumen?",
+        answer:
+          "Nein. Wir rücken sie in die Mitte und decken alles ab. Zerbrechliches räumst du am besten vorher weg.",
+      },
+      {
+        question: "Streicht ihr auch im Winter Fassaden?",
+        answer:
+          "Fassaden nur ab etwa acht Grad. Innen arbeiten wir das ganze Jahr.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Andrea P.",
+        text: "Drei Zimmer in zwei Tagen, alles abgedeckt und sauber hinterlassen. Die Kanten sind wie gezogen.",
+      },
+      {
+        author: "Thomas R.",
+        text: "Die Fassade sieht aus wie neu. Termin und Preis wurden genau eingehalten.",
+      },
+    ],
+  },
+  gaertner: {
+    addFaq: true,
+    contact: {
+      street: "Gievenbecker Weg 63",
+      zip: "48161",
+      city: "Münster",
+      phone: "0251 555 8420",
+      email: "garten@gruenwerk.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "7:00 – 16:00" },
+      { day: "Sa", hours: "nach Absprache" },
+    ],
+    hero: {
+      headline: "Gärten, die wachsen dürfen.",
+      subheadline:
+        "Garten- und Landschaftsbau in Münster. Planung, Bau und Pflege aus einer Hand.",
+    },
+    services: [
+      {
+        title: "Gartengestaltung",
+        description: "Beete, Wege und Sitzplätze, geplant für deinen Garten.",
+      },
+      {
+        title: "Terrassen & Mauern",
+        description: "Holz, Naturstein oder Pflaster, auf festem Unterbau.",
+      },
+      {
+        title: "Rasen",
+        description: "Rollrasen verlegen, Rasen neu anlegen oder sanieren.",
+      },
+      {
+        title: "Gartenpflege",
+        description:
+          "Hecke schneiden, Laub räumen, Beete pflegen. Auch im Abo.",
+      },
+    ],
+    process: {
+      headline: "Vom ersten Rundgang bis zum fertigen Garten",
+      steps: [
+        {
+          title: "Rundgang",
+          text: "Wir gehen mit dir durch den Garten und hören zu. Etwa eine Stunde.",
+        },
+        {
+          title: "Plan",
+          text: "Du bekommst eine Skizze, eine Pflanzliste und einen festen Preis.",
+        },
+        {
+          title: "Bau",
+          text: "Wir bauen und pflanzen. Meist ein bis drei Wochen.",
+        },
+      ],
+    },
+    about:
+      "Wir sind ein kleiner Betrieb in Münster-Gievenbeck: ein Gärtnermeister, drei Landschaftsgärtner, eine Auszubildende.\n\nWir pflanzen, was zum Boden passt, und bauen so, dass der Garten in zehn Jahren noch schöner ist als heute.",
+    faq: [
+      {
+        question: "Wann ist die beste Zeit, einen Garten anzulegen?",
+        answer:
+          "Gepflanzt wird am besten im Frühjahr oder Herbst. Planen kannst du das ganze Jahr.",
+      },
+      {
+        question: "Übernehmt ihr auch die Pflege?",
+        answer:
+          "Ja, einmalig oder regelmäßig. Viele Kunden buchen Heckenschnitt und Laub im Herbst.",
+      },
+      {
+        question: "Entsorgt ihr den Grünschnitt?",
+        answer: "Ja, wir nehmen alles mit und bringen es zur Kompostierung.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Claudia W.",
+        text: "Aus unserem Rasenstück ist ein richtiger Garten geworden. Die Terrasse ist perfekt verlegt.",
+      },
+      {
+        author: "Stefan H.",
+        text: "Pünktlich, freundlich und alles sauber hinterlassen. Die Pflege im Herbst buchen wir jetzt jedes Jahr.",
+      },
+    ],
+  },
+  nagelstudio: {
+    contact: {
+      street: "Rüttenscheider Straße 87",
+      zip: "45130",
+      city: "Essen",
+      phone: "0201 555 3091",
+      email: "hallo@nagelatelier-lumi.example",
+    },
+    hours: [
+      { day: "Mo", hours: "geschlossen" },
+      { day: "Di–Fr", hours: "10:00 – 19:00" },
+      { day: "Sa", hours: "9:00 – 15:00" },
+    ],
+    hero: {
+      headline: "Nägel, die man gern ansieht.",
+      subheadline:
+        "Maniküre, Gel und Nageldesign in Essen-Rüttenscheid. Mit Termin, ohne Eile.",
+    },
+    services: [
+      {
+        title: "Maniküre",
+        description: "Feilen, Nagelhaut pflegen, Lack nach Wahl.",
+        price: "ab 32",
+      },
+      {
+        title: "Gel & Shellac",
+        description: "Hält drei bis vier Wochen, schonend abgelöst.",
+        price: "ab 45",
+      },
+      {
+        title: "Nageldesign",
+        description: "French, Ombré oder kleine Motive, ganz wie du magst.",
+        price: "ab 10",
+      },
+      {
+        title: "Pediküre",
+        description: "Fußbad, Hornhaut, Nägel. Im bequemen Sessel.",
+        price: "ab 42",
+      },
+    ],
+    pricelist: {
+      headline: "Preisliste",
+      categories: [
+        {
+          name: "Hände",
+          items: [
+            { name: "Maniküre mit Lack", price: "32" },
+            { name: "Shellac", price: "45" },
+            { name: "Gel-Modellage, neu", price: "65" },
+            { name: "Gel auffüllen", price: "50" },
+          ],
+        },
+        {
+          name: "Füße",
+          items: [
+            { name: "Pediküre", price: "42" },
+            { name: "Pediküre mit Shellac", price: "55" },
+          ],
+        },
+      ],
+    },
+    about:
+      "Wir sind zu zweit und haben drei Plätze. Jeder Termin hat genug Zeit, damit nichts schnell gehen muss.\n\nWir arbeiten mit Lacken ohne die üblichen Reizstoffe und desinfizieren jedes Werkzeug nach jeder Kundin.",
+    faq: [
+      {
+        question: "Wie lange hält Shellac?",
+        answer: "Meist drei bis vier Wochen. Danach lösen wir ihn schonend ab.",
+      },
+      {
+        question: "Kann ich spontan vorbeikommen?",
+        answer:
+          "Manchmal ist ein Platz frei. Sicherer ist ein kurzer Anruf vorher.",
+      },
+      {
+        question: "Macht ihr auch Nageldesign nach Foto?",
+        answer: "Ja, bring dein Foto mit. Wir sagen dir vorher, was es kostet.",
+      },
+    ],
+    addFaq: true,
+    google: { rating: 4.9, reviewCount: 74 },
+    reviews: [
+      {
+        author: "Selin K.",
+        text: "Mein Shellac hält jetzt vier Wochen ohne Macke. Und das Studio ist richtig gemütlich.",
+      },
+      {
+        author: "Mareike T.",
+        text: "Sehr sauber, sehr genau, und man wird nie gehetzt.",
+      },
+    ],
+  },
+  sanitaer: {
+    addFaq: true,
+    contact: {
+      street: "Kölner Straße 212",
+      zip: "47805",
+      city: "Krefeld",
+      phone: "02151 555 6610",
+      email: "service@haustechnik-yilmaz.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "7:30 – 17:00" },
+      { day: "Fr", hours: "7:30 – 14:00" },
+    ],
+    hero: {
+      headline: "Wasser läuft. Heizung läuft.",
+      subheadline:
+        "Sanitär und Heizung in Krefeld. Reparatur, neues Bad, neue Heizung.",
+    },
+    services: [
+      {
+        title: "Reparatur",
+        description: "Tropfender Hahn, verstopfter Abfluss, undichte Leitung.",
+      },
+      {
+        title: "Badsanierung",
+        description: "Planung, Rohre, Fliesen, Einbau. Alles aus einer Hand.",
+      },
+      {
+        title: "Heizung",
+        description: "Wartung, Austausch, Wärmepumpe mit Förderantrag.",
+      },
+      {
+        title: "Notdienst",
+        description: "Rohrbruch am Wochenende? Ruf an, wir kommen.",
+      },
+    ],
+    process: {
+      headline: "Vom Anruf bis zum fertigen Bad",
+      steps: [
+        {
+          title: "Anruf",
+          text: "Du schilderst, was los ist. Bei Notfällen kommen wir am selben Tag.",
+        },
+        {
+          title: "Besichtigung",
+          text: "Wir schauen uns alles an und sagen ehrlich, was nötig ist.",
+        },
+        {
+          title: "Angebot & Einbau",
+          text: "Fester Preis, fester Termin. Danach räumen wir auf.",
+        },
+      ],
+    },
+    about:
+      "Wir sind ein Meisterbetrieb in Krefeld-Bockum: zwei Meister, vier Gesellen, ein Azubi und zwei Kundendienstwagen.\n\nWir reparieren, bevor wir tauschen. Und wenn getauscht werden muss, erklären wir dir, warum.",
+    faq: [
+      {
+        question: "Habt ihr einen Notdienst?",
+        answer: "Ja, auch am Wochenende. Der Zuschlag steht vorher fest.",
+      },
+      {
+        question: "Was kostet ein neues Bad?",
+        answer:
+          "Das hängt von Größe und Ausstattung ab. Nach der Besichtigung bekommst du einen festen Preis.",
+      },
+      {
+        question: "Helft ihr beim Förderantrag für die Wärmepumpe?",
+        answer:
+          "Ja, wir bereiten die Unterlagen vor und sagen dir, was du einreichen musst.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Jürgen F.",
+        text: "Samstagabend Rohrbruch, eine Stunde später war jemand da. Ruhig, sauber, fair abgerechnet.",
+      },
+      {
+        author: "Nicole S.",
+        text: "Unser neues Bad war in drei Wochen fertig. Genau wie besprochen.",
+      },
+    ],
+  },
+  reinigung: {
+    addFaq: true,
+    contact: {
+      street: "Hansastraße 40",
+      zip: "44137",
+      city: "Dortmund",
+      phone: "0231 555 9020",
+      email: "anfrage@klarsicht-service.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "7:00 – 18:00" },
+      { day: "Sa", hours: "nach Absprache" },
+    ],
+    hero: {
+      headline: "Sauber, bevor ihr kommt.",
+      subheadline:
+        "Büro-, Praxis- und Glasreinigung in Dortmund. Feste Teams, feste Zeiten.",
+    },
+    services: [
+      {
+        title: "Unterhaltsreinigung",
+        description: "Büros und Praxen, täglich oder wöchentlich.",
+      },
+      {
+        title: "Glas & Fenster",
+        description: "Fenster, Rahmen, Schaufenster. Auch mit Hebebühne.",
+      },
+      {
+        title: "Treppenhaus",
+        description: "Für Hausverwaltungen, mit Reinigungsplan im Aushang.",
+      },
+      {
+        title: "Grundreinigung",
+        description: "Nach Umbau, Auszug oder einfach einmal richtig.",
+      },
+    ],
+    process: {
+      headline: "So starten wir",
+      steps: [
+        {
+          title: "Begehung",
+          text: "Wir schauen uns die Räume an und fragen, was dir wichtig ist.",
+        },
+        {
+          title: "Angebot",
+          text: "Du bekommst einen Festpreis pro Monat und einen Reinigungsplan.",
+        },
+        {
+          title: "Festes Team",
+          text: "Immer dieselben Leute, mit Schlüssel und Ansprechpartnerin.",
+        },
+      ],
+    },
+    about:
+      "Wir reinigen seit vielen Jahren Büros, Praxen und Treppenhäuser in Dortmund und Umgebung. Unsere Teams sind fest angestellt und bleiben bei ihren Objekten.\n\nWenn etwas nicht passt, rufst du eine Person an, nicht eine Hotline.",
+    faq: [
+      {
+        question: "Reinigt ihr auch abends oder früh morgens?",
+        answer: "Ja. Wir richten uns nach euren Öffnungszeiten.",
+      },
+      {
+        question: "Bringt ihr Mittel und Geräte mit?",
+        answer: "Ja, alles. Auf Wunsch nur mit umweltfreundlichen Mitteln.",
+      },
+      {
+        question: "Wie schnell könnt ihr anfangen?",
+        answer: "Nach der Begehung meist innerhalb von zwei Wochen.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Praxis Dr. M.",
+        text: "Seit zwei Jahren dasselbe Team, zuverlässig und gründlich. Wir müssen uns um nichts kümmern.",
+      },
+      {
+        author: "Hausverwaltung K.",
+        text: "Die Treppenhäuser sind jede Woche sauber, und Mängel werden sofort gemeldet.",
+      },
+    ],
+  },
+  hausreinigung: {
+    addFaq: true,
+    contact: {
+      street: "Lindenthalgürtel 18",
+      zip: "50935",
+      city: "Köln",
+      phone: "0221 555 4417",
+      email: "hallo@sauberzeit.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "8:00 – 18:00" },
+      { day: "Sa", hours: "9:00 – 13:00" },
+    ],
+    hero: {
+      headline: "Mehr Zeit für dich.",
+      subheadline:
+        "Haushaltsreinigung in Köln. Wöchentlich, alle zwei Wochen oder einmalig.",
+    },
+    services: [
+      {
+        title: "Regelmäßige Reinigung",
+        description: "Bad, Küche, Böden, Staub. Immer dieselbe Person.",
+      },
+      {
+        title: "Fenster putzen",
+        description: "Innen und außen, Rahmen und Fensterbänke.",
+      },
+      {
+        title: "Grundreinigung",
+        description: "Vor dem Einzug, nach dem Auszug oder zum Frühjahr.",
+      },
+      {
+        title: "Wäsche & Bügeln",
+        description: "Waschen, aufhängen, bügeln. Auf Wunsch dazu.",
+      },
+    ],
+    process: {
+      headline: "So fangen wir an",
+      steps: [
+        {
+          title: "Kennenlernen",
+          text: "Wir kommen vorbei und schauen, was du brauchst. Etwa eine halbe Stunde.",
+        },
+        {
+          title: "Fester Termin",
+          text: "Du bekommst einen festen Wochentag und eine feste Reinigungskraft.",
+        },
+        {
+          title: "Los geht's",
+          text: "Du gibst den Schlüssel, wir kümmern uns. Kündbar jeden Monat.",
+        },
+      ],
+    },
+    about:
+      "Wir sind ein kleiner Haushaltsservice in Köln-Lindenthal mit sechs festen Reinigungskräften. Alle sind angestellt und versichert.\n\nDu bekommst immer dieselbe Person, die deine Wohnung kennt und weiß, wo was hingehört.",
+    faq: [
+      {
+        question: "Muss ich zu Hause sein?",
+        answer:
+          "Nein. Viele Kunden geben uns einen Schlüssel, er wird sicher verwahrt.",
+      },
+      {
+        question: "Bringt ihr Putzmittel mit?",
+        answer: "Ja. Wenn du eigene Mittel nutzen willst, nehmen wir die.",
+      },
+      {
+        question: "Kann ich das von der Steuer absetzen?",
+        answer:
+          "Ja, als haushaltsnahe Dienstleistung. Du bekommst jeden Monat eine Rechnung dafür.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Julia R.",
+        text: "Seit einem Jahr kommt jeden Dienstag Frau Petrović. Die Wohnung ist danach einfach schön.",
+      },
+      {
+        author: "Markus und Lena",
+        text: "Zuverlässig, freundlich und gründlich. Wir haben endlich die Wochenenden wieder.",
+      },
+    ],
+  },
+  hausarzt: {
+    contact: {
+      street: "Am Markt 7",
+      zip: "26122",
+      city: "Oldenburg",
+      phone: "0441 555 2380",
+      email: "praxis@dr-albers.example",
+    },
+    hours: [
+      { day: "Mo", hours: "8:00 – 12:00, 15:00 – 18:00" },
+      { day: "Di", hours: "8:00 – 12:00, 15:00 – 18:00" },
+      { day: "Mi", hours: "8:00 – 12:00" },
+      { day: "Do", hours: "8:00 – 12:00, 15:00 – 19:00" },
+      { day: "Fr", hours: "8:00 – 12:00" },
+      { day: "Sa", hours: "geschlossen" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Ihre Hausarztpraxis in der Innenstadt.",
+      subheadline:
+        "Allgemeinmedizin für Erwachsene und Familien. Termine auch am Donnerstagabend.",
+    },
+    usp: ["Alle Kassen", "Privat"],
+    services: [
+      {
+        title: "Vorsorge",
+        description: "Check-up ab 35, Hautkrebs-Screening, Impfungen.",
+      },
+      {
+        title: "Akute Beschwerden",
+        description:
+          "Infekte, Schmerzen, Krankschreibung. Offene Sprechstunde morgens.",
+      },
+      {
+        title: "Chronische Erkrankungen",
+        description:
+          "Diabetes, Bluthochdruck, Asthma. Mit festen Kontrollterminen.",
+      },
+      {
+        title: "Hausbesuche",
+        description: "Für Patienten, die nicht in die Praxis kommen können.",
+      },
+    ],
+    process: {
+      headline: "Ihr erster Besuch",
+      steps: [
+        {
+          title: "Anrufen",
+          text: "Sagen Sie uns kurz, worum es geht. Wir nennen Ihnen einen Termin.",
+        },
+        {
+          title: "Mitbringen",
+          text: "Versichertenkarte, Medikamentenplan und, falls vorhanden, alte Befunde.",
+        },
+        {
+          title: "Gespräch",
+          text: "Wir nehmen uns Zeit für Ihre Vorgeschichte und Ihre Fragen.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Dr. Hendrik Albers", role: "Facharzt für Allgemeinmedizin" },
+        { name: "Dr. Mira Okafor", role: "Fachärztin für Innere Medizin" },
+        { name: "Tanja Wübben", role: "Praxismanagerin" },
+      ],
+    },
+    about:
+      "Seit über zwanzig Jahren betreuen wir am Markt ganze Familien, oft über mehrere Generationen. Wir kennen unsere Patientinnen und Patienten und nehmen uns Zeit.\n\nDie Praxis ist barrierefrei, der Aufzug hält direkt vor der Tür.",
+    faq: [
+      {
+        question: "Nehmen Sie neue Patienten auf?",
+        answer: "Ja, solange es unsere Zeit zulässt. Rufen Sie einfach an.",
+      },
+      {
+        question: "Gibt es eine offene Sprechstunde?",
+        answer:
+          "Ja, montags bis freitags von 8 bis 9 Uhr für akute Beschwerden, ohne Termin.",
+      },
+      {
+        question: "Kann ich Rezepte vorbestellen?",
+        answer: "Ja, telefonisch oder per E-Mail. Abholen am nächsten Werktag.",
+      },
+    ],
+    google: { rating: 4.7, reviewCount: 138 },
+    reviews: [
+      {
+        author: "Heike S.",
+        text: "Dr. Albers hört zu und erklärt alles verständlich. Ich fühle mich hier gut aufgehoben.",
+      },
+      {
+        author: "Ralf D.",
+        text: "Morgens in der offenen Sprechstunde gewesen, nach einer halben Stunde wieder draußen.",
+      },
+    ],
+  },
+  apotheke: {
+    contact: {
+      street: "Lindenstraße 3",
+      zip: "33602",
+      city: "Bielefeld",
+      phone: "0521 555 1704",
+      email: "team@linden-apotheke.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "8:00 – 19:00" },
+      { day: "Sa", hours: "8:30 – 14:00" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Beratung, die sich Zeit nimmt.",
+      subheadline:
+        "Ihre Apotheke an der Lindenstraße. Medikamente, Beratung und Botendienst.",
+    },
+    usp: ["E-Rezept", "Botendienst"],
+    services: [
+      {
+        title: "Rezepte & E-Rezept",
+        description:
+          "Karte stecken, Medikamente mitnehmen. Fehlendes bis zum Nachmittag.",
+      },
+      {
+        title: "Medikationsberatung",
+        description: "Wir prüfen, ob Ihre Medikamente gut zusammenpassen.",
+      },
+      {
+        title: "Botendienst",
+        description: "Lieferung nach Hause, am selben Tag im Stadtgebiet.",
+      },
+      {
+        title: "Messungen",
+        description: "Blutdruck und Blutzucker, ohne Termin.",
+      },
+    ],
+    process: {
+      headline: "Medikamente vorbestellen",
+      steps: [
+        {
+          title: "Anrufen oder schreiben",
+          text: "Nennen Sie uns das Medikament oder senden Sie das E-Rezept.",
+        },
+        {
+          title: "Wir bestellen",
+          text: "Was nicht vorrätig ist, ist meist am Nachmittag da.",
+        },
+        {
+          title: "Abholen oder liefern",
+          text: "Sie holen es ab, oder unser Bote bringt es zu Ihnen.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Sabine Kröger", role: "Apothekerin, Inhaberin" },
+        { name: "Daniel Hoffmann", role: "Apotheker" },
+        { name: "Lea Brinkmann", role: "PTA" },
+      ],
+    },
+    about:
+      "Die Linden-Apotheke gibt es seit 1958 an derselben Ecke. Wir kennen viele unserer Kundinnen und Kunden mit Namen und wissen, was sie brauchen.\n\nDer Eingang ist ebenerdig, und für längere Gespräche haben wir einen ruhigen Beratungsraum.",
+    faq: [
+      {
+        question: "Kann ich ein E-Rezept bei Ihnen einlösen?",
+        answer: "Ja, mit Ihrer Versichertenkarte oder über die App.",
+      },
+      {
+        question: "Wie funktioniert der Botendienst?",
+        answer:
+          "Bestellen Sie bis 13 Uhr, dann liefern wir am selben Tag. Im Stadtgebiet kostenlos.",
+      },
+      {
+        question: "Wer hat heute Notdienst?",
+        answer: "Den aktuellen Notdienst finden Sie im Aushang an unserer Tür.",
+      },
+    ],
+    google: { rating: 4.8, reviewCount: 96 },
+    reviews: [
+      {
+        author: "Gisela M.",
+        text: "Hier wird man noch richtig beraten. Und der Botendienst ist für mich ein Segen.",
+      },
+      {
+        author: "Tim A.",
+        text: "Medikament war nicht da, zwei Stunden später konnte ich es abholen.",
+      },
+    ],
+  },
+  ergotherapie: {
+    contact: {
+      street: "Bahnhofstraße 21",
+      zip: "24937",
+      city: "Flensburg",
+      phone: "0461 555 3355",
+      email: "praxis@ergo-hansen.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "8:00 – 18:00" },
+      { day: "Fr", hours: "8:00 – 14:00" },
+    ],
+    hero: {
+      headline: "Wieder selbst machen können.",
+      subheadline:
+        "Ergotherapie für Kinder und Erwachsene. Mit Rezept oder als Selbstzahler.",
+    },
+    usp: ["Alle Kassen", "Hausbesuche"],
+    services: [
+      {
+        title: "Kinder",
+        description: "Konzentration, Feinmotorik, Stifthaltung, Wahrnehmung.",
+      },
+      {
+        title: "Nach Schlaganfall",
+        description: "Alltagsbewegungen neu lernen, Schritt für Schritt.",
+      },
+      {
+        title: "Handtherapie",
+        description:
+          "Nach Verletzung oder Operation, mit Schiene aus eigener Herstellung.",
+      },
+      {
+        title: "Im Alter",
+        description: "Selbstständig bleiben: Anziehen, Kochen, Gedächtnis.",
+      },
+    ],
+    pricelist: {
+      headline: "Für Selbstzahler",
+      categories: [
+        {
+          name: "Je Behandlung",
+          items: [
+            { name: "Einzeltherapie, 45 Minuten", price: "48 €" },
+            { name: "Handtherapie, 30 Minuten", price: "36 €" },
+            { name: "Hausbesuch, Zuschlag", price: "15 €" },
+          ],
+        },
+      ],
+    },
+    process: {
+      headline: "Ihr erster Termin",
+      steps: [
+        {
+          title: "Verordnung mitbringen",
+          text: "Das Rezept vom Arzt. Ohne Rezept behandeln wir als Selbstzahler.",
+        },
+        {
+          title: "Kennenlernen",
+          text: "Wir fragen, was im Alltag schwerfällt, und setzen gemeinsam Ziele.",
+        },
+        {
+          title: "Behandlung",
+          text: "Meist einmal pro Woche. Mit Übungen für zu Hause.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Kirsten Hansen", role: "Ergotherapeutin, Inhaberin" },
+        { name: "Malte Jessen", role: "Handtherapie" },
+        { name: "Aylin Çelik", role: "Pädiatrie" },
+      ],
+    },
+    about:
+      "Drei Behandlungsräume, eine kleine Übungsküche und ein Raum zum Toben für die Kinder. Wir üben, was im Alltag gebraucht wird.\n\nWer nicht in die Praxis kommen kann, den besuchen wir zu Hause oder im Pflegeheim.",
+    faq: [
+      {
+        question: "Brauche ich ein Rezept?",
+        answer:
+          "Für die Kasse ja. Ohne Rezept zahlen Sie selbst, die Preise stehen oben.",
+      },
+      {
+        question: "Kommen Sie auch nach Hause?",
+        answer: "Ja, mit Verordnung für Hausbesuche, im Stadtgebiet Flensburg.",
+      },
+      {
+        question: "Ab welchem Alter behandeln Sie Kinder?",
+        answer: "Ab etwa drei Jahren. Eltern sind beim ersten Termin dabei.",
+      },
+    ],
+    addFaq: true,
+    google: false,
+  },
+  logopaedie: {
+    contact: {
+      street: "Podbielskistraße 98",
+      zip: "30177",
+      city: "Hannover",
+      phone: "0511 555 6620",
+      email: "praxis@logo-kleefeld.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "8:00 – 18:30" },
+      { day: "Fr", hours: "8:00 – 13:00" },
+    ],
+    hero: {
+      headline: "Gut gesprochen. Gut verstanden.",
+      subheadline:
+        "Logopädie für Kinder und Erwachsene in Hannover. Sprache, Sprechen, Stimme, Schlucken.",
+    },
+    usp: ["Alle Kassen", "Hausbesuche"],
+    services: [
+      {
+        title: "Kinder",
+        description:
+          "Aussprache, Wortschatz, Satzbau. Mit Spielen statt Druck.",
+      },
+      {
+        title: "Stottern",
+        description: "Für Kinder und Erwachsene, mit Übungen für den Alltag.",
+      },
+      {
+        title: "Stimme",
+        description: "Für Heiserkeit und alle, die beruflich viel sprechen.",
+      },
+      {
+        title: "Nach Schlaganfall",
+        description: "Sprachstörungen und Schlucken, auch als Hausbesuch.",
+      },
+    ],
+    pricelist: {
+      headline: "Für Selbstzahler",
+      categories: [
+        {
+          name: "Je Behandlung",
+          items: [
+            { name: "Therapie, 45 Minuten", price: "52 €" },
+            { name: "Therapie, 30 Minuten", price: "38 €" },
+            { name: "Stimmtraining, 60 Minuten", price: "68 €" },
+          ],
+        },
+      ],
+    },
+    process: {
+      headline: "Ihr erster Termin",
+      steps: [
+        {
+          title: "Verordnung mitbringen",
+          text: "Das Rezept vom Kinder- oder Hausarzt. Ohne Rezept als Selbstzahler.",
+        },
+        {
+          title: "Befund",
+          text: "Wir hören genau hin und schauen, wo es hakt. Etwa eine Stunde.",
+        },
+        {
+          title: "Therapie",
+          text: "Ein- bis zweimal pro Woche, mit kleinen Übungen für zu Hause.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Anna Kleefeld", role: "Logopädin, Inhaberin" },
+        { name: "Jan-Ole Riemer", role: "Logopäde, Stimme" },
+        { name: "Sarah Nowak", role: "Logopädin, Kinder" },
+      ],
+    },
+    about:
+      "Unsere Praxis in der List hat zwei helle Therapieräume und eine Spielecke im Wartebereich. Kinder lernen bei uns mit Bildern, Spielen und Bewegung.\n\nErwachsene behandeln wir in Ruhe, auf Wunsch auch zu Hause.",
+    faq: [
+      {
+        question: "Brauche ich ein Rezept?",
+        answer:
+          "Für die Kasse ja. Ohne Rezept zahlen Sie selbst, die Preise stehen oben.",
+      },
+      {
+        question: "Dürfen Eltern bei der Therapie dabei sein?",
+        answer: "Ja, gerade am Anfang. So können Sie zu Hause gut mitüben.",
+      },
+      {
+        question: "Wie lange dauert eine Therapie?",
+        answer:
+          "Meist zehn bis zwanzig Termine. Wir sprechen regelmäßig über den Stand.",
+      },
+    ],
+    addFaq: true,
+    google: false,
+  },
+  architekt: {
+    contact: {
+      street: "Ludgeristraße 56",
+      zip: "48143",
+      city: "Münster",
+      phone: "0251 555 7140",
+      email: "buero@hollmann-architekten.example",
+    },
+    hours: [{ day: "Mo–Fr", hours: "9:00 – 17:30" }],
+    hero: {
+      headline: "Häuser, die zu ihren Menschen passen.",
+      subheadline:
+        "Architekturbüro in Münster. Neubau, Umbau und Sanierung, vom Entwurf bis zum Einzug.",
+    },
+    services: [
+      {
+        title: "Neubau",
+        description:
+          "Einfamilienhäuser und kleine Mehrfamilienhäuser, energieeffizient geplant.",
+      },
+      {
+        title: "Umbau & Anbau",
+        description: "Mehr Platz im Bestand, mit Blick auf Statik und Budget.",
+      },
+      {
+        title: "Sanierung",
+        description: "Altbauten energetisch erneuern, mit Fördermitteln.",
+      },
+      {
+        title: "Bauleitung",
+        description: "Wir koordinieren die Gewerke und sind auf der Baustelle.",
+      },
+    ],
+    process: {
+      headline: "So arbeiten wir zusammen",
+      steps: [
+        {
+          title: "Erstgespräch",
+          text: "Sie erzählen von Ihren Wünschen, wir schauen uns das Grundstück an.",
+        },
+        {
+          title: "Entwurf",
+          text: "Skizzen, Grundrisse und eine erste Kostenschätzung.",
+        },
+        {
+          title: "Genehmigung",
+          text: "Wir reichen den Bauantrag ein und klären Fragen mit dem Amt.",
+        },
+        {
+          title: "Bau",
+          text: "Ausschreibung, Bauleitung und Abnahme bis zum Einzug.",
+        },
+      ],
+    },
+    about:
+      "Wir sind ein Büro mit sechs Architektinnen und Architekten im Kreuzviertel. Seit 2004 planen wir Wohnhäuser in Münster und im Münsterland.\n\nWir bauen lieber gut als groß: mit hellen Räumen, regionalen Materialien und Kosten, die vorher feststehen.",
+    faq: [
+      {
+        question: "Was kostet ein Architekt?",
+        answer:
+          "Das Honorar richtet sich nach der HOAI und den Baukosten. Im Erstgespräch nennen wir Ihnen eine Größenordnung.",
+      },
+      {
+        question: "Lohnt sich ein Architekt auch für einen Umbau?",
+        answer:
+          "Meist ja. Wir sehen Probleme früh und helfen beim Förderantrag.",
+      },
+      {
+        question: "Wie lange dauert es bis zur Baugenehmigung?",
+        answer: "In Münster meist drei bis sechs Monate nach dem Antrag.",
+      },
+    ],
+    google: { rating: 4.9, reviewCount: 31 },
+    reviews: [
+      {
+        author: "Familie Terhorst",
+        text: "Aus unserem alten Bauernhaus ist ein helles Zuhause geworden. Die Kosten wurden eingehalten.",
+      },
+      {
+        author: "Dr. Christine L.",
+        text: "Gute Ideen, ehrliche Beratung und eine Bauleitung, die wirklich da war.",
+      },
+    ],
+  },
+  innenarchitekt: {
+    contact: {
+      street: "Gärtnerplatz 4",
+      zip: "80469",
+      city: "München",
+      phone: "089 555 2271",
+      email: "studio@raumform.example",
+    },
+    hours: [{ day: "Mo–Fr", hours: "10:00 – 18:00" }],
+    hero: {
+      headline: "Räume, in denen man bleiben will.",
+      subheadline:
+        "Innenarchitektur für Wohnungen, Praxen und kleine Läden in München.",
+    },
+    services: [
+      {
+        title: "Wohnräume",
+        description:
+          "Grundriss, Licht, Farben und Möbel, aufeinander abgestimmt.",
+      },
+      {
+        title: "Küche & Bad",
+        description: "Planung bis ins Detail, mit Handwerkern aus der Region.",
+      },
+      {
+        title: "Praxis & Laden",
+        description: "Räume, die gut funktionieren und gut aussehen.",
+      },
+      {
+        title: "Beratung vor Ort",
+        description: "Zwei Stunden, ein Plan, klare Empfehlungen.",
+      },
+    ],
+    process: {
+      headline: "So entsteht Ihr Raum",
+      steps: [
+        {
+          title: "Kennenlernen",
+          text: "Wir besuchen Sie, messen auf und hören zu, wie Sie leben.",
+        },
+        {
+          title: "Konzept",
+          text: "Moodboard, Grundriss und Materialproben zum Anfassen.",
+        },
+        {
+          title: "Umsetzung",
+          text: "Wir bestellen, koordinieren und sind beim Einbau dabei.",
+        },
+      ],
+    },
+    about:
+      "Studio Raumform sind zwei Innenarchitektinnen und ein Schreiner im Glockenbachviertel. Wir planen Räume, die zu den Menschen darin passen.\n\nMaterialien und Stoffe suchen wir mit Ihnen gemeinsam aus, in unserem Studio mit über 300 Mustern.",
+    faq: [
+      {
+        question: "Was kostet eine Beratung?",
+        answer:
+          "Die Beratung vor Ort kostet pauschal 280 Euro. Wird daraus ein Auftrag, rechnen wir sie an.",
+      },
+      {
+        question: "Arbeiten Sie auch mit vorhandenen Möbeln?",
+        answer: "Gern. Gute Stücke behalten wir und planen um sie herum.",
+      },
+      {
+        question: "Wie lange dauert ein Projekt?",
+        answer:
+          "Eine Wohnung meist drei bis vier Monate vom Konzept bis zum Einzug.",
+      },
+    ],
+    google: { rating: 5.0, reviewCount: 27 },
+    reviews: [
+      {
+        author: "Katharina W.",
+        text: "Unsere kleine Altbauwohnung wirkt jetzt doppelt so groß. Jede Ecke ist durchdacht.",
+      },
+      {
+        author: "Praxis Dr. Huber",
+        text: "Patienten sagen uns ständig, wie angenehm das Wartezimmer ist.",
+      },
+    ],
+  },
+  reisebuero: {
+    contact: {
+      street: "Ostenstraße 11",
+      zip: "93047",
+      city: "Regensburg",
+      phone: "0941 555 8812",
+      email: "reisen@fernweh-reisebuero.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "9:30 – 18:30" },
+      { day: "Sa", hours: "10:00 – 13:00" },
+    ],
+    hero: {
+      headline: "Urlaub, der zu Ihnen passt.",
+      subheadline:
+        "Persönliche Reiseberatung in Regensburg. Pauschal, individuell oder als Rundreise.",
+    },
+    services: [
+      {
+        title: "Pauschalreisen",
+        description:
+          "Flug und Hotel zum Festpreis, von allen großen Veranstaltern.",
+      },
+      {
+        title: "Rundreisen",
+        description: "Selbst gefahren oder geführt, Route nach Ihren Wünschen.",
+      },
+      {
+        title: "Kreuzfahrten",
+        description:
+          "Fluss und Meer, mit ehrlicher Beratung zur passenden Reederei.",
+      },
+      {
+        title: "Gruppenreisen",
+        description: "Für Vereine, Firmen und Familien, alles organisiert.",
+      },
+    ],
+    process: {
+      headline: "So planen wir Ihre Reise",
+      steps: [
+        {
+          title: "Beratung",
+          text: "Im Büro oder am Telefon. Sie erzählen, wir fragen nach.",
+        },
+        {
+          title: "Angebote",
+          text: "Zwei, drei passende Vorschläge mit allen Preisen.",
+        },
+        {
+          title: "Buchung",
+          text: "Wir buchen, schicken die Unterlagen und sind auch unterwegs erreichbar.",
+        },
+      ],
+    },
+    about:
+      "Wir sind seit 1996 in der Ostenstraße und haben selbst viele der Ziele bereist, die wir verkaufen. Deshalb können wir sagen, welches Hotel wirklich ruhig ist.\n\nGeht unterwegs etwas schief, rufen Sie uns an, nicht eine Hotline.",
+    faq: [
+      {
+        question: "Ist eine Buchung im Reisebüro teurer?",
+        answer:
+          "Nein. Sie zahlen denselben Preis wie beim Veranstalter, die Beratung ist inklusive.",
+      },
+      {
+        question: "Brauche ich einen Termin?",
+        answer:
+          "Nicht unbedingt. Für längere Beratungen ist ein Termin aber besser.",
+      },
+      {
+        question: "Was passiert, wenn mein Flug ausfällt?",
+        answer:
+          "Rufen Sie uns an. Wir kümmern uns um Umbuchung und Erstattung.",
+      },
+    ],
+    google: { rating: 4.8, reviewCount: 112 },
+    reviews: [
+      {
+        author: "Brigitte und Hans F.",
+        text: "Die Rundreise durch Portugal war perfekt geplant. Jedes Hotel ein Treffer.",
+      },
+      {
+        author: "Stefanie R.",
+        text: "Als unser Flug ausfiel, hatte Frau Lehner innerhalb einer Stunde eine Lösung.",
+      },
+    ],
+  },
+  yoga: {
+    contact: {
+      street: "Bremer Platz 9",
+      zip: "48155",
+      city: "Münster",
+      phone: "0251 555 3360",
+      email: "namaste@yogaraum-ost.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "7:00 – 21:00" },
+      { day: "Sa–So", hours: "9:00 – 13:00" },
+    ],
+    hero: {
+      headline: "Atmen. Ankommen. Dehnen.",
+      subheadline:
+        "Yoga in kleinen Gruppen im Ostviertel. Die erste Stunde kostet nichts.",
+    },
+    services: [
+      {
+        title: "Hatha Yoga",
+        description: "75 Minuten, ruhig und für alle Level.",
+        price: "ab 15 €",
+      },
+      {
+        title: "Vinyasa Flow",
+        description: "60 Minuten, fließend und kräftigend.",
+        price: "ab 15 €",
+      },
+      {
+        title: "Yin & Entspannung",
+        description: "75 Minuten, lange Haltungen, viel Ruhe.",
+        price: "ab 15 €",
+      },
+      {
+        title: "Rückenyoga",
+        description: "60 Minuten, sanft, auch mit Beschwerden.",
+        price: "ab 13 €",
+      },
+      {
+        title: "Probestunde",
+        description: "Einmal, ohne Vertrag.",
+        price: "0 €",
+      },
+    ],
+    about:
+      "Ein heller Raum mit Holzboden, höchstens vierzehn Matten. Matten, Blöcke und Decken sind da, du brauchst nur dich.\n\nUnsere Lehrerinnen unterrichten seit vielen Jahren und zeigen jede Haltung auch in einer leichteren Fassung.",
+    faq: [
+      {
+        question: "Ich bin nicht beweglich. Geht das trotzdem?",
+        answer: "Ja. Genau dafür ist Yoga da. Jede Haltung gibt es leichter.",
+      },
+      {
+        question: "Was muss ich mitbringen?",
+        answer: "Bequeme Kleidung und etwas zu trinken. Matten haben wir.",
+      },
+    ],
+    google: false,
+    reviews: [
+      {
+        author: "Miriam K.",
+        text: "Nach einem Bürotag ist die Abendstunde hier mein Lieblingsort. Ruhig, freundlich, ohne Leistungsdruck.",
+      },
+    ],
+  },
+  pilates: {
+    contact: {
+      street: "Brückenstraße 14",
+      zip: "01097",
+      city: "Dresden",
+      phone: "0351 555 7703",
+      email: "hallo@pilates-loft.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "7:00 – 20:30" },
+      { day: "Sa", hours: "9:00 – 13:00" },
+    ],
+    hero: {
+      headline: "Stark aus der Mitte.",
+      subheadline:
+        "Pilates auf der Matte und am Reformer in der Dresdner Neustadt. Höchstens acht pro Kurs.",
+    },
+    services: [
+      {
+        title: "Reformer Basics",
+        description: "50 Minuten, Einstieg am Gerät.",
+        price: "ab 26 €",
+      },
+      {
+        title: "Reformer Flow",
+        description: "50 Minuten, für alle mit Erfahrung.",
+        price: "ab 26 €",
+      },
+      {
+        title: "Matten-Pilates",
+        description: "55 Minuten, Kraft und Haltung ohne Gerät.",
+        price: "ab 16 €",
+      },
+      {
+        title: "Einzelstunde",
+        description: "Ganz nach deinem Körper, auch nach Verletzung.",
+        price: "ab 65 €",
+      },
+      {
+        title: "Probestunde",
+        description: "Einmal am Reformer, ohne Vertrag.",
+        price: "19 €",
+      },
+    ],
+    about:
+      "Ein Loft mit acht Reformern, viel Licht und Lehrerinnen mit langer Ausbildung. Wir korrigieren genau und erklären, warum.\n\nPilates stärkt Rücken, Beckenboden und Haltung. Viele kommen nach einer Physiotherapie zu uns.",
+    faq: [
+      {
+        question: "Brauche ich Vorerfahrung für den Reformer?",
+        answer:
+          "Nein. Starte mit Reformer Basics, dort lernst du das Gerät kennen.",
+      },
+      {
+        question: "Was muss ich mitbringen?",
+        answer:
+          "Bequeme Kleidung und rutschfeste Socken. Die gibt es auch bei uns.",
+      },
+    ],
+    google: false,
+    reviews: [
+      {
+        author: "Johanna B.",
+        text: "Nach drei Monaten Reformer sind meine Rückenschmerzen weg. Die Lehrerinnen sehen jede Kleinigkeit.",
+      },
+    ],
+  },
+  fahrschule: {
+    contact: {
+      street: "Kaiserstraße 120",
+      zip: "76133",
+      city: "Karlsruhe",
+      phone: "0721 555 4480",
+      email: "info@fahrschule-becker.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "14:00 – 18:30" },
+      { day: "Fr", hours: "14:00 – 17:00" },
+    ],
+    hero: {
+      headline: "Führerschein ohne Umwege.",
+      subheadline:
+        "Klasse B, A und BE in Karlsruhe. Theorie zweimal pro Woche, Fahrstunden auch am Samstag.",
+    },
+    services: [
+      {
+        title: "Klasse B",
+        description: "Auto, auch mit Automatik-Schlüsselzahl.",
+        price: "Grundbetrag 390 €",
+      },
+      {
+        title: "Fahrstunde",
+        description: "45 Minuten, in der Stadt oder auf der Autobahn.",
+        price: "65 €",
+      },
+      {
+        title: "Klasse A & A2",
+        description: "Motorrad, mit Übungsplatz und Leihkleidung.",
+        price: "Grundbetrag 420 €",
+      },
+      {
+        title: "Klasse BE",
+        description: "Anhänger, an einem Wochenende.",
+        price: "ab 580 €",
+      },
+      {
+        title: "Intensivkurs",
+        description: "Theorie in zwei Wochen, in den Ferien.",
+        price: "auf Anfrage",
+      },
+    ],
+    about:
+      "Vier Fahrlehrer, fünf Autos und zwei Motorräder. Wir kennen die Prüfstrecken in Karlsruhe und üben genau dort.\n\nWer nervös ist, bekommt bei uns mehr Zeit. Bestehen ist wichtiger als schnell sein.",
+    faq: [
+      {
+        question: "Was kostet der Führerschein insgesamt?",
+        answer:
+          "Das hängt von der Zahl der Fahrstunden ab. Im Beratungsgespräch rechnen wir es dir ehrlich aus.",
+      },
+      {
+        question: "Ab wann kann ich anfangen?",
+        answer:
+          "Mit Theorie jederzeit. Fahren darfst du ab 16,5 Jahren für das begleitete Fahren.",
+      },
+    ],
+    google: false,
+    reviews: [
+      {
+        author: "Lukas M.",
+        text: "Beim ersten Mal bestanden. Herr Becker bleibt auch bei Fehlern total ruhig.",
+      },
+    ],
+  },
+  hebamme: {
+    contact: {
+      street: "Wilhelmshöher Allee 141",
+      zip: "34121",
+      city: "Kassel",
+      phone: "0561 555 2049",
+      email: "hallo@nestwaerme.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "9:00 – 16:00" },
+      { day: "Fr", hours: "9:00 – 13:00" },
+      { day: "Sa", hours: "Kurse nach Plan" },
+    ],
+    hero: {
+      headline: "Gut begleitet, vom ersten Ultraschall an.",
+      subheadline:
+        "Drei Hebammen in Kassel-Wehlheiden. Vorsorge, Kurse und Wochenbett bei euch zu Hause.",
+    },
+    services: [
+      {
+        title: "Schwangerenvorsorge",
+        description:
+          "Im Wechsel mit eurer Frauenärztin, in Ruhe und mit Zeit für Fragen.",
+      },
+      {
+        title: "Geburtsvorbereitung",
+        description:
+          "Für Paare oder nur für Frauen, als Abend- oder Wochenendkurs.",
+      },
+      {
+        title: "Wochenbett",
+        description:
+          "Hausbesuche nach der Geburt, Stillberatung, Gewicht und Nabel.",
+      },
+      {
+        title: "Rückbildung",
+        description: "Ab acht Wochen nach der Geburt, Baby darf mit.",
+      },
+    ],
+    about:
+      "Wir sind drei Hebammen mit zusammen über vierzig Jahren Erfahrung. In unseren Räumen gibt es Kurse und Sprechstunden, im Wochenbett kommen wir zu euch.\n\nMeldet euch früh, am besten in den ersten Wochen der Schwangerschaft. Dann haben wir sicher Zeit für euch.",
+    stats: {
+      headline: "Wir begleiten euch, von Anfang an.",
+      items: [
+        { value: "3", label: "Hebammen im Team" },
+        { value: "12", label: "Wochen Wochenbett-Betreuung" },
+        { value: "2009", label: "gegründet in Wehlheiden" },
+      ],
+    },
+    process: {
+      headline: "So läuft es ab",
+      steps: [
+        {
+          title: "Melden",
+          text: "Ruft an oder schreibt uns, sobald ihr wisst, dass ihr schwanger seid.",
+        },
+        {
+          title: "Kennenlernen",
+          text: "Ein erstes Treffen bei uns. Wir besprechen, was ihr euch wünscht.",
+        },
+        {
+          title: "Begleitung",
+          text: "Vorsorge, Kurs, und nach der Geburt kommen wir zu euch nach Hause.",
+        },
+      ],
+    },
+    team: {
+      headline: "Wer bei uns ist",
+      members: [
+        { name: "Birte Sommerfeld", role: "Hebamme, Gründerin" },
+        { name: "Yasemin Arslan", role: "Hebamme, Stillberaterin" },
+        { name: "Clara Hein", role: "Hebamme" },
+      ],
+    },
+    faq: [
+      {
+        question: "Wann sollten wir uns melden?",
+        answer:
+          "So früh wie möglich, am besten in den ersten zwölf Wochen. Hebammen sind oft lange im Voraus ausgebucht.",
+      },
+      {
+        question: "Zahlt die Krankenkasse?",
+        answer:
+          "Ja. Vorsorge, Kurse und Wochenbett zahlt die gesetzliche Kasse. Nur der Partnerbeitrag im Kurs kostet extra.",
+      },
+      {
+        question: "Kommt ihr auch nach einem Kaiserschnitt?",
+        answer: "Ja, natürlich. Die Wochenbett-Besuche sind genauso.",
+      },
+    ],
+    addFaq: true,
+    google: false,
+    reviews: [
+      {
+        author: "Lisa und Jonas",
+        text: "Birte hat uns durch das erste Wochenbett getragen. Jede Frage durfte gestellt werden.",
+      },
+      {
+        author: "Merve A.",
+        text: "Der Geburtsvorbereitungskurs hat mir so viel Angst genommen. Danke!",
+      },
+    ],
+  },
+  tierarzt: {
+    contact: {
+      street: "Parkallee 33",
+      zip: "28209",
+      city: "Bremen",
+      phone: "0421 555 6090",
+      email: "praxis@tierarzt-stadtpark.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "9:00 – 12:00, 15:00 – 19:00" },
+      { day: "Sa", hours: "10:00 – 12:00" },
+      { day: "So", hours: "Notdienst nach Anruf" },
+    ],
+    hero: {
+      headline: "In guten Händen, von Kopf bis Pfote.",
+      subheadline:
+        "Kleintierpraxis für Hunde, Katzen und Kaninchen. In Ruhe, mit Zeit zum Ankommen.",
+    },
+    services: [
+      {
+        title: "Vorsorge & Impfung",
+        description:
+          "Jährlicher Check, Impfungen, Entwurmung, Heimtierausweis.",
+      },
+      {
+        title: "Untersuchung",
+        description: "Wenn euer Tier nicht frisst, humpelt oder sich kratzt.",
+      },
+      {
+        title: "Zahnpflege",
+        description: "Zahnstein entfernen in leichter Narkose.",
+      },
+      {
+        title: "Kastration",
+        description: "Für Katze, Kater, Hündin und Rüde, mit Nachkontrolle.",
+      },
+    ],
+    about:
+      "Unsere Praxis liegt direkt am Bürgerpark. Hunde und Katzen warten bei uns getrennt, damit alle ruhig bleiben.\n\nWir nehmen uns Zeit, erklären jede Behandlung und sagen euch vorher, was sie kostet.",
+    process: {
+      headline: "So läuft euer Besuch",
+      steps: [
+        {
+          title: "Termin machen",
+          text: "Ruft an oder schreibt uns. Bei Notfällen kommt sofort.",
+        },
+        {
+          title: "Ankommen",
+          text: "Euer Tier darf erst schnuppern. Leckerli gibt es am Tisch.",
+        },
+        {
+          title: "Untersuchung",
+          text: "Wir erklären, was wir sehen, und nennen die Kosten vorher.",
+        },
+      ],
+    },
+    faq: [
+      {
+        question: "Was tun im Notfall?",
+        answer:
+          "Ruft an, auch am Wochenende. Wir sagen euch, ob ihr sofort kommen solltet.",
+      },
+      {
+        question: "Was kostet eine Impfung?",
+        answer:
+          "Das richtet sich nach der Gebührenordnung. Wir nennen euch den Preis vorher.",
+      },
+      {
+        question: "Kann ich mein ängstliches Tier mitbringen?",
+        answer:
+          "Ja. Sagt uns Bescheid, dann planen wir mehr Zeit und einen ruhigen Termin ein.",
+      },
+    ],
+    addFaq: true,
+    drop: ["pricelist"],
+    google: { rating: 4.9, reviewCount: 143 },
+    reviews: [
+      {
+        author: "Sandra P.",
+        text: "Unsere Katze hasst Tierarztbesuche. Hier war sie ganz ruhig, weil sich alle Zeit genommen haben.",
+      },
+      {
+        author: "Michael B.",
+        text: "Sonntags angerufen, sofort Hilfe bekommen. Wir sind sehr dankbar.",
+      },
+    ],
+    cta: { headline: "Termin für euer Tier?", ctaText: "Termin anfragen" },
+    ctaAt: "end",
   },
   baeckerei: {
     contact: {
@@ -1504,7 +3239,9 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
       case "stats":
         return text.stats ? { ...section, ...text.stats } : section;
       case "usp":
-        return text.usp ? { ...section, items: text.usp.map(title => ({ title })) } : section;
+        return text.usp
+          ? { ...section, items: text.usp.map(title => ({ title })) }
+          : section;
       case "testimonials":
         return text.reviews
           ? {
@@ -1688,7 +3425,9 @@ function withStudioMenu(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
       ? -1
       : rest.findIndex(
           s =>
-            s.type === "testimonials" || s.type === "faq" || s.type === "contact"
+            s.type === "testimonials" ||
+            s.type === "faq" ||
+            s.type === "contact"
         );
   rest.forEach((s, i) => {
     if (i === before) out.push(...cta);

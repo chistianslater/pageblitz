@@ -69,7 +69,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "coiffeur",
       "frisör",
       "hairstylist",
-      "nail",
+      // Nagelstudio: eigener Satz `nagelstudio` (2026-10-18).
       "lash",
       "brow",
       "manicure",
@@ -348,13 +348,11 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "handwerk",
       "bau",
       "elektriker",
-      "klempner",
-      "maler",
-      // Schreiner/Tischler: eigener Satz `schreinerei` (2026-10-11).
+      // Klempner, Sanitär, Heizung: eigener Satz `sanitaer` (2026-10-18).
+      // Schreiner/Tischler: eigener Satz `schreinerei` (2026-10-11),
+      // Maler: eigener Satz `maler` (2026-10-18).
       "zimmerer",
       "dachdecker",
-      "sanitär",
-      "heizung",
       "installation",
       "craft",
       "construction",
@@ -388,8 +386,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "gym",
       "sport",
       "training",
-      "yoga",
-      "pilates",
+      // Yoga, Pilates: eigene Sätze (2026-10-18).
       "crossfit",
       "personal trainer",
       "gesundheit",
@@ -451,7 +448,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "klinik",
       "krankenhaus",
       "therapie",
-      "apotheke",
+      // Apotheke: eigener Satz `apotheke` (2026-10-18).
       "medical",
       "heilpraktiker",
       "naturheil",
@@ -522,8 +519,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "physiotherapeut",
       "physio",
       "krankengymnastik",
-      "ergotherapie",
-      "ergotherapeut",
+      // Ergotherapie: eigener Satz `ergotherapie` (2026-10-18).
       "manuelle therapie",
       "massagepraxis",
       "medizinische massage",
@@ -592,7 +588,8 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
     gallery: [
       "https://images.unsplash.com/photo-1629909614456-6b1c5c94cecc?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1762625570087-6d98fca29531?w=800&q=80&auto=format&fit=crop",
+      // Wandschild mit Bandzitat ersetzt (2026-10-18): Blutdruckmessung.
+      "https://images.unsplash.com/photo-1758691462123-8a17ae95d203?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1758691463198-dc663b8a64e4?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1589279003513-467d320f47eb?w=800&q=80&auto=format&fit=crop",
@@ -771,7 +768,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "workshop",
       "weiterbildung",
       "training",
-      "fahrschule",
+      // Fahrschule: eigener Satz `fahrschule` (2026-10-18).
       "sprachschule",
     ],
     hero: [
@@ -955,6 +952,410 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
   },
 
+  // ── Maler (2026-10-18) ─────────────────────────────
+  // Wände, Fassaden, Farbfächer — vorher Baustellenfotos aus `handwerk`.
+  maler: {
+    keywords: [
+      "maler",
+      "malerbetrieb",
+      "malermeister",
+      "lackierer",
+      "anstreicher",
+      "tapezierer",
+      "raumausstatter",
+      "painter",
+      "painting contractor",
+    ],
+    refines: ["handwerk"],
+    hero: [
+      "https://images.unsplash.com/photo-1688372198189-de6a51777a81?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1742900280861-32bed068938b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1622250544703-997d69d856e3?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1693985120993-e9b203ce7631?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1574359411659-15573a27fd0c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1768839725085-829e6ac7ac26?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Garten- und Landschaftsbau (2026-10-18) ────────
+  // Terrassen, Rasen, Pflanzarbeit. Die Gärtnerei (Pflanzenverkauf) bleibt
+  // bei `nature` — „gärtnerei" ist dort das längere Stichwort.
+  gaertner: {
+    keywords: [
+      "gärtner",
+      "landschaftsgärtner",
+      "landschaftsbau",
+      "galabau",
+      "gartenpflege",
+      "gartenbau",
+      "baumpflege",
+      "landscaper",
+      "gardener",
+    ],
+    refines: ["nature", "handwerk"],
+    hero: [
+      "https://images.unsplash.com/photo-1734079692147-c6fc9438a2d0?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1686663048931-6df69f577a2f?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1605117882932-f9e32b03fea9?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1734079692079-aae7e24a7035?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1734303023491-db8037a21f09?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1637531347055-4fa8aa80c111?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1601001815894-4bb6c81416d7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1738193830098-2d92352a1856?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Nagelstudio (2026-10-18) ──────────────────────
+  // Maniküre am Tisch, Lackregal, fertige Nägel.
+  nagelstudio: {
+    keywords: [
+      "nagelstudio",
+      "nageldesign",
+      "nagelpflege",
+      "maniküre",
+      "pediküre",
+      "nail salon",
+      "nail studio",
+      "nails",
+      "manicure",
+    ],
+    refines: ["friseur"],
+    hero: [
+      "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1619607146034-5a05296c8f9a?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1634449862841-8c6e970117e5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1612887390768-fb02affea7a6?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1769687209448-025548dfca8b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1610992015762-45dca7fa3a85?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Sanitär & Heizung (2026-10-18) ────────────────
+  // Rohre, Bad, Heizungskeller — vorher Baustellenfotos aus `handwerk`.
+  sanitaer: {
+    keywords: [
+      "klempner",
+      "sanitär",
+      "heizung",
+      "sanitärinstallation",
+      "heizungsinstallation",
+      "heizungsbau",
+      "installateur",
+      "badsanierung",
+      "plumber",
+      "plumbing",
+    ],
+    refines: ["handwerk"],
+    hero: [
+      "https://images.unsplash.com/photo-1676210134188-4c05dd172f89?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1749532125405-70950966b0e5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1620653713380-7a34b773fef8?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1650551182991-b07558247564?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1676210134050-6f12c6898395?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542013936693-884638332954?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Gebäudereinigung (2026-10-18) ─────────────────
+  // Büros, Flure, Glas. Kein „reinigung“ allein: Textil- und chemische Reinigung sind etwas anderes.
+  reinigung: {
+    keywords: [
+      "gebäudereinigung",
+      "reinigungsservice",
+      "reinigungsfirma",
+      "reinigungsdienst",
+      "büroreinigung",
+      "unterhaltsreinigung",
+      "glasreinigung",
+      "fensterreinigung",
+      "gebäudeservice",
+      "cleaning service",
+      "office cleaning",
+      "commercial cleaning",
+      "janitorial",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1580256081112-e49377338b7f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1763026227930-ec2c91d4e7f2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1627905646269-7f034dcc5738?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1482449609509-eae2a7ea42b7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1577412647305-991150c7d163?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1437326300822-01d8f13c024f?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Haushalts- und Hausreinigung (2026-10-18) ─────
+  // Wohnung, Küche, Treppe — privat statt Büro.
+  hausreinigung: {
+    keywords: [
+      "hausreinigung",
+      "haushaltsreinigung",
+      "haushaltshilfe",
+      "haushaltsservice",
+      "putzhilfe",
+      "putzfrau",
+      "house cleaning",
+      "maid service",
+    ],
+    refines: ["reinigung"],
+    hero: [
+      "https://images.unsplash.com/photo-1758273238415-01ec03d9ef27?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1686178827149-6d55c72d81df?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1713110824336-f78c320dcf8e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1646980241033-cd7abda2ee88?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1757387240036-d7eb9b096c40?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Apotheke (2026-10-18) ─────────────────────────
+  // Beratung am Tresen, Regale, Packungen.
+  apotheke: {
+    keywords: [
+      "apotheke",
+      "apotheker",
+      "pharmacy",
+      "pharmacie",
+    ],
+    refines: ["medizin"],
+    strictRefine: true,
+    hero: [
+      "https://images.unsplash.com/photo-1576091358783-a212ec293ff3?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1580281657527-47f249e8f4df?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1580281657527-47f249e8f4df?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1642055514517-7b52288890ec?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1603706580932-6befcf7d8521?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1757800945999-ed0fa905d0f5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Ergotherapie (2026-10-18) ─────────────────────
+  // Feinmotorik, Alltagstraining, Kinder und Ältere — keine Massagebank.
+  ergotherapie: {
+    keywords: [
+      "ergotherapie",
+      "ergotherapeut",
+      "ergotherapeutin",
+      "occupational therapy",
+    ],
+    refines: ["medizin", "physio"],
+    strictRefine: true,
+    hero: [
+      "https://images.unsplash.com/photo-1762955911431-4c44c7c3f408?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1758598737547-666bce663667?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1758598737547-666bce663667?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1762955913084-96ea3f986468?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1645005512942-a17817fb7c11?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1611073615830-9f76902c10fe?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1575364289437-fb1479d52732?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1769720204844-caa13e11d826?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Logopädie (2026-10-18) ────────────────────────
+  // Sprechen, Zuhören, Spielen mit Kindern und Erwachsenen.
+  logopaedie: {
+    keywords: [
+      "logopädie",
+      "logopäde",
+      "logopädin",
+      "sprachtherapie",
+      "sprachheil",
+      "stimmtherapie",
+      "speech therapy",
+    ],
+    refines: ["medizin"],
+    strictRefine: true,
+    hero: [
+      "https://images.unsplash.com/photo-1771765767087-ce71e4a7916a?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1709127347884-a106974ef58d?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1728138240695-54ebc33215f2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1709127347884-a106974ef58d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1453738773917-9c3eff1db985?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1758273240631-59d44c8f5b66?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1685362158423-abf004b858d2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1596066190600-3af9aadaaea1?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Architekturbüro (2026-10-18) ──────────────────
+  // Häuser, Pläne, Zeichentisch.
+  architekt: {
+    keywords: [
+      "architekt",
+      "architektin",
+      "architekturbüro",
+      "architektur",
+      "architect",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1696237461860-630be53f179c?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1628012209120-d9db7abf7eab?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1598368195835-91e67f80c9d7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1628012209120-d9db7abf7eab?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1564703048291-bcf7f001d83d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1598367815092-a2c0cbc1ea3d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1633354747567-e0682586f082?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1618385455730-2571c38966b7?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Innenarchitektur (2026-10-18) ─────────────────
+  // Wohnräume, Stoff- und Materialproben.
+  innenarchitekt: {
+    keywords: [
+      "innenarchitekt",
+      "innenarchitektin",
+      "innenarchitektur",
+      "interior design",
+      "interior designer",
+      "inneneinrichtung",
+    ],
+    refines: ["architekt"],
+    hero: [
+      "https://images.unsplash.com/photo-1606744888344-493238951221?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1774199496664-a9690967be5a?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1781888699751-15f2b304693c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1770970831074-6e88b6cc260b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1618221381711-42ca8ab6e908?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1664638413302-d1ca29ac885b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1774199496664-a9690967be5a?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Yoga (2026-10-18) ─────────────────────────────
+  // Helle Räume, Matten, Kurse — keine Hanteln.
+  yoga: {
+    keywords: [
+      "yoga",
+      "yogastudio",
+      "yogaschule",
+      "yogalehrer",
+      "yogalehrerin",
+    ],
+    refines: ["fitness"],
+    hero: [
+      "https://images.unsplash.com/photo-1763403921315-f2ef8697199f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1676496962536-d8ef110ff6f0?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1676496962536-d8ef110ff6f0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1626444232874-e72c020eeb0e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1617734417481-aafe074f1b86?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1761035005546-62b8018b212a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1764111585875-1c09efea69ae?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1761034114082-c2d63456a82a?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Pilates (2026-10-18) ──────────────────────────
+  // Reformer, Studio, Geräte an der Wand.
+  pilates: {
+    keywords: [
+      "pilates",
+      "pilatesstudio",
+      "reformer",
+    ],
+    refines: ["fitness"],
+    hero: [
+      "https://images.unsplash.com/photo-1747238415033-b74eec07eb59?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1783841193384-4269c68aa050?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1783841193384-4269c68aa050?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1747240549807-fc3962949818?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1771270786606-f5a0e57db762?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1747239685045-fcbcf98985db?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1747239202356-764770773c9a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1591258370814-01609b341790?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Fahrschule (2026-10-18) ───────────────────────
+  // Fahrstunde, Übungsplatz, Motorrad-Parcours.
+  fahrschule: {
+    keywords: [
+      "fahrschule",
+      "fahrlehrer",
+      "fahrlehrerin",
+      "führerschein",
+      "driving school",
+    ],
+    refines: ["education", "automotive"],
+    hero: [
+      "https://images.unsplash.com/photo-1773063449875-332dff62b6e3?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1553782097-130fef5d3e27?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1630406144797-821be1f35d75?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1553782097-130fef5d3e27?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1691371107034-e28ee43a669e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1611508106567-6218ae6c5f6a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1537211790624-e6f568af4b13?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1777620659283-58b88ac292de?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Reisebüro (2026-10-18) ────────────────────────
+  // Ziele, Karten, Beratung — keine fremden Reisepässe.
+  reisebuero: {
+    keywords: [
+      "reisebüro",
+      "reisebuero",
+      "reiseagentur",
+      "reiseveranstalter",
+      "reiseberatung",
+      "travel agency",
+      "travel agent",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1783443162577-ffb10e6ebed7?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1563297814-f1545e82dc5e?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1524850011238-e3d235c7d4c9?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1563297814-f1545e82dc5e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1759054714057-02518b192bde?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512100356356-de1b84283e18?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1516546453174-5e1098a4b4af?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
   // ── Laden & Einzelhandel (2026-10-11, Werkstoff W1) ────────────
   // Ladenräume, Tresen, Regale. Kein „shop"/„boutique" als Schlagwort:
   // „Barber Shop" und „Beauty Boutique" gehören zum Friseur.
@@ -988,7 +1389,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
   },
 
-
   // ════ Freundlich F1 (2026-10-13): Bildsätze der Zielbranchen ════
   // Warm, hell, im Browser gesichtet (Kontaktbogen je Satz) und per HTTP 200
   // geprüft (1400er und 800er Zuschnitt). Schlagworte als ganze Fachwörter —
@@ -998,7 +1398,20 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   kita: {
     wholeWords: ["kita", "kitas"],
     categoryWords: ["krippe", "krippen", "kinderhaus", "day care", "daycare"],
-    blockers: ["adult", "adults", "senior", "seniors", "elderly", "dog", "dogs", "pet", "pets", "hunde", "tagespflege", "seniorenheim"],
+    blockers: [
+      "adult",
+      "adults",
+      "senior",
+      "seniors",
+      "elderly",
+      "dog",
+      "dogs",
+      "pet",
+      "pets",
+      "hunde",
+      "tagespflege",
+      "seniorenheim",
+    ],
     keywords: [
       "kindertagesstätte",
       "kindertagesstaette",
@@ -1131,7 +1544,20 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // ── Eisdiele, Eiscafé, Gelateria ──
   // Eistheke, Kugeln in der Waffel, Becher, Sommer — keine Markennamen, kein Ladenschild.
   eisdiele: {
-    blockers: ["supplier", "suppliers", "equipment", "wholesale", "wholesaler", "manufacturer", "distributor", "großhandel", "grosshandel", "hersteller", "lieferant", "zubehör"],
+    blockers: [
+      "supplier",
+      "suppliers",
+      "equipment",
+      "wholesale",
+      "wholesaler",
+      "manufacturer",
+      "distributor",
+      "großhandel",
+      "grosshandel",
+      "hersteller",
+      "lieferant",
+      "zubehör",
+    ],
     keywords: [
       "eisdiele",
       "eiscafé",
