@@ -2,10 +2,12 @@ import Stripe from "stripe";
 import {
   ADDON_KEYS,
   ADDON_NAMES,
+  INTRO_OFFER,
   PLANS,
   TRIAL_DAYS,
   addonPrice,
   calcTotalCents,
+  totalDuringIntro,
   type AddOnFlags,
   type AddOnKey,
   type BillingInterval,
@@ -99,7 +101,14 @@ export async function createStudioCheckoutSession(
   stripeClient: Stripe = defaultStripe,
   env: NodeJS.ProcessEnv = process.env
 ): Promise<{ url: string; sessionId: string; totalCents: number }> {
-  const totalCents = calcTotalCents(args.billingInterval, args.addOns);
+  const regularTotalCents = calcTotalCents(args.billingInterval, args.addOns);
+  const totalCents = totalDuringIntro(args.billingInterval, regularTotalCents);
+  const introCouponId = env.STRIPE_INTRO_COUPON_ID?.trim();
+  if (args.billingInterval === INTRO_OFFER.tariff && !introCouponId) {
+    throw new Error(
+      "STRIPE_INTRO_COUPON_ID fehlt – Jahrestarif darf nicht ohne beworbenen Einführungsrabatt verkauft werden."
+    );
+  }
   const description = stripeBaseDescription(args.billingInterval);
   const addOns = ADDON_KEYS.reduce<Record<string, boolean>>((acc, key) => {
     acc[key] = !!args.addOns[key];
@@ -121,6 +130,9 @@ export async function createStudioCheckoutSession(
     stripeClient.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
+      ...(introCouponId && args.billingInterval === INTRO_OFFER.tariff
+        ? { discounts: [{ coupon: introCouponId }] }
+        : {}),
       customer_email: args.customerEmail,
       line_items: [
         {
@@ -150,6 +162,11 @@ export async function createStudioCheckoutSession(
         metadata: {
           ...subscriptionMetadataFor(args.billingInterval),
           websiteId: args.websiteId.toString(),
+          ...(args.billingInterval === INTRO_OFFER.tariff
+            ? {
+                introOffer: `${INTRO_OFFER.percentOff}pct_${INTRO_OFFER.months}m`,
+              }
+            : {}),
           ...consentMetadata(args),
         },
       },
@@ -164,13 +181,19 @@ export async function createStudioCheckoutSession(
         submit: { message: checkoutTermLine(args.billingInterval) },
       },
       success_url: `${args.origin}/my-website?checkout=success`,
-      cancel_url: `${args.origin}/onboarding/${args.token}`,
+      cancel_url: `${args.origin}/onboarding/${args.token}?checkout=cancelled`,
       metadata: {
         websiteId: args.websiteId.toString(),
         userId: args.userId?.toString() || "0",
         billingInterval: args.billingInterval,
         addOns: JSON.stringify(addOns),
         totalAmount: totalCents.toString(),
+        regularTotalAmount: regularTotalCents.toString(),
+        ...(args.billingInterval === INTRO_OFFER.tariff
+          ? {
+              introOffer: `${INTRO_OFFER.percentOff}pct_${INTRO_OFFER.months}m`,
+            }
+          : {}),
         ...consentMetadata(args),
       },
     })

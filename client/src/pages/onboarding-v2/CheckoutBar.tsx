@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
+  INTRO_OFFER,
   PRICING,
   TRIAL_DAYS,
   calcTotalCents,
   formatEuro,
   sanitizeAddOns,
+  totalDuringIntro,
   type AddOnFlags,
   type BillingInterval,
 } from "@shared/pricing";
 import {
   CHECKOUT_FOOTER,
+  PRICE_INTRO,
   PRICE_MONTHLY,
   PRICE_YEARLY,
   TARIFF_LABEL,
-  YEARLY_SAVINGS_TEXT,
   checkoutTermLine,
   checkoutTotalLine,
 } from "@shared/pricingText";
@@ -24,6 +26,7 @@ import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import { markStudioCheckoutStarted } from "./exitIntent";
 import { trackStudioEvent } from "@/lib/studioEvents";
 import { trackConversion } from "@/lib/tracking";
+import type { StudioFunnelEvent } from "@shared/onboardingV2/funnel";
 
 /** Offener Pflichtpunkt — klickbar: Checklisten-Panel bzw. E-Mail-Feld. */
 export interface MissingItem {
@@ -57,21 +60,31 @@ export function CheckoutSummary({
   onSelectMissing,
 }: CheckoutSummaryProps) {
   const total = calcTotalCents(interval, sanitizeAddOns(addOns));
+  const currentTotal = totalDuringIntro(interval, total);
   const extras = total - PRICING.base[interval];
   return (
     <div className="pb-studio-checkout-summary" data-ready={ready}>
       <p className="pb-studio-checkout-total">
-        <strong>{formatEuro(total)}</strong> / Monat
+        <strong>{formatEuro(currentTotal)}</strong> / Monat
+        {interval === INTRO_OFFER.tariff
+          ? ` für ${INTRO_OFFER.months} Monate`
+          : ""}
       </p>
       {extras > 0 && (
         <p className="pb-studio-checkout-hint">
-          Website {formatEuro(PRICING.base[interval])} + gebuchte Extras{" "}
-          {formatEuro(extras)}
+          Website{" "}
+          {interval === INTRO_OFFER.tariff
+            ? PRICE_INTRO
+            : formatEuro(PRICING.base[interval])}
+          {interval === INTRO_OFFER.tariff ? `, danach ${PRICE_YEARLY}` : ""} +
+          gebuchte Extras {formatEuro(extras)}
         </p>
       )}
       <p className="pb-studio-checkout-hint">
         Die ersten {TRIAL_DAYS} Tage kostenlos
-        {interval === "yearly" ? ` · ${YEARLY_SAVINGS_TEXT}` : ""}
+        {interval === INTRO_OFFER.tariff
+          ? ` · ${INTRO_OFFER.percentOff} % Einführungsrabatt, danach ${formatEuro(total)} / Monat`
+          : ""}
       </p>
       <p className="pb-studio-checkout-hint" data-testid="checkout-term">
         {checkoutTermLine(interval)}
@@ -110,6 +123,7 @@ interface CheckoutBarProps {
   onStateChanged: () => void;
   /** Öffnet das Panel eines offenen Pflichtpunkts (Klick in der Fehlliste). */
   onOpenPanel?: (id: ChecklistItemId) => void;
+  onFunnelEvent?: (event: StudioFunnelEvent) => void;
 }
 
 /** Bewusst einfach gehalten — nur ein Client-seitiger Vorab-Check vor dem Request, die eigentliche Validierung übernimmt der Server (z.string().email()). */
@@ -150,6 +164,7 @@ export function CheckoutBar({
   token,
   onStateChanged,
   onOpenPanel,
+  onFunnelEvent,
 }: CheckoutBarProps) {
   const [billingInterval, setBillingInterval] = useState<BillingInterval>(() =>
     typeof window !== "undefined" &&
@@ -230,11 +245,13 @@ export function CheckoutBar({
     // er „Website freischalten" und zeigte beim Klick nur eine Liste.
     if (firstMissingStep) {
       trackStudioEvent("kauf_blockiert");
+      onFunnelEvent?.("studio_checkout_blocked_legal");
       selectMissing(firstMissingStep);
       return;
     }
     if (!b2bConfirmed) {
       trackStudioEvent("kauf_blockiert");
+      onFunnelEvent?.("studio_checkout_blocked_b2b");
       setShowB2bHint(true);
       document.getElementById("pb-checkout-b2b")?.focus();
       return;
@@ -242,6 +259,7 @@ export function CheckoutBar({
     if (!state.customerEmail) {
       if (!emailValid) {
         trackStudioEvent("kauf_blockiert");
+        onFunnelEvent?.("studio_checkout_blocked_email");
         setShowEmailHint(true);
         document.getElementById("pb-checkout-email")?.focus();
         return;
@@ -284,7 +302,7 @@ export function CheckoutBar({
           aria-pressed={billingInterval === "yearly"}
           onClick={() => setBillingInterval("yearly")}
         >
-          {TARIFF_LABEL.yearly} <span>{PRICE_YEARLY}</span>
+          {TARIFF_LABEL.yearly} <span>{PRICE_INTRO}</span>
         </button>
       </div>
       <CheckoutSummary
@@ -380,13 +398,11 @@ export function CheckoutBar({
           ) : (
             <>
               Website freischalten
-              <small>{checkoutTotalLine(total)}</small>
+              <small>{checkoutTotalLine(billingInterval, total)}</small>
             </>
           )}
         </button>
-        <p className="pb-studio-checkout-trust">
-          {CHECKOUT_FOOTER}
-        </p>
+        <p className="pb-studio-checkout-trust">{CHECKOUT_FOOTER}</p>
         {checkout.error && (
           <p role="alert" style={{ color: "var(--st-warn)" }}>
             {checkout.error.message}

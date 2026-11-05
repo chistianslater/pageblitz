@@ -15,6 +15,7 @@ import {
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { BrandLogo } from "../shared/BrandLogo";
 
 /**
  * Kopf und Fuß von Journal nach Systemblatt (Anker Aman Venice):
@@ -114,8 +115,12 @@ export function JournalHead({
             <NavLinks items={navItems} />
           </nav>
         </details>
-        <a className={brandClasses(brand)} href={home}>
-          {brand}
+        <a
+          className={brandClasses(brand)}
+          href={home}
+          aria-label={data.logo?.kind === "image" ? brand : undefined}
+        >
+          <BrandLogo data={data} decorative fallback={brand} />
         </a>
         <div className="jr-head-actions">
           {tel ? (
@@ -123,7 +128,11 @@ export function JournalHead({
               Anrufen
             </a>
           ) : (
-            <a className="jr-link jr-head-call" href={action.href} {...newTabIfMaps(action.href)}>
+            <a
+              className="jr-link jr-head-call"
+              href={action.href}
+              {...newTabIfMaps(action.href)}
+            >
               {action.label}
             </a>
           )}
@@ -133,14 +142,22 @@ export function JournalHead({
             </a>
           )}
           {/* Klassenname aus dem Plan; Gestalt laut Systemblatt eckig. */}
-          <a className="jr-pill" href={action.href} {...newTabIfMaps(action.href)}>
+          <a
+            className="jr-pill"
+            href={action.href}
+            {...newTabIfMaps(action.href)}
+          >
             {action.label}
           </a>
         </div>
       </div>
       <nav className="jr-nav" aria-label="Hauptnavigation">
-        <a className="jr-nav-home" href={home}>
-          {brand}
+        <a
+          className="jr-nav-home"
+          href={home}
+          aria-label={data.logo?.kind === "image" ? brand : undefined}
+        >
+          <BrandLogo data={data} decorative fallback={brand} />
         </a>
         <NavLinks items={navItems} />
       </nav>
@@ -177,7 +194,11 @@ export function JournalFoot({
   return (
     <footer className="jr-foot">
       <div className="jr-wrap">
-        <p className="jr-mark">{data.businessName}</p>
+        <BrandLogo
+          data={data}
+          footer
+          fallback={<p className="jr-mark">{data.businessName}</p>}
+        />
         {(address || reach.length > 0) && (
           <address className="jr-foot-contact" {...SYS_ACTIONS}>
             {address}
@@ -187,12 +208,21 @@ export function JournalFoot({
         )}
         <div className="jr-links" {...SYS_ACTIONS}>
           {address && (
-            <a className="jr-link" href={mapsHref(address)} target="_blank" rel="noopener noreferrer">
+            <a
+              className="jr-link"
+              href={mapsHref(address)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Route planen
             </a>
           )}
           {!action.href.startsWith("tel:") && (
-            <a className="jr-link" href={action.href} {...newTabIfMaps(action.href)}>
+            <a
+              className="jr-link"
+              href={action.href}
+              {...newTabIfMaps(action.href)}
+            >
               {action.label}
             </a>
           )}

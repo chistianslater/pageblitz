@@ -42,6 +42,7 @@ import {
   ADDON_TERM_NOTE,
   PRICE_CARD_NOTE,
   PRICE_FULL,
+  PRICE_INTRO,
   PRICE_YEARLY,
 } from "../../shared/pricingText";
 import { SEO_INDUSTRIES } from "./landingPages";
@@ -269,7 +270,7 @@ export function generateHomePrerender(): string {
       <p style="${LEAD};max-width:60ch">Deine Vorschau kostet nichts. Für den laufenden Betrieb wählst du deinen Tarif und nur die Extras, die du wirklich brauchst.</p>
       <p style="margin:1rem 0 2rem;color:${C.ink};max-width:60ch"><strong>Die Basis ist schon dabei.</strong> Kein separates Hosting suchen. Kein SSL einrichten. Kein Honorar für jede Textänderung.</p>
       <div style="max-width:32rem;border:1px solid ${C.line};border-radius:16px;padding:1.5rem">
-        <p style="font-size:2.25rem;font-weight:700;letter-spacing:-.02em;margin:0;color:${C.ink}">${PRICE_YEARLY}/Monat</p>
+        <p style="font-size:2.25rem;font-weight:700;letter-spacing:-.02em;margin:0;color:${C.ink}">${PRICE_INTRO}/Monat <s style="font-size:1rem;color:${C.muted}">${PRICE_YEARLY}/Monat</s></p>
         <p style="font-size:.875rem;color:${C.muted};margin:.25rem 0 1.25rem">${escapeHtml(PRICE_CARD_NOTE.yearly)}</p>
         <ul style="margin:0;padding-left:1.25rem;color:${C.ink};line-height:2">
           ${PLAN_FEATURES.map(f => `<li>${escapeHtml(f)}</li>`).join("\n          ")}

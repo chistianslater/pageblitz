@@ -32,6 +32,8 @@ import {
 import type { AddOnFlags } from "../../shared/pricing";
 import { AGB_VERSION } from "../../shared/agb";
 import { createStudioCheckoutSession } from "./checkout";
+import { recordStudioFunnelEvent } from "./funnel";
+import { STUDIO_FUNNEL_EVENT_IDS } from "../../shared/onboardingV2/funnel";
 
 /** Nicht buchbare Extras (Finding I1) — dieselbe Menge wie BOOKABLE_ADDON_KEYS, nur invertiert. */
 const LOCKED_ADDON_KEYS = ADDON_KEYS.filter(
@@ -49,6 +51,14 @@ const LOCKED_ADDON_MESSAGE =
  * Kontaktdaten), Extras-Flags und die Kunden-E-Mail vor dem Checkout.
  */
 export const commerceProcedures = {
+  recordFunnelEvent: publicProcedure
+    .input(tokenInput.extend({ event: z.enum(STUDIO_FUNNEL_EVENT_IDS) }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      await recordStudioFunnelEvent(loaded.website.id, input.event);
+      return { ok: true };
+    }),
+
   /**
    * Schreibt die Rechtsdaten in onboarding_responses, generiert Impressum
    * und Datenschutz daraus und patcht sie zusammen mit den Kontaktdaten
@@ -130,7 +140,7 @@ export const commerceProcedures = {
         openingHours: legal.openingHours,
       });
 
-      return persistDoc(
+      const state = await persistDoc(
         input.token,
         loaded,
         next,
@@ -139,6 +149,8 @@ export const commerceProcedures = {
           extra: { hasLegalPages: true },
         }
       );
+      await recordStudioFunnelEvent(loaded.website.id, "studio_legal_saved");
+      return state;
     }),
 
   /**
@@ -299,6 +311,7 @@ export const commerceProcedures = {
           ? { marketingConsent: true, marketingConsentAt: Date.now() }
           : {}),
       });
+      await recordStudioFunnelEvent(loaded.website.id, "studio_email_saved");
 
       if (!emailChanged) {
         return buildState(input.token, {
@@ -367,6 +380,15 @@ export const commerceProcedures = {
       const state = await buildState(input.token, loaded);
 
       if (!state.checkoutReady) {
+        const legalOpen = state.checklist.some(
+          item => item.id === "legal" && item.status !== "done"
+        );
+        await recordStudioFunnelEvent(
+          state.websiteId,
+          legalOpen
+            ? "studio_checkout_blocked_legal"
+            : "studio_checkout_blocked_email"
+        );
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -391,6 +413,7 @@ export const commerceProcedures = {
         // einfließen (Finding I1).
         addOns: sanitizeAddOns(state.addOns),
       });
+      await recordStudioFunnelEvent(state.websiteId, "studio_checkout_created");
 
       await updateWebsite(state.websiteId, {
         onboardingStatus: "completed",

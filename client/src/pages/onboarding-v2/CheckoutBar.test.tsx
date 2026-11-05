@@ -30,10 +30,16 @@ describe("CheckoutSummary", () => {
 
   test("ohne Extras steht der Preis einmal — kein „+ Extras“ (Audit 2026-09-19)", () => {
     const html = renderToStaticMarkup(
-      <CheckoutSummary interval="yearly" addOns={{}} ready={true} hasEmail={true} missing={[]} />
+      <CheckoutSummary
+        interval="yearly"
+        addOns={{}}
+        ready={true}
+        hasEmail={true}
+        missing={[]}
+      />
     );
     expect(html).not.toContain("Extras");
-    expect(html.match(/19,90 €/g)).toHaveLength(1);
+    expect(html.match(/9,95 €/g)).toHaveLength(1);
     expect(html).toContain("7 Tage kostenlos");
   });
 
@@ -69,22 +75,36 @@ describe("CheckoutSummary", () => {
         missing={[]}
       />
     );
-    expect(yearly).toContain("spare 60 € im Jahr");
-    expect(monthly).not.toContain("spare 60 € im Jahr");
+    expect(yearly).toContain("50 % Einführungsrabatt");
+    expect(monthly).not.toContain("Einführungsrabatt");
     expect(yearly).not.toContain("Monate gratis");
   });
 
   test("nennt die Laufzeitbedingungen je Tarif direkt am Preis", () => {
     const yearly = renderToStaticMarkup(
-      <CheckoutSummary interval="yearly" addOns={{}} ready={false} hasEmail={false} missing={[]} />
+      <CheckoutSummary
+        interval="yearly"
+        addOns={{}}
+        ready={false}
+        hasEmail={false}
+        missing={[]}
+      />
     );
     const monthly = renderToStaticMarkup(
-      <CheckoutSummary interval="monthly" addOns={{}} ready={false} hasEmail={false} missing={[]} />
+      <CheckoutSummary
+        interval="monthly"
+        addOns={{}}
+        ready={false}
+        hasEmail={false}
+        missing={[]}
+      />
     );
     expect(yearly).toContain(
       "12 Monate Laufzeit ab der ersten Zahlung, danach Verlängerung um 12 Monate; Kündigung bis 1 Monat vor Laufzeitende."
     );
-    expect(monthly).toContain("Monatlich kündbar zum Ende des Abrechnungsmonats.");
+    expect(monthly).toContain(
+      "Monatlich kündbar zum Ende des Abrechnungsmonats."
+    );
   });
 
   test("Team zählt seit Plan B5 Task 2 in die Gesamtsumme mit", () => {
@@ -97,7 +117,8 @@ describe("CheckoutSummary", () => {
         missing={[]}
       />
     );
-    // 19,90 € Basis (jährlich) + 3,90 € Team.
+    // 9,95 € Einführungs-Basis + 3,90 € Team; später regulär 23,80 €.
+    expect(html).toContain("13,85 €");
     expect(html).toContain("23,80 €");
   });
 });
@@ -164,7 +185,7 @@ function buildState(overrides: Partial<StudioState> = {}): StudioState {
     checkoutReady: false,
     customerEmail: null,
     ageGate: { enabled: false, suspected: false, asked: false },
-  legal: {
+    legal: {
       legalOwner: "",
       legalStreet: "",
       legalZip: "",
@@ -213,7 +234,9 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
         onStateChanged={() => {}}
       />
     );
-    const match = html.match(/<button[^>]*class="[^"]*pb-studio-checkout-cta[^"]*"[^>]*>[\s\S]*?<\/button>/);
+    const match = html.match(
+      /<button[^>]*class="[^"]*pb-studio-checkout-cta[^"]*"[^>]*>[\s\S]*?<\/button>/
+    );
     expect(match).not.toBeNull();
     expect(match![0]).toContain("Rechtliches ergänzen");
     expect(match![0]).not.toContain("disabled");
@@ -233,7 +256,9 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
       />
     );
     expect(html).toContain("Website freischalten");
-    expect(html).toContain("7 Tage gratis, dann 19,90 € / Monat");
+    expect(html).toContain(
+      "7 Tage gratis, dann 9,95 € / Monat für 6 Monate, danach 19,90 € / Monat"
+    );
   });
 
   test("nur die E-Mail fehlt: kein eigener Speichern-Knopf, Freischalten speichert sie mit", () => {
@@ -251,7 +276,11 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
 
   test("Umschalter nennt beide Preise", () => {
     const html = renderWithTrpc(
-      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+      <CheckoutBar
+        state={buildState()}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
     );
     expect(html).toContain("24,90 €");
     expect(html).toContain("19,90 €");
@@ -259,7 +288,11 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
 
   test("Vertrauenszeile am Knopf: inkl. 19 % MwSt., Stripe — kein „jederzeit kündbar“", () => {
     const html = renderWithTrpc(
-      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+      <CheckoutBar
+        state={buildState()}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
     );
     expect(html).not.toContain("Jederzeit kündbar");
     expect(html).toContain("Jahrestarif");
@@ -288,7 +321,11 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
 
   test("Extras-Hinweis nur, wenn solche Extras gebucht sind (Finding F3 bleibt inhaltlich)", () => {
     const ohne = renderWithTrpc(
-      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+      <CheckoutBar
+        state={buildState()}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
     );
     expect(ohne).not.toContain("Kontaktformular erscheint sofort");
     const mit = renderWithTrpc(
@@ -304,7 +341,11 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
 
   test("Pflicht-Häkchen B2B (§ 14 BGB) + AGB steht vor dem Freischalten, AGB-Link im neuen Tab", () => {
     const html = renderWithTrpc(
-      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+      <CheckoutBar
+        state={buildState()}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
     );
     expect(html).toContain(
       "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB) und akzeptiere die "
@@ -312,6 +353,8 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
     expect(html).toMatch(
       /<a href="\/agb" target="_blank" rel="noopener noreferrer">AGB<\/a>\./
     );
-    expect(html).toMatch(/id="pb-checkout-b2b"[^>]*required|required[^>]*id="pb-checkout-b2b"/);
+    expect(html).toMatch(
+      /id="pb-checkout-b2b"[^>]*required|required[^>]*id="pb-checkout-b2b"/
+    );
   });
 });

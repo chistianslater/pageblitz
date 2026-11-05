@@ -1,11 +1,7 @@
 import React from "react";
 import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS, orderedSections } from "../../engine";
-import {
-  isPlaceholderHours,
-  shortHours,
-  telHref,
-} from "../shared/heroFacts";
+import { isPlaceholderHours, shortHours, telHref } from "../shared/heroFacts";
 import { useSystem } from "../SystemContext";
 import {
   contactOf,
@@ -21,15 +17,10 @@ import type {
   SectionOf,
   SectionType,
 } from "../../../../../../shared/siteContract/types";
-import {
-  actionPair,
-  brandParts,
-  branchOf,
-  nameOf,
-  visibleDoc,
-} from "./facts";
+import { actionPair, brandParts, branchOf, nameOf, visibleDoc } from "./facts";
 import { fitFootWord } from "./fit";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { BrandLogo } from "../shared/BrandLogo";
 
 /**
  * Kopf und Fuß von Werkstoff nach Systemblatt (Anker Hollis): Kopf hell
@@ -87,21 +78,41 @@ export function WerkstoffHead({
   return (
     <header className="ws-head">
       <div className="ws-head-bar">
-        <a className="ws-brand" href={`${anchorPrefix}#${SECTION_ANCHORS.hero}`}>
-          <span className="ws-brand-mark">{mark}</span>
-          {sub && <span className="ws-brand-sub">{sub}</span>}
+        <a
+          className="ws-brand"
+          href={`${anchorPrefix}#${SECTION_ANCHORS.hero}`}
+          aria-label={data.logo?.kind === "image" ? nameOf(data) : undefined}
+        >
+          <BrandLogo
+            data={data}
+            decorative
+            fallback={
+              <>
+                <span className="ws-brand-mark">{mark}</span>
+                {sub && <span className="ws-brand-sub">{sub}</span>}
+              </>
+            }
+          />
         </a>
         <nav className="ws-nav" aria-label="Hauptnavigation">
           <NavLinks items={navItems} />
           {first && (
-            <a className="ws-btn" href={first.href} {...newTabIfMaps(first.href)}>
+            <a
+              className="ws-btn"
+              href={first.href}
+              {...newTabIfMaps(first.href)}
+            >
               {first.label}
             </a>
           )}
         </nav>
         {/* Weg im Kopf zwischen Leiste (< 48 rem) und Navigation (≥ 64 rem). */}
         {first && (
-          <a className="ws-btn ws-head-btn" href={first.href} {...newTabIfMaps(first.href)}>
+          <a
+            className="ws-btn ws-head-btn"
+            href={first.href}
+            {...newTabIfMaps(first.href)}
+          >
             {first.label}
           </a>
         )}
@@ -251,15 +262,23 @@ export function WerkstoffFoot({
             © {now.getFullYear()} {data.businessName}
           </span>
         </p>
-        <p
-          className="ws-foot-word"
-          aria-hidden="true"
-          style={{ "--ws-fit": word.widthEm.toFixed(3) } as React.CSSProperties}
-        >
-          {word.lines.length > 1
-            ? word.lines.map(line => <span key={line}>{line}</span>)
-            : mark}
-        </p>
+        <BrandLogo
+          data={data}
+          footer
+          fallback={
+            <p
+              className="ws-foot-word"
+              aria-hidden="true"
+              style={
+                { "--ws-fit": word.widthEm.toFixed(3) } as React.CSSProperties
+              }
+            >
+              {word.lines.length > 1
+                ? word.lines.map(line => <span key={line}>{line}</span>)
+                : mark}
+            </p>
+          }
+        />
       </div>
     </footer>
   );

@@ -21,6 +21,7 @@ import type {
   SectionType,
 } from "../../../../../../shared/siteContract/types";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { BrandLogo } from "../shared/BrandLogo";
 
 /**
  * Kopf und Fuß von Raster nach Systemblatt (Anker Colophon): Handy
@@ -90,12 +91,20 @@ export function RasterHead({
   return (
     <header className={overPhoto ? "rs-head rs-head--over" : "rs-head"}>
       <div className="rs-head-bar">
-        <a className="rs-brand" href={home}>
-          {brand}
+        <a
+          className="rs-brand"
+          href={home}
+          aria-label={data.logo?.kind === "image" ? brand : undefined}
+        >
+          <BrandLogo data={data} decorative fallback={brand} />
         </a>
         <nav className="rs-nav" aria-label="Hauptnavigation">
           <NavLinks items={navItems} />
-          <a className="rs-btn" href={action.href} {...newTabIfMaps(action.href)}>
+          <a
+            className="rs-btn"
+            href={action.href}
+            {...newTabIfMaps(action.href)}
+          >
             {action.label}
           </a>
         </nav>
@@ -172,9 +181,12 @@ export function RasterFoot({
   return (
     <footer className="rs-foot">
       <div className="rs-wrap">
+        <BrandLogo data={data} footer />
         {/* Aufforderung: Aufruf-Abschnitt, sonst die Hauptaktion — nichts erfunden. */}
         <p className="rs-foot-call" {...SYS_ACTIONS}>
-          <a href={action.href} {...newTabIfMaps(action.href)}>{cta?.headline || action.label}</a>
+          <a href={action.href} {...newTabIfMaps(action.href)}>
+            {cta?.headline || action.label}
+          </a>
         </p>
         <div className="rs-foot-cols">
           {serviceTitles.length > 0 && (

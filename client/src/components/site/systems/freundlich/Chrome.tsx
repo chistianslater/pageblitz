@@ -15,6 +15,7 @@ import { SYS_ACTIONS, SYS_DOCK } from "../shared/dockAutoHide";
 import { dockPair, freundlichActions, monogramOf } from "./facts";
 import { Cloud } from "./Entry";
 import { Icon, wayIcon } from "./icons";
+import { BrandLogo } from "../shared/BrandLogo";
 
 /**
  * Kopf, Fuß und Handy-Leiste von Freundlich nach Systemblatt 10/16/18:
@@ -80,12 +81,20 @@ function Brand({ href }: { href: string }) {
   const name = nameOf(data);
   return (
     <a className="fr-brand" href={href} aria-label={name}>
-      <span className="fr-logo" aria-hidden="true">
-        {monogramOf(name)}
-      </span>
-      <span className="fr-mark" aria-hidden="true">
-        {name}
-      </span>
+      <BrandLogo
+        data={data}
+        decorative
+        fallback={
+          <>
+            <span className="fr-logo" aria-hidden="true">
+              {monogramOf(name)}
+            </span>
+            <span className="fr-mark" aria-hidden="true">
+              {name}
+            </span>
+          </>
+        }
+      />
     </a>
   );
 }
@@ -113,7 +122,10 @@ export function FreundlichHead({
             {more.length > 0 && (
               <details className="fr-menu fr-menu--more">
                 <summary className="fr-more-toggle">Mehr</summary>
-                <nav className="fr-menu-panel fr-menu-panel--more" aria-label="Mehr">
+                <nav
+                  className="fr-menu-panel fr-menu-panel--more"
+                  aria-label="Mehr"
+                >
                   <NavLinks items={more} />
                 </nav>
               </details>
@@ -166,10 +178,18 @@ export function FreundlichFoot({ basePath }: { basePath: string }) {
     <footer className="fr-foot">
       <Cloud tone="deep" />
       <div className="fr-wrap">
-        <span className="fr-logo fr-logo--foot" aria-hidden="true">
-          {monogramOf(name)}
-        </span>
-        <p className="fr-foot-name">{name}</p>
+        <BrandLogo
+          data={data}
+          footer
+          fallback={
+            <>
+              <span className="fr-logo fr-logo--foot" aria-hidden="true">
+                {monogramOf(name)}
+              </span>
+              <p className="fr-foot-name">{name}</p>
+            </>
+          }
+        />
         <div className="fr-foot-cols">
           {((tel && contact?.phone) || (mail && contact?.email)) && (
             <div className="fr-foot-col">

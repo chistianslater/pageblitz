@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  PRICE_YEARLY,
-  VAT_NOTE,
-  YEARLY_CONDITION,
-} from "@shared/pricingText";
+import { INTRO_OFFER } from "@shared/pricing";
+import { PRICE_INTRO, VAT_NOTE, YEARLY_CONDITION } from "@shared/pricingText";
 
 /**
  * Beweis-Streifen direkt unter dem Hero (Spec §4.3): Preis- und Zeitanker
@@ -24,8 +21,8 @@ const ANCHORS: Anchor[] = [
   {
     kicker: "Statt Agentur",
     strike: { text: "2.000–8.000 €", label: "statt 2.000 bis 8.000 Euro" },
-    value: `${PRICE_YEARLY}/Monat`,
-    text: `Im Jahrestarif ${YEARLY_CONDITION}, ${VAT_NOTE} Keine Einrichtungskosten, kein Projekthonorar.`,
+    value: `${PRICE_INTRO}/Monat`,
+    text: `Einführungspreis für ${INTRO_OFFER.months} Monate, danach regulär. Im Jahrestarif ${YEARLY_CONDITION}, ${VAT_NOTE} Keine Einrichtungskosten, kein Projekthonorar.`,
   },
   {
     kicker: "Statt Wartezeit",
