@@ -698,6 +698,12 @@ export default function StudioPage({ token }: { token: string }) {
               showExit={activeId === null}
             />
           )}
+          {isPreview && !state.customerEmail && activeId !== "publish" && (
+            <PublishTeaser
+              hasEmail={false}
+              onOpen={() => setActiveId("publish")}
+            />
+          )}
           {activeId === "style" ? (
             <StylePanel
               token={token}
@@ -898,14 +904,17 @@ export default function StudioPage({ token }: { token: string }) {
                   setActiveId(editor.panel, key);
                 }}
               />
-              {/* Freischalten ist der letzte Eintrag, nicht mehr die volle
-                  Checkout-Leiste (Test-Feedback 2026-09-18: „direkt beim
-                  Zahlen"). Abrechnung/E-Mail/Button liegen im Panel. */}
+              {/* Nach gesicherter E-Mail bleibt Freischalten der letzte
+                  Eintrag. Vorher steht der kostenlose Sicherungsweg immer
+                  oben in der Seitenleiste — auch während des Wizards. */}
               {state.status !== "preview" ? (
                 <LiveCard slug={state.slug} status={state.status} />
-              ) : (
-                <PublishTeaser onOpen={() => setActiveId("publish")} />
-              )}
+              ) : state.customerEmail ? (
+                <PublishTeaser
+                  hasEmail
+                  onOpen={() => setActiveId("publish")}
+                />
+              ) : null}
             </>
           )}
         </aside>
