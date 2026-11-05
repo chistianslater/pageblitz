@@ -479,7 +479,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `APP_BASE_URL` / `APP_URL` / `BASE_URL` | Basis-URL für Links (E-Mails, Redirects) |
 | `STRIPE_SECRET_KEY` | Stripe-API |
 | `STRIPE_WEBHOOK_SECRET` | Signaturprüfung `handleCheckoutCompleted` |
-| `STRIPE_INTRO_COUPON_ID` | Einführungsangebot im Jahrestarif: Stripe-Coupon über 9,95 € Rabatt, wiederholend für 6 Monate; ohne Wert blockiert der Checkout absichtlich statt den beworbenen Rabatt zu unterschlagen |
+| `STRIPE_INTRO_COUPON_YEARLY_ID` / `STRIPE_INTRO_COUPON_MONTHLY_ID` | Einführungspreise: Stripe-Coupons über 9,95 € bzw. 12,45 € Rabatt, wiederholend für 6 Monate. `STRIPE_INTRO_COUPON_ID` bleibt als Fallback für den Jahrestarif kompatibel; ohne passenden Coupon blockiert der Checkout absichtlich statt den beworbenen Rabatt zu unterschlagen. |
 | `STRIPE_TAX_RATE_ID` | Stripe-Tax-Rate „Pageblitz – USt. 19 % (inklusive)“ (`txr_1UQ7JeBdezH7rtSBjZQgFf8l`) — an Checkout (`default_tax_rates`), neuen Add-on-Items und Tarifwechsel; fehlt sie, wird trotzdem verkauft, aber ohne ausgewiesene USt. (einmalige Warnung `[steuer]` im Log) |
 | `STRIPE_PORTAL_CONFIGURATION_ID` | optional: feste Kundenportal-Konfiguration ohne Kündigen (sonst legt der Server sie selbst an, siehe „Preise & Laufzeit“) |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Transaktions-/Lifecycle-Mails |

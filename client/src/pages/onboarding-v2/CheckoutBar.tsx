@@ -13,9 +13,7 @@ import {
 } from "@shared/pricing";
 import {
   CHECKOUT_FOOTER,
-  PRICE_INTRO,
-  PRICE_MONTHLY,
-  PRICE_YEARLY,
+  PRICE_INTRO_BY_TARIFF,
   TARIFF_LABEL,
   checkoutTermLine,
   checkoutTotalLine,
@@ -66,25 +64,19 @@ export function CheckoutSummary({
     <div className="pb-studio-checkout-summary" data-ready={ready}>
       <p className="pb-studio-checkout-total">
         <strong>{formatEuro(currentTotal)}</strong> / Monat
-        {interval === INTRO_OFFER.tariff
-          ? ` für ${INTRO_OFFER.months} Monate`
-          : ""}
+        {` für ${INTRO_OFFER.months} Monate`}
       </p>
       {extras > 0 && (
         <p className="pb-studio-checkout-hint">
           Website{" "}
-          {interval === INTRO_OFFER.tariff
-            ? PRICE_INTRO
-            : formatEuro(PRICING.base[interval])}
-          {interval === INTRO_OFFER.tariff ? `, danach ${PRICE_YEARLY}` : ""} +
-          gebuchte Extras {formatEuro(extras)}
+          {PRICE_INTRO_BY_TARIFF[interval]}, danach{" "}
+          {formatEuro(PRICING.base[interval])} + gebuchte Extras{" "}
+          {formatEuro(extras)}
         </p>
       )}
       <p className="pb-studio-checkout-hint">
         Die ersten {TRIAL_DAYS} Tage kostenlos
-        {interval === INTRO_OFFER.tariff
-          ? ` · ${INTRO_OFFER.percentOff} % Einführungsrabatt, danach ${formatEuro(total)} / Monat`
-          : ""}
+        {` · ${INTRO_OFFER.percentOff} % Einführungsrabatt, danach ${formatEuro(total)} / Monat`}
       </p>
       <p className="pb-studio-checkout-hint" data-testid="checkout-term">
         {checkoutTermLine(interval)}
@@ -295,14 +287,14 @@ export function CheckoutBar({
           aria-pressed={billingInterval === "monthly"}
           onClick={() => setBillingInterval("monthly")}
         >
-          {TARIFF_LABEL.monthly} <span>{PRICE_MONTHLY}</span>
+          {TARIFF_LABEL.monthly} <span>{PRICE_INTRO_BY_TARIFF.monthly}</span>
         </button>
         <button
           type="button"
           aria-pressed={billingInterval === "yearly"}
           onClick={() => setBillingInterval("yearly")}
         >
-          {TARIFF_LABEL.yearly} <span>{PRICE_INTRO}</span>
+          {TARIFF_LABEL.yearly} <span>{PRICE_INTRO_BY_TARIFF.yearly}</span>
         </button>
       </div>
       <CheckoutSummary

@@ -217,7 +217,8 @@ describe("Home-Prerender", () => {
     // Preisquelle abweicht — Prerender und React-Landing müssen wortgleich
     // bleiben (Cloaking-Risiko, Kopfkommentar in server/seo/homePage.ts).
     const allowed = new Set<string>([
-      formatEuro(INTRO_OFFER.discountedCentsPerMonth),
+      formatEuro(INTRO_OFFER.discountedCentsPerMonth.yearly),
+      formatEuro(INTRO_OFFER.discountedCentsPerMonth.monthly),
       formatEuro(PRICING.base.yearly),
       formatEuro(PRICING.base.monthly),
       ...ADDON_KEYS.map(k => formatEuro(addonPrice(k))),

@@ -103,10 +103,13 @@ export async function createStudioCheckoutSession(
 ): Promise<{ url: string; sessionId: string; totalCents: number }> {
   const regularTotalCents = calcTotalCents(args.billingInterval, args.addOns);
   const totalCents = totalDuringIntro(args.billingInterval, regularTotalCents);
-  const introCouponId = env.STRIPE_INTRO_COUPON_ID?.trim();
-  if (args.billingInterval === INTRO_OFFER.tariff && !introCouponId) {
+  const introCouponId =
+    args.billingInterval === "yearly"
+      ? (env.STRIPE_INTRO_COUPON_YEARLY_ID ?? env.STRIPE_INTRO_COUPON_ID)?.trim()
+      : env.STRIPE_INTRO_COUPON_MONTHLY_ID?.trim();
+  if (!introCouponId) {
     throw new Error(
-      "STRIPE_INTRO_COUPON_ID fehlt – Jahrestarif darf nicht ohne beworbenen Einführungsrabatt verkauft werden."
+      `Stripe-Einführungscoupon für ${args.billingInterval} fehlt – der Tarif darf nicht ohne beworbenen Rabatt verkauft werden.`
     );
   }
   const description = stripeBaseDescription(args.billingInterval);
@@ -130,9 +133,7 @@ export async function createStudioCheckoutSession(
     stripeClient.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
-      ...(introCouponId && args.billingInterval === INTRO_OFFER.tariff
-        ? { discounts: [{ coupon: introCouponId }] }
-        : {}),
+      discounts: [{ coupon: introCouponId }],
       customer_email: args.customerEmail,
       line_items: [
         {
@@ -162,11 +163,7 @@ export async function createStudioCheckoutSession(
         metadata: {
           ...subscriptionMetadataFor(args.billingInterval),
           websiteId: args.websiteId.toString(),
-          ...(args.billingInterval === INTRO_OFFER.tariff
-            ? {
-                introOffer: `${INTRO_OFFER.percentOff}pct_${INTRO_OFFER.months}m`,
-              }
-            : {}),
+          introOffer: `${INTRO_OFFER.percentOff}pct_${INTRO_OFFER.months}m`,
           ...consentMetadata(args),
         },
       },
@@ -189,11 +186,7 @@ export async function createStudioCheckoutSession(
         addOns: JSON.stringify(addOns),
         totalAmount: totalCents.toString(),
         regularTotalAmount: regularTotalCents.toString(),
-        ...(args.billingInterval === INTRO_OFFER.tariff
-          ? {
-              introOffer: `${INTRO_OFFER.percentOff}pct_${INTRO_OFFER.months}m`,
-            }
-          : {}),
+        introOffer: `${INTRO_OFFER.percentOff}pct_${INTRO_OFFER.months}m`,
         ...consentMetadata(args),
       },
     })

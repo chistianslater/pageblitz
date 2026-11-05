@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 vi.hoisted(() => {
   process.env.STRIPE_SECRET_KEY ||= "sk_test_dummy_for_unit_tests";
   process.env.STRIPE_INTRO_COUPON_ID ||= "coupon_intro_test";
+  process.env.STRIPE_INTRO_COUPON_MONTHLY_ID ||= "coupon_intro_monthly_test";
 });
 
 import { createStudioCheckoutSession } from "./checkout";
@@ -39,7 +40,10 @@ const baseArgs = {
   agbVersion: "2026-10-13",
 };
 
-const INTRO_ENV = { STRIPE_INTRO_COUPON_ID: "coupon_intro_test" };
+const INTRO_ENV = {
+  STRIPE_INTRO_COUPON_ID: "coupon_intro_test",
+  STRIPE_INTRO_COUPON_MONTHLY_ID: "coupon_intro_monthly_test",
+};
 
 describe("createStudioCheckoutSession", () => {
   test("Basis-Position + je aktivem Add-on eine eigene Position; Summe der Positionen = calcTotalCents (Plan B6 Task 6: Items je Add-on für den Stripe-Sync)", async () => {
@@ -106,7 +110,7 @@ describe("createStudioCheckoutSession", () => {
     await createStudioCheckoutSession(
       { ...baseArgs, addOns: {}, billingInterval: "monthly" },
       stripe,
-      {}
+      INTRO_ENV
     );
     const call = create.mock.calls[0][0];
     expect(call.line_items).toHaveLength(1);
@@ -277,12 +281,12 @@ describe("createStudioCheckoutSession", () => {
     expect(call.custom_text.submit.message).toBe(checkoutTermLine("yearly"));
   });
 
-  test("Monatstarif: 24,90 €/Monat, termMonths 0, monatlich kündbar am Knopf", async () => {
+  test("Monatstarif: 12,45 € für 6 Monate, danach 24,90 €, monatlich kündbar", async () => {
     const { stripe, create } = fakeStripe();
     await createStudioCheckoutSession(
       { ...baseArgs, addOns: {}, billingInterval: "monthly" },
       stripe,
-      {}
+      INTRO_ENV
     );
     const call = create.mock.calls[0][0];
     expect(call.line_items[0].price_data.unit_amount).toBe(
@@ -293,7 +297,12 @@ describe("createStudioCheckoutSession", () => {
       termMonths: "0",
     });
     expect(call.subscription_data.trial_period_days).toBe(TRIAL_DAYS);
-    expect(call.discounts).toBeUndefined();
+    expect(call.discounts).toEqual([
+      { coupon: "coupon_intro_monthly_test" },
+    ]);
+    expect(call.metadata.totalAmount).toBe("1245");
+    expect(call.metadata.regularTotalAmount).toBe("2490");
+    expect(call.metadata.introOffer).toBe("50pct_6m");
     expect(call.custom_text.submit.message).toBe(checkoutTermLine("monthly"));
   });
 
@@ -301,7 +310,19 @@ describe("createStudioCheckoutSession", () => {
     const { stripe, create } = fakeStripe();
     await expect(
       createStudioCheckoutSession(baseArgs, stripe, {})
-    ).rejects.toThrow("STRIPE_INTRO_COUPON_ID fehlt");
+    ).rejects.toThrow("Stripe-Einführungscoupon für yearly fehlt");
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  test("Monatstarif ohne konfigurierten Coupon bricht vor Stripe ab", async () => {
+    const { stripe, create } = fakeStripe();
+    await expect(
+      createStudioCheckoutSession(
+        { ...baseArgs, billingInterval: "monthly" },
+        stripe,
+        { STRIPE_INTRO_COUPON_ID: "coupon_intro_test" }
+      )
+    ).rejects.toThrow("Stripe-Einführungscoupon für monthly fehlt");
     expect(create).not.toHaveBeenCalled();
   });
 

@@ -23,6 +23,7 @@ import {
   ADDON_TERM_NOTE,
   PRICE_FOOTNOTE,
   PRICE_INTRO,
+  PRICE_INTRO_MONTHLY,
   TARIFF_LABEL,
   TARIFF_TERM_SHORT,
   YEARLY_SAVINGS_TEXT,
@@ -93,7 +94,7 @@ interface PricingProps {
  */
 export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
   const [, navigate] = useLocation();
-  const price = billingYearly ? PRICE_INTRO : PRICE_MONTHLY;
+  const price = billingYearly ? PRICE_INTRO : PRICE_INTRO_MONTHLY;
 
   return (
     <section
@@ -129,11 +130,10 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                   </span>
                 </div>
                 <p className="mt-2 text-[0.85rem] text-lp-muted">
-                  {billingYearly && (
-                    <>
-                      <s>{PRICE_YEARLY}/Monat</s> regulär ·{" "}
-                    </>
-                  )}
+                  <s>
+                    {billingYearly ? PRICE_YEARLY : PRICE_MONTHLY}/Monat
+                  </s>{" "}
+                  regulär ·{" "}
                   {billingYearly
                     ? `${TARIFF_LABEL.yearly} · ${TARIFF_TERM_SHORT.yearly} · ${YEARLY_SAVINGS_TEXT}`
                     : `${TARIFF_LABEL.monthly} · ${TARIFF_TERM_SHORT.monthly}`}

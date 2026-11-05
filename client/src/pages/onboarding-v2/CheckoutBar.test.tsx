@@ -56,7 +56,7 @@ describe("CheckoutSummary", () => {
     expect(html).toContain("bereit");
   });
 
-  test("zeigt den ruhigen Jahres-Hinweis nur bei jährlicher Abrechnung, ohne Badge", () => {
+  test("zeigt den Einführungsrabatt in beiden Tarifen, ohne Badge", () => {
     const yearly = renderToStaticMarkup(
       <CheckoutSummary
         interval="yearly"
@@ -76,7 +76,9 @@ describe("CheckoutSummary", () => {
       />
     );
     expect(yearly).toContain("50 % Einführungsrabatt");
-    expect(monthly).not.toContain("Einführungsrabatt");
+    expect(monthly).toContain("50 % Einführungsrabatt");
+    expect(monthly).toContain("12,45 €");
+    expect(monthly).toContain("24,90 €");
     expect(yearly).not.toContain("Monate gratis");
   });
 
@@ -282,8 +284,8 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
         onStateChanged={() => {}}
       />
     );
-    expect(html).toContain("24,90 €");
-    expect(html).toContain("19,90 €");
+    expect(html).toContain("12,45 €");
+    expect(html).toContain("9,95 €");
   });
 
   test("Vertrauenszeile am Knopf: inkl. 19 % MwSt., Stripe — kein „jederzeit kündbar“", () => {

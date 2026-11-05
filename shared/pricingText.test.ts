@@ -14,6 +14,7 @@ import {
   PRICE_FROM_SHORT,
   PRICE_FULL,
   PRICE_INTRO,
+  PRICE_INTRO_MONTHLY,
   PRICE_LLMS_TXT,
   PRICE_MONTHLY,
   PRICE_PROMPT_FACTS,
@@ -46,6 +47,7 @@ describe("Grundtexte", () => {
     expect(PRICE_YEARLY).toBe("19,90 €");
     expect(PRICE_MONTHLY).toBe("24,90 €");
     expect(PRICE_INTRO).toBe("9,95 €");
+    expect(PRICE_INTRO_MONTHLY).toBe("12,45 €");
     expect(VAT_NOTE).toBe("inkl. 19 % MwSt.");
     expect(VAT_NOTE_ALL).toBe("Alle Preise inkl. 19 % MwSt.");
     expect(YEARLY_SAVINGS).toBe("60 €");
@@ -59,17 +61,17 @@ describe("Grundtexte", () => {
   test("Kurzform mit Fußnote und Vollform", () => {
     expect(PRICE_FROM_SHORT).toBe("ab 9,95 €/Monat*");
     expect(PRICE_FULL).toBe(
-      "Einführungsangebot bei neuer Freischaltung im Jahrestarif: 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat; 12 Monate Laufzeit, danach Verlängerung um 12 Monate. Monatstarif: 24,90 €/Monat, monatlich kündbar. Alle Preise inkl. 19 % MwSt. Angebot nur für Gewerbetreibende und Selbstständige."
+      "Einführungsangebot bei neuer Freischaltung: Jahrestarif 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat; 12 Monate Laufzeit, danach Verlängerung um 12 Monate. Monatstarif 12,45 €/Monat in den ersten 6 Monaten, danach 24,90 €/Monat, monatlich kündbar. Alle Preise inkl. 19 % MwSt. Angebot nur für Gewerbetreibende und Selbstständige."
     );
     expect(PRICE_FOOTNOTE).toBe(`* ${PRICE_FULL}`);
     expect(PRICE_FROM_INLINE).toBe(
       "ab 9,95 €/Monat für die ersten 6 Monate, danach 19,90 €/Monat bei 12 Monaten Laufzeit"
     );
     expect(PRICE_SENTENCE).toBe(
-      "9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat bei 12 Monaten Laufzeit oder 24,90 €/Monat monatlich kündbar, jeweils inkl. 19 % MwSt."
+      "im Jahrestarif 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat bei 12 Monaten Laufzeit; im Monatstarif 12,45 €/Monat in den ersten 6 Monaten, danach 24,90 €/Monat, monatlich kündbar; jeweils inkl. 19 % MwSt."
     );
     expect(PRICE_FAQ_ANSWER).toBe(
-      "Mit Pageblitz zahlst du 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat bei 12 Monaten Laufzeit oder 24,90 €/Monat monatlich kündbar, jeweils inkl. 19 % MwSt. – ohne Einrichtungsgebühr. Die ersten 7 Tage sind gratis."
+      "Mit Pageblitz zahlst du im Jahrestarif 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat bei 12 Monaten Laufzeit; im Monatstarif 12,45 €/Monat in den ersten 6 Monaten, danach 24,90 €/Monat, monatlich kündbar; jeweils inkl. 19 % MwSt. – ohne Einrichtungsgebühr. Die ersten 7 Tage sind gratis."
     );
   });
 
@@ -82,7 +84,7 @@ describe("Grundtexte", () => {
       "9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat. 12 Monate Laufzeit, monatlich abgebucht. Verlängert sich um 12 Monate, wenn du nicht spätestens 1 Monat vor Laufzeitende kündigst."
     );
     expect(TARIFF_SUMMARY.monthly).toBe(
-      "24,90 €/Monat, monatlich kündbar zum Ende des Abrechnungsmonats."
+      "12,45 €/Monat in den ersten 6 Monaten, danach 24,90 €/Monat, monatlich kündbar zum Ende des Abrechnungsmonats."
     );
     expect(ADDON_TERM_NOTE).toBe(
       "Extras sind monatlich kündbar – auch im Jahrestarif – und enden spätestens mit deinem Abo."
@@ -91,7 +93,7 @@ describe("Grundtexte", () => {
       "50 % Einführungsrabatt für 6 Monate · Jahrestarif · 12 Monate Laufzeit, monatlich abgebucht · Keine Einrichtungsgebühr"
     );
     expect(PRICE_CARD_NOTE.monthly).toBe(
-      "Monatstarif · monatlich kündbar · Keine Einrichtungsgebühr"
+      "50 % Einführungsrabatt für 6 Monate · Monatstarif · monatlich kündbar · Keine Einrichtungsgebühr"
     );
     expect(TERM_COMPARISON).toBe(
       "12 Monate (19,90 €/Monat) oder monatlich kündbar (24,90 €/Monat)"
@@ -100,7 +102,7 @@ describe("Grundtexte", () => {
       "7 Tage gratis · danach 9,95 €/Monat für 6 Monate, anschließend 19,90 €/Monat · 12 Monate Laufzeit · inkl. 19 % MwSt."
     );
     expect(trialThenText("monthly")).toBe(
-      "7 Tage gratis · danach 24,90 €/Monat · monatlich kündbar · inkl. 19 % MwSt."
+      "7 Tage gratis · danach 12,45 €/Monat für 6 Monate, anschließend 24,90 €/Monat · monatlich kündbar · inkl. 19 % MwSt."
     );
     expect(TARIFF_SWITCH_NOTE.monthly).toBe(
       "Wechsel in den Jahrestarif (19,90 €/Monat) jederzeit möglich: gilt ab der nächsten Abbuchung, ab dann 12 Monate Laufzeit."
@@ -117,13 +119,13 @@ describe("Checkout", () => {
       "7 Tage gratis, dann 13,85 € / Monat für 6 Monate, danach 23,80 € / Monat"
     );
     expect(checkoutTotalLine("monthly", 2880)).toBe(
-      "7 Tage gratis, dann 28,80 € / Monat"
+      "7 Tage gratis, dann 16,35 € / Monat für 6 Monate, danach 28,80 € / Monat"
     );
     expect(checkoutTermLine("yearly")).toBe(
       "50 % Einführungsrabatt für die ersten 6 Monate. 12 Monate Laufzeit ab der ersten Zahlung, danach Verlängerung um 12 Monate; Kündigung bis 1 Monat vor Laufzeitende. In den 7 Testtagen kostenlos kündbar."
     );
     expect(checkoutTermLine("monthly")).toBe(
-      "Monatlich kündbar zum Ende des Abrechnungsmonats. In den 7 Testtagen kostenlos kündbar."
+      "50 % Einführungsrabatt für die ersten 6 Monate. Monatlich kündbar zum Ende des Abrechnungsmonats. In den 7 Testtagen kostenlos kündbar."
     );
     expect(CHECKOUT_FOOTER).toBe(
       "Alle Preise inkl. 19 % MwSt. · sichere Zahlung über Stripe"
@@ -134,7 +136,7 @@ describe("Checkout", () => {
       "9,95 €/Monat für 6 Monate, danach 19,90 €/Monat · Jahrestarif, 12 Monate Laufzeit · inkl. 19 % MwSt."
     );
     expect(stripeBaseDescription("monthly")).toBe(
-      "24,90 €/Monat · Monatstarif, monatlich kündbar · inkl. 19 % MwSt."
+      "12,45 €/Monat für 6 Monate, danach 24,90 €/Monat · Monatstarif, monatlich kündbar · inkl. 19 % MwSt."
     );
   });
 });
@@ -241,13 +243,13 @@ describe("Postkarte, Prompts, llms.txt", () => {
     expect(PRICE_PROMPT_FACTS).toBe(
       [
         "- Einführungsangebot im Jahrestarif: 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat; monatlich abgebucht, 12 Monate Mindestlaufzeit ab der ersten Zahlung nach den Testtagen; verlängert sich um 12 Monate, Kündigung bis 1 Monat vor Laufzeitende",
-        "- Monatstarif: 24,90 €/Monat, monatlich kündbar",
+        "- Einführungsangebot im Monatstarif: 12,45 €/Monat in den ersten 6 Monaten, danach 24,90 €/Monat; monatlich kündbar",
         "- 7 Tage kostenlos testen; Kündigung in den Testtagen kostet nichts",
         "- Alle Preise inkl. 19 % MwSt.; Extras sind monatlich kündbar, auch im Jahrestarif",
       ].join("\n")
     );
     expect(PRICE_LLMS_TXT).toBe(
-      "Einführungsangebot: Jahrestarif 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat bei 12 Monaten Laufzeit (Verlängerung um 12 Monate, Kündigung 1 Monat zum Laufzeitende) oder 24,90 €/Monat monatlich kündbar, inkl. 19 % MwSt., 7 Tage gratis testen"
+      "Einführungsangebot: Jahrestarif 9,95 €/Monat in den ersten 6 Monaten, danach 19,90 €/Monat bei 12 Monaten Laufzeit (Verlängerung um 12 Monate, Kündigung 1 Monat zum Laufzeitende) oder Monatstarif 12,45 €/Monat in den ersten 6 Monaten, danach 24,90 €/Monat, monatlich kündbar, inkl. 19 % MwSt., 7 Tage gratis testen"
     );
   });
 });

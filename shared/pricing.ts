@@ -62,23 +62,25 @@ export const PLANS: Readonly<Record<Tariff, PlanSpec>> = {
   },
 };
 
-/** Zeitlich offen gelassenes Einführungsangebot für neue Jahrestarife. */
+/** Zeitlich offen gelassenes Einführungsangebot für neue Freischaltungen. */
 export const INTRO_OFFER = {
-  tariff: "yearly",
   percentOff: 50,
   months: 6,
-  regularCentsPerMonth: PLANS.yearly.centsPerMonth,
-  discountedCentsPerMonth: PLANS.yearly.centsPerMonth / 2,
+  discountedCentsPerMonth: {
+    monthly: PLANS.monthly.centsPerMonth / 2,
+    yearly: PLANS.yearly.centsPerMonth / 2,
+  },
 } as const;
 
 export function totalDuringIntro(
   tariff: Tariff,
   regularTotalCents: number
 ): number {
-  return tariff === INTRO_OFFER.tariff
-    ? regularTotalCents -
-        (INTRO_OFFER.regularCentsPerMonth - INTRO_OFFER.discountedCentsPerMonth)
-    : regularTotalCents;
+  return (
+    regularTotalCents -
+    (PLANS[tariff].centsPerMonth -
+      INTRO_OFFER.discountedCentsPerMonth[tariff])
+  );
 }
 
 export const PRICING = {
