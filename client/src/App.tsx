@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/landing/primitives";
 import ErrorBoundary from "./components/ErrorBoundary";
 import {
   initConsent,
+  isInternalAnalyticsPath,
   trackMetaPageView,
   hasMarketingConsent,
 } from "./lib/consent";
@@ -293,28 +294,31 @@ function ScrollToTop() {
 
 function AppContent() {
   const [location] = useLocation();
+  // Kunden-Website-Routen: kein PageBlitz-Banner oder Pageblitz-Tracking
+  // (auch bei Subdomain-Zugriff).
+  const isCustomerSite =
+    location.startsWith("/site/") || !!getCustomerSubdomain();
+  const measurementEnabled =
+    !isCustomerSite && !isInternalAnalyticsPath(location);
 
-  // Bestehende Einwilligung beim ersten Render nachladen
+  // Interne Bereiche dürfen die Vertriebsdaten nicht verfälschen; beim
+  // Wechsel zurück in den Funnel wird GA wieder aktiviert.
   useEffect(() => {
-    initConsent();
-  }, []);
+    initConsent(measurementEnabled);
+  }, [measurementEnabled]);
 
   // Meta Pixel PageView bei jedem SPA-Routenwechsel feuern
   useEffect(() => {
-    if (hasMarketingConsent()) {
+    if (measurementEnabled && hasMarketingConsent()) {
       trackMetaPageView();
     }
-  }, [location]);
-
-  // Kunden-Website-Routen: kein PageBlitz-Banner (auch bei Subdomain-Zugriff)
-  const isCustomerSite =
-    location.startsWith("/site/") || !!getCustomerSubdomain();
+  }, [location, measurementEnabled]);
 
   return (
     <>
       <ScrollToTop />
       <Router />
-      {!isCustomerSite && (
+      {measurementEnabled && (
         <Suspense fallback={null}>
           <PageblitzCookieBanner />
         </Suspense>

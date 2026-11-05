@@ -10,6 +10,11 @@
 
 export { BLOG_POSTS, getBlogPost, type BlogPost } from "./blogPosts";
 import { BLOG_POSTS, type BlogPost } from "./blogPosts";
+import {
+  renderSeoConsentBody,
+  renderSeoTrackingHead,
+  SEO_COOKIE_SETTINGS_BUTTON,
+} from "./tracking";
 
 // ── Rendering ────────────────────────────────────────────────────────────────
 
@@ -36,6 +41,7 @@ const BRAND_MARK_SVG = `<svg viewBox="480 380 1060 1360" aria-hidden="true"><pat
 
 const BLOG_CSS = `
 *{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300 700;font-display:swap;src:url("/fonts/space-grotesk-latin-wght.woff2") format("woff2")}
 body{font-family:'Space Grotesk',system-ui,-apple-system,sans-serif;background:#0b0b0d;color:#f2f1ee;line-height:1.7;-webkit-font-smoothing:antialiased}
 a{color:#ccff00;text-decoration:none}
 a:hover{text-decoration:underline}
@@ -110,10 +116,8 @@ function pageShell(opts: {
 <meta property="og:description" content="${escapeHtml(opts.description)}">
 <meta property="og:type" content="article">
 <meta property="og:url" content="${opts.canonical}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>${BLOG_CSS}</style>
+${renderSeoTrackingHead()}
 ${opts.schema}
 </head>
 <body>
@@ -124,8 +128,9 @@ ${opts.schema}
 ${opts.body}
 <footer class="site"><div class="wrap">
   <span>© Pageblitz · <a href="/blog">Blog</a></span>
-  <span><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/agb">AGB</a></span>
+  <span><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/agb">AGB</a> · ${SEO_COOKIE_SETTINGS_BUTTON}</span>
 </div></footer>
+${renderSeoConsentBody()}
 </body>
 </html>`;
 }

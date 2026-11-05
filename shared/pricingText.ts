@@ -92,6 +92,11 @@ export const PRICE_FROM_INLINE =
   `ab ${PRICE_INTRO}/Monat für die ersten ${INTRO_OFFER.months} Monate, danach ` +
   `${PRICE_YEARLY}/Monat ${YEARLY_CONDITION}`;
 
+/** Kurzer, aber vollständiger Einführungshinweis für Meta-Descriptions. */
+export const SEO_PRICE_META =
+  `${TRIAL_DAYS} Tage gratis. Ab ${PRICE_INTRO}/Monat für ` +
+  `${INTRO_OFFER.months} Monate im ${TARIFF_LABEL.yearly}.`;
+
 /** Ein Satz für Fließtext/FAQ: beide Tarife, MwSt., Test. */
 export const PRICE_SENTENCE =
   `im ${TARIFF_LABEL.yearly} ${PRICE_INTRO}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ` +
