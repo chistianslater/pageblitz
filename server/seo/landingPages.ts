@@ -5,6 +5,7 @@ import {
   PRICE_FROM_INLINE,
   PRICE_FULL,
   PRICE_INTRO,
+  PRICE_INTRO_MONTHLY,
   PRICE_MONTHLY,
   PRICE_YEARLY,
   TARIFF_LABEL,
@@ -3139,7 +3140,8 @@ ${localSectionHtml}
         </div>
 
         <div id="price-monthly" style="display:none">
-          <div class="pricing-price">${PRICE_MONTHLY}<span>/Monat</span></div>
+          <div class="pricing-price">${PRICE_INTRO_MONTHLY}<span>/Monat</span></div>
+          <div class="pricing-note"><s>${PRICE_MONTHLY}/Monat</s> regulär</div>
           <div class="pricing-note">${escapeHtml(TARIFF_SUMMARY.monthly)}</div>
         </div>
         <div id="price-yearly">

@@ -23,9 +23,11 @@ import {
 import {
   BlitzMark,
   textLink,
-  PRICE_MONTHLY,
 } from "@/components/landing/primitives";
-import { PRICE_FROM_INLINE } from "@shared/pricingText";
+import {
+  PRICE_FROM_INLINE,
+  PRICE_INTRO_MONTHLY,
+} from "@shared/pricingText";
 import { StandortControl } from "./StandortControl";
 import {
   geoFallbackMessage,
@@ -838,7 +840,7 @@ export default function StartPage() {
               "Entwurf kostenlos",
               new URLSearchParams(window.location.search).get("billing") ===
               "monthly"
-                ? `Live für ${PRICE_MONTHLY}/Monat, monatlich kündbar`
+                ? `Live ab ${PRICE_INTRO_MONTHLY}/Monat, monatlich kündbar`
                 : `Live ${PRICE_FROM_INLINE}`,
               "Keine Kreditkarte für den Entwurf",
             ].map(item => (

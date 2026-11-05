@@ -37,8 +37,15 @@ const M = PLANS.monthly;
 export const PRICE_YEARLY = formatEuro(Y.centsPerMonth);
 /** „24,90 €" */
 export const PRICE_MONTHLY = formatEuro(M.centsPerMonth);
-/** „9,95 €" — Einführungsangebot im Jahrestarif. */
-export const PRICE_INTRO = formatEuro(INTRO_OFFER.discountedCentsPerMonth);
+/** Einführungspreise je Tarif. */
+export const PRICE_INTRO_BY_TARIFF: Record<Tariff, string> = {
+  yearly: formatEuro(INTRO_OFFER.discountedCentsPerMonth.yearly),
+  monthly: formatEuro(INTRO_OFFER.discountedCentsPerMonth.monthly),
+};
+/** „9,95 €" — günstigster Einführungs- und Jahrestarifpreis. */
+export const PRICE_INTRO = PRICE_INTRO_BY_TARIFF.yearly;
+/** „12,45 €" — Einführungspreis im Monatstarif. */
+export const PRICE_INTRO_MONTHLY = PRICE_INTRO_BY_TARIFF.monthly;
 
 /** „inkl. 19 % MwSt." */
 export const VAT_NOTE = `inkl. ${VAT.ratePercent} % MwSt.`;
@@ -65,9 +72,10 @@ export const B2B_NOTE = "Angebot nur für Gewerbetreibende und Selbstständige."
 // Pflicht-Häkchen vor dem Checkout (B2B + AGB): shared/agb.ts CHECKOUT_CONSENT.
 
 export const PRICE_FULL =
-  `Einführungsangebot bei neuer Freischaltung im ${TARIFF_LABEL.yearly}: ${PRICE_INTRO}/Monat in den ersten ` +
+  `Einführungsangebot bei neuer Freischaltung: ${TARIFF_LABEL.yearly} ${PRICE_INTRO}/Monat in den ersten ` +
   `${INTRO_OFFER.months} Monaten, danach ${PRICE_YEARLY}/Monat; ${Y.termMonths} Monate ` +
-  `Laufzeit, danach Verlängerung um ${Y.renewMonths} Monate. ${TARIFF_LABEL.monthly}: ` +
+  `Laufzeit, danach Verlängerung um ${Y.renewMonths} Monate. ${TARIFF_LABEL.monthly} ` +
+  `${PRICE_INTRO_MONTHLY}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ` +
   `${PRICE_MONTHLY}/Monat, monatlich kündbar. ${VAT_NOTE_ALL} ${B2B_NOTE}`;
 
 /** Fußnote zu PRICE_FROM_SHORT bzw. jedem „*" hinter einem Preis. */
@@ -86,9 +94,10 @@ export const PRICE_FROM_INLINE =
 
 /** Ein Satz für Fließtext/FAQ: beide Tarife, MwSt., Test. */
 export const PRICE_SENTENCE =
-  `${PRICE_INTRO}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ` +
-  `${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit oder ` +
-  `${PRICE_MONTHLY}/Monat monatlich kündbar, jeweils ${VAT_NOTE}`;
+  `im ${TARIFF_LABEL.yearly} ${PRICE_INTRO}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ` +
+  `${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit; im ${TARIFF_LABEL.monthly} ` +
+  `${PRICE_INTRO_MONTHLY}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ` +
+  `${PRICE_MONTHLY}/Monat, monatlich kündbar; jeweils ${VAT_NOTE}`;
 
 /** Kanonische FAQ-Antwort „Was kostet …?" der SEO-Branchenseiten. */
 export const PRICE_FAQ_ANSWER =
@@ -108,13 +117,15 @@ export const TARIFF_SUMMARY: Record<Tariff, string> = {
     `${PRICE_YEARLY}/Monat. ${Y.termMonths} Monate Laufzeit, monatlich abgebucht. ` +
     `Verlängert sich um ${Y.renewMonths} Monate, wenn du nicht ` +
     `spätestens ${Y.noticeMonths} Monat vor Laufzeitende kündigst.`,
-  monthly: `${PRICE_MONTHLY}/Monat, monatlich kündbar zum Ende des Abrechnungsmonats.`,
+  monthly:
+    `${PRICE_INTRO_MONTHLY}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ` +
+    `${PRICE_MONTHLY}/Monat, monatlich kündbar zum Ende des Abrechnungsmonats.`,
 };
 
 /** Zeile unter dem Preis auf der Preiskarte (Landing + Prerender). */
 export const PRICE_CARD_NOTE: Record<Tariff, string> = {
   yearly: `${INTRO_OFFER.percentOff} % Einführungsrabatt für ${INTRO_OFFER.months} Monate · ${TARIFF_LABEL.yearly} · ${TARIFF_TERM_SHORT.yearly} · Keine Einrichtungsgebühr`,
-  monthly: `${TARIFF_LABEL.monthly} · ${TARIFF_TERM_SHORT.monthly} · Keine Einrichtungsgebühr`,
+  monthly: `${INTRO_OFFER.percentOff} % Einführungsrabatt für ${INTRO_OFFER.months} Monate · ${TARIFF_LABEL.monthly} · ${TARIFF_TERM_SHORT.monthly} · Keine Einrichtungsgebühr`,
 };
 
 /** Hinweis zu den Extras (gilt in beiden Tarifen). */
@@ -128,7 +139,7 @@ export const TERM_COMPARISON = `${Y.termMonths} Monate (${PRICE_YEARLY}/Monat) o
 export function trialThenText(tariff: Tariff): string {
   return tariff === "yearly"
     ? `${TRIAL_DAYS} Tage gratis · danach ${PRICE_INTRO}/Monat für ${INTRO_OFFER.months} Monate, anschließend ${PRICE_YEARLY}/Monat · ${Y.termMonths} Monate Laufzeit · ${VAT_NOTE}`
-    : `${TRIAL_DAYS} Tage gratis · danach ${PRICE_MONTHLY}/Monat · monatlich kündbar · ${VAT_NOTE}`;
+    : `${TRIAL_DAYS} Tage gratis · danach ${PRICE_INTRO_MONTHLY}/Monat für ${INTRO_OFFER.months} Monate, anschließend ${PRICE_MONTHLY}/Monat · monatlich kündbar · ${VAT_NOTE}`;
 }
 
 // ── Checkout (Studio) ───────────────────────────────────────────────────
@@ -138,9 +149,7 @@ export function checkoutTotalLine(
   tariff: Tariff,
   regularTotalCents: number
 ): string {
-  return tariff === INTRO_OFFER.tariff
-    ? `${TRIAL_DAYS} Tage gratis, dann ${formatEuro(totalDuringIntro(tariff, regularTotalCents))} / Monat für ${INTRO_OFFER.months} Monate, danach ${formatEuro(regularTotalCents)} / Monat`
-    : `${TRIAL_DAYS} Tage gratis, dann ${formatEuro(regularTotalCents)} / Monat`;
+  return `${TRIAL_DAYS} Tage gratis, dann ${formatEuro(totalDuringIntro(tariff, regularTotalCents))} / Monat für ${INTRO_OFFER.months} Monate, danach ${formatEuro(regularTotalCents)} / Monat`;
 }
 
 /** Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Button. */
@@ -151,7 +160,8 @@ export function checkoutTermLine(tariff: Tariff): string {
         `${Y.termMonths} Monate Laufzeit ab der ersten Zahlung, danach ` +
         `Verlängerung um ${Y.renewMonths} Monate; Kündigung bis ` +
         `${Y.noticeMonths} Monat vor Laufzeitende. ${trial}`
-    : `Monatlich kündbar zum Ende des Abrechnungsmonats. ${trial}`;
+    : `${INTRO_OFFER.percentOff} % Einführungsrabatt für die ersten ${INTRO_OFFER.months} Monate. ` +
+        `Monatlich kündbar zum Ende des Abrechnungsmonats. ${trial}`;
 }
 
 /** Fußzeile des Checkouts. */
@@ -161,7 +171,7 @@ export const CHECKOUT_FOOTER = `${VAT_NOTE_ALL} · sichere Zahlung über Stripe`
 export function stripeBaseDescription(tariff: Tariff): string {
   return tariff === "yearly"
     ? `${PRICE_INTRO}/Monat für ${INTRO_OFFER.months} Monate, danach ${PRICE_YEARLY}/Monat · ${TARIFF_LABEL.yearly}, ${Y.termMonths} Monate Laufzeit · ${VAT_NOTE}`
-    : `${PRICE_MONTHLY}/Monat · ${TARIFF_LABEL.monthly}, monatlich kündbar · ${VAT_NOTE}`;
+    : `${PRICE_INTRO_MONTHLY}/Monat für ${INTRO_OFFER.months} Monate, danach ${PRICE_MONTHLY}/Monat · ${TARIFF_LABEL.monthly}, monatlich kündbar · ${VAT_NOTE}`;
 }
 
 /** Text neben dem Checkout-Button in Stripe (custom_text.submit). */
@@ -304,13 +314,13 @@ export const POSTCARD_LETTER_PRICE = `${PRICE_YEARLY} im Monat bei ${Y.termMonth
 /** Faktenzeilen für KI-Prompts (Landing-/Support-Chat). */
 export const PRICE_PROMPT_FACTS = [
   `- Einführungsangebot im Jahrestarif: ${PRICE_INTRO}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ${PRICE_YEARLY}/Monat; monatlich abgebucht, ${Y.termMonths} Monate Mindestlaufzeit ab der ersten Zahlung nach den Testtagen; verlängert sich um ${Y.renewMonths} Monate, Kündigung bis ${Y.noticeMonths} Monat vor Laufzeitende`,
-  `- Monatstarif: ${PRICE_MONTHLY}/Monat, monatlich kündbar`,
+  `- Einführungsangebot im Monatstarif: ${PRICE_INTRO_MONTHLY}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ${PRICE_MONTHLY}/Monat; monatlich kündbar`,
   `- ${TRIAL_DAYS} Tage kostenlos testen; Kündigung in den Testtagen kostet nichts`,
   `- ${VAT_NOTE_ALL}; Extras sind monatlich kündbar, auch im Jahrestarif`,
 ].join("\n");
 
 /** Kurzfassung für llms.txt. */
-export const PRICE_LLMS_TXT = `Einführungsangebot: Jahrestarif ${PRICE_INTRO}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit (Verlängerung um ${Y.renewMonths} Monate, Kündigung ${Y.noticeMonths} Monat zum Laufzeitende) oder ${PRICE_MONTHLY}/Monat monatlich kündbar, ${VAT_NOTE}, ${TRIAL_DAYS} Tage gratis testen`;
+export const PRICE_LLMS_TXT = `Einführungsangebot: Jahrestarif ${PRICE_INTRO}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ${PRICE_YEARLY}/Monat bei ${Y.termMonths} Monaten Laufzeit (Verlängerung um ${Y.renewMonths} Monate, Kündigung ${Y.noticeMonths} Monat zum Laufzeitende) oder Monatstarif ${PRICE_INTRO_MONTHLY}/Monat in den ersten ${INTRO_OFFER.months} Monaten, danach ${PRICE_MONTHLY}/Monat, monatlich kündbar, ${VAT_NOTE}, ${TRIAL_DAYS} Tage gratis testen`;
 
 // ── Schema.org ──────────────────────────────────────────────────────────
 

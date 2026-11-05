@@ -63,16 +63,14 @@ describe("pricing", () => {
     expect(addonPrice("booking")).toBe(490);
     expect(addonPrice("gallery")).toBe(390);
   });
-  test("Einführungsangebot halbiert nur die Basis des Jahrestarifs für sechs Monate", () => {
+  test("Einführungsangebot halbiert nur die Basis beider Tarife für sechs Monate", () => {
     expect(INTRO_OFFER).toMatchObject({
-      tariff: "yearly",
       percentOff: 50,
       months: 6,
-      regularCentsPerMonth: 1990,
-      discountedCentsPerMonth: 995,
+      discountedCentsPerMonth: { yearly: 995, monthly: 1245 },
     });
     expect(totalDuringIntro("yearly", 2380)).toBe(1385);
-    expect(totalDuringIntro("monthly", 2880)).toBe(2880);
+    expect(totalDuringIntro("monthly", 2880)).toBe(1635);
   });
   test("calcTotalCents summiert nur aktive Add-ons", () => {
     expect(calcTotalCents("yearly", {})).toBe(1990);
