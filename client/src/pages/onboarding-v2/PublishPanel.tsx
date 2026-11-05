@@ -8,15 +8,15 @@ import type { StudioFunnelEvent } from "@shared/onboardingV2/funnel";
 
 interface PublishTeaserProps {
   onOpen: () => void;
+  hasEmail: boolean;
 }
 
 /**
- * Ruhiger letzter Eintrag unter der Checkliste (Test-Feedback 2026-09-18:
- * „im Studio ist man direkt schon beim Zahlen"). Zeigt nur Preis ab und
- * dass der Kauf der letzte Schritt ist — Abrechnung, E-Mail und Button
- * liegen erst im Panel dahinter.
+ * Ruhiger Einstieg in den Abschluss: Vor der E-Mail-Sicherung kostenlos und
+ * unverbindlich, danach als letzter Eintrag unter der Checkliste mit Preis.
+ * Abrechnung, E-Mail und Kaufknopf liegen erst im Panel dahinter.
  */
-export function PublishTeaser({ onOpen }: PublishTeaserProps) {
+export function PublishTeaser({ onOpen, hasEmail }: PublishTeaserProps) {
   return (
     <button
       type="button"
@@ -28,13 +28,18 @@ export function PublishTeaser({ onOpen }: PublishTeaserProps) {
         ★
       </span>
       <span>
-        <span className="pb-studio-check-title">Website freischalten</span>
+        <span className="pb-studio-check-title">
+          {hasEmail ? "Website freischalten" : "Entwurf per E-Mail sichern"}
+        </span>
         <span className="pb-studio-check-hint">
-          Zum Schluss, wenn alles passt. Live {PRICE_FROM_INLINE} — bis dahin
-          ist nichts verbindlich.
+          {hasEmail
+            ? `Zum Schluss, wenn alles passt. Live ${PRICE_FROM_INLINE} — bis dahin ist nichts verbindlich.`
+            : "Schick dir deinen persönlichen Link und mach später genau hier weiter. Kostenlos und unverbindlich."}
         </span>
       </span>
-      <span className="pb-studio-check-flag">Zum Schluss</span>
+      <span className="pb-studio-check-flag">
+        {hasEmail ? "Zum Schluss" : "Kostenlos"}
+      </span>
     </button>
   );
 }

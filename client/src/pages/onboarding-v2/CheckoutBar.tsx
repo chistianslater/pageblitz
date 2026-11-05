@@ -216,6 +216,28 @@ export function CheckoutBar({
   const firstMissingStep = missingSteps[0] ?? null;
   const addonNote = addonSetupNote(sanitizeAddOns(state.addOns));
 
+  const saveDraftEmail = async (): Promise<boolean> => {
+    if (!emailValid) {
+      setShowEmailHint(true);
+      document.getElementById("pb-checkout-email")?.focus();
+      return false;
+    }
+    try {
+      await saveEmail.mutateAsync({
+        token,
+        email: trimmedEmail,
+        marketingConsent,
+      });
+    } catch {
+      return false; // Fehler steht unter dem Feld (saveEmail.error).
+    }
+    setShowEmailHint(false);
+    trackStudioEvent("email_gespeichert");
+    trackConversion("qualify_lead");
+    onStateChanged();
+    return true;
+  };
+
   const startCheckout = () => {
     // Exit-Intent nicht mehr dazwischenfunken lassen (Sprung zu Stripe).
     markStudioCheckoutStarted(true);
@@ -249,28 +271,11 @@ export function CheckoutBar({
       return;
     }
     if (!state.customerEmail) {
-      if (!emailValid) {
+      if (!(await saveDraftEmail())) {
         trackStudioEvent("kauf_blockiert");
         onFunnelEvent?.("studio_checkout_blocked_email");
-        setShowEmailHint(true);
-        document.getElementById("pb-checkout-email")?.focus();
         return;
       }
-      // E-Mail beim Freischalten mitspeichern statt über einen eigenen
-      // Speichern-Knopf (Audit 2026-09-19). Der Server verlangt sie vor dem
-      // Checkout (checkoutReady), deshalb zuerst speichern.
-      try {
-        await saveEmail.mutateAsync({
-          token,
-          email: trimmedEmail,
-          marketingConsent,
-        });
-      } catch {
-        return; // Fehler steht unter dem Feld (saveEmail.error)
-      }
-      trackStudioEvent("email_gespeichert");
-      trackConversion("qualify_lead");
-      onStateChanged();
     }
     startCheckout();
   };
@@ -334,6 +339,19 @@ export function CheckoutBar({
             />
             Gelegentlich Tipps &amp; Angebote per E-Mail erhalten
           </label>
+          <button
+            type="button"
+            className="pb-studio-btn"
+            onClick={() => void saveDraftEmail()}
+            disabled={pending}
+          >
+            {saveEmail.isPending
+              ? "Entwurf wird gesichert …"
+              : "Entwurf per E-Mail sichern"}
+          </button>
+          <span className="pb-studio-field-hint">
+            Du bekommst deinen persönlichen Link. Noch keine Bestellung.
+          </span>
           {showEmailError && (
             <p role="alert" style={{ color: "var(--st-warn)" }}>
               Bitte eine gültige E-Mail-Adresse eingeben.

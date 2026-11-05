@@ -263,7 +263,7 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
     );
   });
 
-  test("nur die E-Mail fehlt: kein eigener Speichern-Knopf, Freischalten speichert sie mit", () => {
+  test("E-Mail lässt sich vor Rechtliches und Checkout ausdrücklich sichern", () => {
     const base = buildState();
     const html = renderWithTrpc(
       <CheckoutBar
@@ -273,7 +273,17 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
       />
     );
     expect(html).toContain("Website freischalten");
-    expect(html).not.toMatch(/>Speichern</);
+    expect(html).toContain("Entwurf per E-Mail sichern");
+    expect(html).toContain("Noch keine Bestellung");
+
+    const saved = renderWithTrpc(
+      <CheckoutBar
+        state={buildState({ customerEmail: "a@b.de" })}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
+    );
+    expect(saved).not.toContain("Entwurf per E-Mail sichern");
   });
 
   test("Umschalter nennt beide Preise", () => {
