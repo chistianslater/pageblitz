@@ -10,8 +10,8 @@ import { escapeHtml } from "./metaInjection";
 import {
   PRICE_FAQ_ANSWER,
   PRICE_FOOTNOTE,
-  PRICE_FROM_INLINE,
   PRICE_FULL,
+  SEO_PRICE_META,
   TERM_COMPARISON,
   trialThenText,
 } from "../../shared/pricingText";
@@ -51,10 +51,15 @@ describe("SEO-Preistexte", () => {
     expect(html).toContain("inkl. 19 % MwSt.");
   });
 
-  it("Meta-Description nennt die Laufzeit", () => {
-    const html = generateLandingPageHTML(SEO_INDUSTRIES.friseur);
-    const meta = html.match(/<meta name="description" content="([^"]*)"/)?.[1];
-    expect(meta).toContain(escapeHtml(PRICE_FROM_INLINE));
+  it("Meta-Descriptions zeigen Angebot und CTA vollständig im Snippet", () => {
+    for (const industry of Object.values(SEO_INDUSTRIES)) {
+      for (const city of [undefined, ...DE_CITIES]) {
+        const html = generateLandingPageHTML(industry, city);
+        const meta = html.match(/<meta name="description" content="([^"]*)"/)?.[1];
+        expect(meta).toContain(escapeHtml(SEO_PRICE_META));
+        expect(meta?.length).toBeLessThanOrEqual(160);
+      }
+    }
   });
 
   it("Startseite: Prerender zeigt die vollständigen Bedingungen", () => {

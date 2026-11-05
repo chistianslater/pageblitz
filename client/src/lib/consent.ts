@@ -9,6 +9,15 @@
 const CONSENT_KEY = "pageblitz_site_consent_v1";
 /** GA4-Property von pageblitz.de — auch Ziel der Studio-Funnel-Ereignisse (studioEvents.ts). */
 export const GA4_MEASUREMENT_ID = "G-3ZF2WR4VWF";
+const INTERNAL_ANALYTICS_PATHS = [
+  "/admin",
+  "/admin-login",
+  "/design-review",
+  "/login",
+  "/my-account",
+  "/my-website",
+  "/welcome-back",
+];
 
 export type ConsentData = {
   /** Google Analytics 4 + Microsoft Clarity */
@@ -51,7 +60,20 @@ export function saveConsent(data: Omit<ConsentData, "timestamp">): void {
  * Beim App-Start aufrufen: lädt bereits erteilte Einwilligungen nach.
  * So werden Skripte bei wiederkehrenden Besuchern sofort geladen.
  */
-export function initConsent(): void {
+export function isInternalAnalyticsPath(pathname: string): boolean {
+  return INTERNAL_ANALYTICS_PATHS.some(
+    path => pathname === path || pathname.startsWith(`${path}/`)
+  );
+}
+
+/** Pageblitz-Messung in Admin-, Login- und Kundenbereichen sicher abschalten. */
+export function initConsent(enabled = true): void {
+  try {
+    (window as any)[`ga-disable-${GA4_MEASUREMENT_ID}`] = !enabled;
+  } catch {
+    // ignore
+  }
+  if (!enabled) return;
   const consent = getStoredConsent();
   if (consent) {
     updateGoogleConsent(consent);

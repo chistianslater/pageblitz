@@ -7,6 +7,7 @@ import {
   PRICE_INTRO,
   PRICE_INTRO_MONTHLY,
   PRICE_MONTHLY,
+  SEO_PRICE_META,
   PRICE_YEARLY,
   TARIFF_LABEL,
   TARIFF_SUMMARY,
@@ -23,6 +24,11 @@ import {
   seoShowcaseFor,
   type SeoShowcase,
 } from "../../shared/seoShowcases";
+import {
+  renderSeoConsentBody,
+  renderSeoTrackingHead,
+  SEO_COOKIE_SETTINGS_BUTTON,
+} from "./tracking";
 
 export interface SeoIndustry {
   slug: string;
@@ -2833,17 +2839,11 @@ export function generateLandingPageHTML(
   const title = city
     ? `Website für ${industry.displayName} in ${city.name} erstellen | Pageblitz`
     : `${industry.title} | Pageblitz`;
-  // Stadt NACH VORN (Audit 2026-08-30, Punkt 4): die alte Fassung hängte
-  // die Stadt ans Ende einer ~190-Zeichen-Description — Google schneidet
-  // bei ~160 ab, in den SERPs sahen Branchen- und Stadt-Seite identisch aus.
-  // Branchen-Meta: Suffix nur anhängen, wenn die 160-Zeichen-Grenze hält
-  // (Vollgrade-Fund 2026-08-31: Friseur lag mit Suffix bei 177c).
-  const branchSuffix = " 7 Tage gratis testen.";
+  // Suchbegriff und Stadt stehen vorn; der Preis bleibt kurz genug, damit
+  // Google den Vorschau-CTA nicht abschneidet.
   const metaDesc = city
-    ? `Professionelle ${industry.displayName}-Website in ${city.name} ${PRICE_FROM_INLINE} – von der KI in 3 Minuten erstellt. Jetzt Vorschau ansehen und 7 Tage gratis testen.`
-    : industry.description.length + branchSuffix.length <= 160
-      ? `${industry.description}${branchSuffix}`
-      : industry.description;
+    ? `Website für ${industry.displayName} in ${city.name}: KI-Vorschau in 3 Min. ${SEO_PRICE_META}`
+    : `Website für ${industry.displayName}: KI-Vorschau in 3 Minuten. ${SEO_PRICE_META}`;
   const h1 = industry.h1Template.replace("{city}", cityStr);
 
   const otherIndustries = Object.values(SEO_INDUSTRIES).filter(
@@ -3024,6 +3024,7 @@ export function generateLandingPageHTML(
   <script type="application/ld+json">${buildWebPageSchema(title, metaDesc, canonical)}</script>
   <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
   <style>${SHARED_CSS}</style>
+  ${renderSeoTrackingHead()}
 </head>
 <body style="--accent:${style.accent};--orb:${style.orb};--hero-bg:${style.heroBg}">
 
@@ -3225,7 +3226,7 @@ ${cityLinksHtml}
 
 <footer>
   <div class="container">
-    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a> · <a href="https://pageblitz.de/agb">AGB</a></p>
+    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a> · <a href="https://pageblitz.de/agb">AGB</a> · ${SEO_COOKIE_SETTINGS_BUTTON}</p>
   </div>
 </footer>
 
@@ -3245,6 +3246,7 @@ function expandAddons(){
   if(btn) btn.style.display='none';
 }
 </script>
+${renderSeoConsentBody()}
 </body>
 </html>`;
 }
@@ -3329,6 +3331,7 @@ export function generateOverviewHTML(): string {
   <link rel="preload" href="/fonts/space-grotesk-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <script type="application/ld+json">${faqSchema}</script>
   <style>${overviewCss}</style>
+  ${renderSeoTrackingHead()}
 </head>
 <body>
 
@@ -3379,10 +3382,11 @@ export function generateOverviewHTML(): string {
 
 <footer>
   <div class="container">
-    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a> · <a href="https://pageblitz.de/agb">AGB</a></p>
+    <p>© ${new Date().getFullYear()} Pageblitz · <a href="https://pageblitz.de/impressum">Impressum</a> · <a href="https://pageblitz.de/datenschutz">Datenschutz</a> · <a href="https://pageblitz.de/agb">AGB</a> · ${SEO_COOKIE_SETTINGS_BUTTON}</p>
   </div>
 </footer>
 
+${renderSeoConsentBody()}
 </body>
 </html>`;
 }
