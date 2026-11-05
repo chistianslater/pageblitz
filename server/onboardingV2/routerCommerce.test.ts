@@ -30,6 +30,7 @@ vi.mock("../db", async importOriginal => {
     updateWebsite: vi.fn().mockResolvedValue(undefined),
     createOnboarding: vi.fn(),
     updateSubscription: vi.fn().mockResolvedValue(undefined),
+    logOnboardingEventOnce: vi.fn().mockResolvedValue(undefined),
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -158,6 +159,22 @@ beforeEach(() => {
   mockedDb.createOnboarding.mockImplementation(async data => {
     onboardingRow = { ...data };
     return 999;
+  });
+});
+
+describe("onboardingV2.recordFunnelEvent", () => {
+  test("speichert nur feste Studio-IDs ohne Nutzerdaten", async () => {
+    await caller().onboardingV2.recordFunnelEvent({
+      token: "tok",
+      event: "studio_panel_legal",
+    });
+
+    expect(mockedDb.logOnboardingEventOnce).toHaveBeenCalledWith({
+      websiteId: 42,
+      step: "studio_panel_legal",
+      stepIndex: 50,
+      event: "reached",
+    });
   });
 });
 
@@ -985,8 +1002,8 @@ describe("onboardingV2.createCheckout", () => {
     const result = await caller().onboardingV2.createCheckout({
       token: "tok",
       billingInterval: "yearly",
-        b2bConfirmed: true,
-        agbVersion: AGB_VERSION,
+      b2bConfirmed: true,
+      agbVersion: AGB_VERSION,
     });
 
     expect(result).toEqual({ url: "https://stripe/session" });
@@ -1049,8 +1066,8 @@ describe("onboardingV2.createCheckout", () => {
     await caller().onboardingV2.createCheckout({
       token: "tok",
       billingInterval: "yearly",
-        b2bConfirmed: true,
-        agbVersion: AGB_VERSION,
+      b2bConfirmed: true,
+      agbVersion: AGB_VERSION,
     });
 
     expect(mockedCheckout.createStudioCheckoutSession).toHaveBeenCalledWith(
@@ -1133,8 +1150,8 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufende
     const result = await caller().onboardingV2.createCheckout({
       token: "tok",
       billingInterval: "yearly",
-        b2bConfirmed: true,
-        agbVersion: AGB_VERSION,
+      b2bConfirmed: true,
+      agbVersion: AGB_VERSION,
     });
     expect(result).toEqual({ url: "https://stripe/session" });
   });

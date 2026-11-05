@@ -1355,6 +1355,27 @@ export async function logOnboardingEvent(data: InsertOnboardingEvent) {
   await db.insert(onboardingEvents).values(data);
 }
 
+/** Best-effort-Deduplizierung für den aktuellen Studio-Funnel je Website. */
+export async function logOnboardingEventOnce(data: InsertOnboardingEvent) {
+  const db = await getDb();
+  if (!db) return;
+  const event = data.event ?? "reached";
+  const existing = await db
+    .select({ id: onboardingEvents.id })
+    .from(onboardingEvents)
+    .where(
+      and(
+        eq(onboardingEvents.websiteId, data.websiteId),
+        eq(onboardingEvents.step, data.step),
+        eq(onboardingEvents.event, event)
+      )
+    )
+    .limit(1);
+  if (existing.length === 0) {
+    await db.insert(onboardingEvents).values({ ...data, event });
+  }
+}
+
 export async function getStepFunnelStats() {
   const db = await getDb();
   if (!db) return [];

@@ -1,9 +1,10 @@
 import React from "react";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { StudioState } from "../../../../server/onboardingV2/state";
-import { PRICE_YEARLY, YEARLY_CONDITION } from "@shared/pricingText";
+import { PRICE_FROM_INLINE } from "@shared/pricingText";
 import { PanelFrame } from "./panels/PanelFrame";
 import { CheckoutBar } from "./CheckoutBar";
+import type { StudioFunnelEvent } from "@shared/onboardingV2/funnel";
 
 interface PublishTeaserProps {
   onOpen: () => void;
@@ -29,8 +30,8 @@ export function PublishTeaser({ onOpen }: PublishTeaserProps) {
       <span>
         <span className="pb-studio-check-title">Website freischalten</span>
         <span className="pb-studio-check-hint">
-          Zum Schluss, wenn alles passt. Ab {PRICE_YEARLY}/Monat{" "}
-          {YEARLY_CONDITION} — bis dahin ist nichts verbindlich.
+          Zum Schluss, wenn alles passt. Live {PRICE_FROM_INLINE} — bis dahin
+          ist nichts verbindlich.
         </span>
       </span>
       <span className="pb-studio-check-flag">Zum Schluss</span>
@@ -44,6 +45,7 @@ interface PublishPanelProps {
   onStateChanged: () => void;
   onOpenPanel: (id: ChecklistItemId) => void;
   onClose: () => void;
+  onFunnelEvent?: (event: StudioFunnelEvent) => void;
 }
 
 /** Freischalten als eigenes Panel mit Rückweg — die bisherige CheckoutBar bleibt der Inhalt. */
@@ -53,6 +55,7 @@ export function PublishPanel({
   onStateChanged,
   onOpenPanel,
   onClose,
+  onFunnelEvent,
 }: PublishPanelProps) {
   return (
     <PanelFrame
@@ -69,6 +72,7 @@ export function PublishPanel({
         token={token}
         onStateChanged={onStateChanged}
         onOpenPanel={onOpenPanel}
+        onFunnelEvent={onFunnelEvent}
       />
     </PanelFrame>
   );

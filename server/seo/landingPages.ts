@@ -4,6 +4,7 @@ import {
   PRICE_FOOTNOTE,
   PRICE_FROM_INLINE,
   PRICE_FULL,
+  PRICE_INTRO,
   PRICE_MONTHLY,
   PRICE_YEARLY,
   TARIFF_LABEL,
@@ -61,8 +62,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Friseur erstellen",
     h1Template:
       "KI-Website für deinen Friseursalon{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Friseure ${PRICE_FROM_INLINE}. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Friseure ${PRICE_FROM_INLINE}. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Friseur",
       "Friseursalon Website erstellen",
@@ -110,8 +110,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Restaurant",
     title: "Website für Restaurant erstellen",
     h1Template: "KI-Website für dein Restaurant{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Restaurants ${PRICE_FROM_INLINE}. Speisekarte, Öffnungszeiten, Tisch-Reservierung – alles von der KI erstellt.`,
+    description: `Professionelle Website für Restaurants ${PRICE_FROM_INLINE}. Speisekarte, Öffnungszeiten, Tisch-Reservierung – alles von der KI erstellt.`,
     keywords: [
       "Website Restaurant",
       "Restaurant Website erstellen",
@@ -160,8 +159,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Handwerker erstellen",
     h1Template:
       "KI-Website für deinen Handwerksbetrieb{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Handwerker ${PRICE_FROM_INLINE}. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Handwerker ${PRICE_FROM_INLINE}. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Handwerker",
       "Handwerksbetrieb Website erstellen",
@@ -210,8 +208,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Zahnarztpraxis erstellen",
     h1Template:
       "KI-Website für deine Zahnarztpraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Zahnarztpraxen ${PRICE_FROM_INLINE}. Praxis, Team, Leistungen, Online-Terminanfrage – von der KI erstellt.`,
+    description: `Professionelle Website für Zahnarztpraxen ${PRICE_FROM_INLINE}. Praxis, Team, Leistungen, Online-Terminanfrage – von der KI erstellt.`,
     keywords: [
       "Website Zahnarzt",
       "Zahnarztpraxis Website erstellen",
@@ -260,8 +257,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Kosmetikstudio erstellen",
     h1Template:
       "KI-Website für dein Kosmetikstudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Kosmetikerinnen ${PRICE_FROM_INLINE}. Behandlungen, Preise, Galerie und Terminanfrage – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Kosmetikerinnen ${PRICE_FROM_INLINE}. Behandlungen, Preise, Galerie und Terminanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Kosmetikstudio",
       "Kosmetikerin Website erstellen",
@@ -310,8 +306,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Fitnessstudio erstellen",
     h1Template:
       "KI-Website für dein Fitnessstudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Fitnessstudios und Personal Trainer ${PRICE_FROM_INLINE}. Kurspläne, Mitgliedschaft, Fotos – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Fitnessstudios und Personal Trainer ${PRICE_FROM_INLINE}. Kurspläne, Mitgliedschaft, Fotos – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Fitnessstudio",
       "Personal Trainer Website erstellen",
@@ -359,8 +354,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Arztpraxis",
     title: "Website für Arztpraxis erstellen",
     h1Template: "KI-Website für deine Arztpraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Arztpraxen ${PRICE_FROM_INLINE}. Praxis, Team, Leistungen, Öffnungszeiten – DSGVO-konform und als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Arztpraxen ${PRICE_FROM_INLINE}. Praxis, Team, Leistungen, Öffnungszeiten – DSGVO-konform und als Vorschau in 3 Minuten.`,
     keywords: ["Website Arztpraxis", "Arzt Website erstellen", "Homepage Arzt"],
     features: [
       {
@@ -405,8 +399,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Immobilienmakler erstellen",
     h1Template:
       "KI-Website für deinen Immobilienmakler-Betrieb{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Immobilienmakler ${PRICE_FROM_INLINE}. Referenzobjekte, Kontaktformular, Über-Mich – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Immobilienmakler ${PRICE_FROM_INLINE}. Referenzobjekte, Kontaktformular, Über-Mich – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Immobilienmakler",
       "Makler Website erstellen",
@@ -455,8 +448,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Anwaltskanzlei erstellen",
     h1Template:
       "KI-Website für deine Anwaltskanzlei{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Rechtsanwälte ${PRICE_FROM_INLINE}. Fachgebiete, Kontaktformular, Kanzleivorstellung – DSGVO-konform.`,
+    description: `Professionelle Website für Rechtsanwälte ${PRICE_FROM_INLINE}. Fachgebiete, Kontaktformular, Kanzleivorstellung – DSGVO-konform.`,
     keywords: [
       "Website Rechtsanwalt",
       "Anwaltskanzlei Website erstellen",
@@ -505,8 +497,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Steuerberater erstellen",
     h1Template:
       "KI-Website für deine Steuerkanzlei{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Steuerberater ${PRICE_FROM_INLINE}. Leistungen, Team, Kontaktformular – DSGVO-konform und als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Steuerberater ${PRICE_FROM_INLINE}. Leistungen, Team, Kontaktformular – DSGVO-konform und als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Steuerberater",
       "Steuerkanzlei Website erstellen",
@@ -554,8 +545,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Fotograf",
     title: "Website für Fotografen erstellen",
     h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Portfolio-Website für Fotografen ${PRICE_FROM_INLINE}. Portfolio-Galerie, Preisliste, Buchungsanfrage – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Portfolio-Website für Fotografen ${PRICE_FROM_INLINE}. Portfolio-Galerie, Preisliste, Buchungsanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Fotograf",
       "Fotografen Website erstellen",
@@ -604,8 +594,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Physiotherapeut erstellen",
     h1Template:
       "KI-Website für deine Physiopraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Physiotherapeuten ${PRICE_FROM_INLINE}. Behandlungen, Team, Online-Terminanfrage – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Physiotherapeuten ${PRICE_FROM_INLINE}. Behandlungen, Team, Online-Terminanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Physiotherapeut",
       "Physiopraxis Website erstellen",
@@ -653,8 +642,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Nagelstudio",
     title: "Website für Nagelstudio erstellen",
     h1Template: "KI-Website für dein Nagelstudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Nagelstudios ${PRICE_FROM_INLINE}. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten und ohne Technik.`,
+    description: `Professionelle Website für Nagelstudios ${PRICE_FROM_INLINE}. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten und ohne Technik.`,
     keywords: [
       "Website Nagelstudio",
       "Nagelstylistin Website erstellen",
@@ -702,8 +690,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Bäckerei",
     title: "Website für Bäckerei erstellen",
     h1Template: "KI-Website für deine Bäckerei{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Bäckereien und Konditoreien ${PRICE_FROM_INLINE}. Angebote, Öffnungszeiten, Sonderbestellungen – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Bäckereien und Konditoreien ${PRICE_FROM_INLINE}. Angebote, Öffnungszeiten, Sonderbestellungen – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Bäckerei",
       "Bäckerei Homepage erstellen",
@@ -752,8 +739,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Reinigungsservice erstellen",
     h1Template:
       "KI-Website für deinen Reinigungsservice{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Reinigungsunternehmen ${PRICE_FROM_INLINE}. Leistungen, Angebote, Kontaktformular – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Reinigungsunternehmen ${PRICE_FROM_INLINE}. Leistungen, Angebote, Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Reinigungsservice",
       "Reinigungsunternehmen Website erstellen",
@@ -802,8 +788,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Hundesalon erstellen",
     h1Template:
       "KI-Website für deinen Hundesalon{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Hundesalons und Tierpfleger ${PRICE_FROM_INLINE}. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Hundesalons und Tierpfleger ${PRICE_FROM_INLINE}. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Hundesalon",
       "Tierpfleger Website erstellen",
@@ -852,8 +837,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Musikschule erstellen",
     h1Template:
       "KI-Website für deine Musikschule{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Musikschulen und Musiklehrer ${PRICE_FROM_INLINE}. Kurse, Instrumente, Schnupperstunde – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Musikschulen und Musiklehrer ${PRICE_FROM_INLINE}. Kurse, Instrumente, Schnupperstunde – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Musikschule",
       "Musiklehrer Website erstellen",
@@ -902,8 +886,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Elektriker erstellen",
     h1Template:
       "KI-Website für deinen Elektrobetrieb{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Elektriker ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Elektriker ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Elektriker",
       "Elektriker Website erstellen",
@@ -952,8 +935,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Malerbetrieb erstellen",
     h1Template:
       "KI-Website für deinen Malerbetrieb{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Malerbetriebe ${PRICE_FROM_INLINE}. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.`,
+    description: `Professionelle Website für Malerbetriebe ${PRICE_FROM_INLINE}. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.`,
     keywords: [
       "Website Maler",
       "Malerbetrieb Website erstellen",
@@ -1002,8 +984,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Klempner erstellen",
     h1Template:
       "KI-Website für deinen Klempnerbetrieb{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Klempner ${PRICE_FROM_INLINE}. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Klempner ${PRICE_FROM_INLINE}. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Klempner",
       "Klempner Website erstellen",
@@ -1052,8 +1033,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Gärtner erstellen",
     h1Template:
       "KI-Website für deinen Gärtnereibetrieb{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Gärtner ${PRICE_FROM_INLINE}. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.`,
+    description: `Professionelle Website für Gärtner ${PRICE_FROM_INLINE}. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.`,
     keywords: [
       "Website Gärtner",
       "Gärtnerei Website erstellen",
@@ -1102,8 +1082,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Tierarzt erstellen",
     h1Template:
       "KI-Website für deine Tierarztpraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Tierarztpraxen ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Tierarztpraxen ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Tierarzt",
       "Tierarztpraxis Website erstellen",
@@ -1151,8 +1130,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Apotheke",
     title: "Website für Apotheke erstellen",
     h1Template: "KI-Website für deine Apotheke{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Apotheken ${PRICE_FROM_INLINE}. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.`,
+    description: `Professionelle Website für Apotheken ${PRICE_FROM_INLINE}. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.`,
     keywords: [
       "Website Apotheke",
       "Apotheke Website erstellen",
@@ -1200,8 +1178,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Yogastudio",
     title: "Website für Yogastudio erstellen",
     h1Template: "KI-Website für dein Yogastudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Yogastudios ${PRICE_FROM_INLINE}. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Yogastudios ${PRICE_FROM_INLINE}. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Yogastudio",
       "Yogastudio Website erstellen",
@@ -1249,8 +1226,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Fahrschule",
     title: "Website für Fahrschule erstellen",
     h1Template: "KI-Website für deine Fahrschule{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Fahrschulen ${PRICE_FROM_INLINE}. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.`,
+    description: `Professionelle Website für Fahrschulen ${PRICE_FROM_INLINE}. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.`,
     keywords: [
       "Website Fahrschule",
       "Fahrschule Website erstellen",
@@ -1299,8 +1275,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Kfz-Werkstatt erstellen",
     h1Template:
       "KI-Website für deine Kfz-Werkstatt{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Kfz-Werkstätten ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Kfz-Werkstätten ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Kfz-Werkstatt",
       "Autowerkstatt Website erstellen",
@@ -1349,8 +1324,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Schlüsseldienst erstellen",
     h1Template:
       "KI-Website für deinen Schlüsseldienst{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Schlüsseldienste ${PRICE_FROM_INLINE}. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Schlüsseldienste ${PRICE_FROM_INLINE}. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Schlüsseldienst",
       "Schlüsseldienst Website erstellen",
@@ -1399,8 +1373,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Architekt erstellen",
     h1Template:
       "KI-Website für dein Architekturbüro{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Architekturbüros ${PRICE_FROM_INLINE}. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.`,
+    description: `Professionelle Website für Architekturbüros ${PRICE_FROM_INLINE}. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.`,
     keywords: [
       "Website Architekt",
       "Architekturbüro Website erstellen",
@@ -1449,8 +1422,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Innenarchitekt erstellen",
     h1Template:
       "KI-Website für dein Innenarchitekturbüro{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Innenarchitekten ${PRICE_FROM_INLINE}. Mit Designportfolio, Leistungsübersicht und Kontaktformular – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Innenarchitekten ${PRICE_FROM_INLINE}. Mit Designportfolio, Leistungsübersicht und Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Innenarchitekt",
       "Innenarchitektur Website erstellen",
@@ -1499,8 +1471,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Buchhaltungsbüro erstellen",
     h1Template:
       "KI-Website für dein Buchhaltungsbüro{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Buchhaltungsbüros ${PRICE_FROM_INLINE}. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Buchhaltungsbüros ${PRICE_FROM_INLINE}. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Buchhaltung",
       "Buchhaltungsbüro Website erstellen",
@@ -1549,8 +1520,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Logopädie erstellen",
     h1Template:
       "KI-Website für deine Logopädiepraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Logopädiepraxen ${PRICE_FROM_INLINE}. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Logopädiepraxen ${PRICE_FROM_INLINE}. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Logopädie",
       "Logopädie Praxis Website",
@@ -1599,8 +1569,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Ergotherapie erstellen",
     h1Template:
       "KI-Website für deine Ergotherapiepraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Ergotherapiepraxen ${PRICE_FROM_INLINE}. Mit Therapieangeboten, Patienteninfos und Kontaktformular – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Ergotherapiepraxen ${PRICE_FROM_INLINE}. Mit Therapieangeboten, Patienteninfos und Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Ergotherapie",
       "Ergotherapie Praxis Website",
@@ -1649,8 +1618,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Hebamme erstellen",
     h1Template:
       "KI-Website für deine Hebammenpraxis{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Hebammen ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Hebammen ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Hebamme",
       "Hebamme Website erstellen",
@@ -1699,8 +1667,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Pilatesstudio erstellen",
     h1Template:
       "KI-Website für dein Pilatesstudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Pilatesstudios ${PRICE_FROM_INLINE}. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Pilatesstudios ${PRICE_FROM_INLINE}. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Pilatesstudio",
       "Pilates Studio Website erstellen",
@@ -1748,8 +1715,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Reisebüro",
     title: "Website für Reisebüro erstellen",
     h1Template: "KI-Website für dein Reisebüro{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Reisebüros ${PRICE_FROM_INLINE}. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.`,
+    description: `Professionelle Website für Reisebüros ${PRICE_FROM_INLINE}. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.`,
     keywords: [
       "Website Reisebüro",
       "Reisebüro Website erstellen",
@@ -1798,8 +1764,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     title: "Website für Hausreinigung erstellen",
     h1Template:
       "KI-Website für deinen Hausreinigungsservice{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Hausreinigungsservices ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Preisangaben und Kontaktformular – als Vorschau in 3 Minuten.`,
+    description: `Professionelle Website für Hausreinigungsservices ${PRICE_FROM_INLINE}. Mit Leistungsübersicht, Preisangaben und Kontaktformular – als Vorschau in 3 Minuten.`,
     keywords: [
       "Website Hausreinigung",
       "Reinigungsservice Website erstellen",
@@ -1847,8 +1812,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     displayName: "Fotostudio",
     title: "Website für Fotostudio erstellen",
     h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
-    description:
-      `Professionelle Website für Fotostudios ${PRICE_FROM_INLINE}. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.`,
+    description: `Professionelle Website für Fotostudios ${PRICE_FROM_INLINE}. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.`,
     keywords: [
       "Website Fotostudio",
       "Fotograf Website erstellen",
@@ -3095,7 +3059,7 @@ export function generateLandingPageHTML(
       <div><div class="stat-value">3 Min.</div><div class="stat-label">Bis zur Vorschau</div></div>
       <div><div class="stat-value">Flexibel</div><div class="stat-label">Design &amp; Aufbau</div></div>
       <div><div class="stat-value">0 €</div><div class="stat-label">Einrichtungskosten</div></div>
-      <div><div class="stat-value">${PRICE_YEARLY}*</div><div class="stat-label">Pro Monat im ${TARIFF_LABEL.yearly}</div></div>
+      <div><div class="stat-value">${PRICE_INTRO}*</div><div class="stat-label">Einführungspreis im ${TARIFF_LABEL.yearly}</div></div>
     </div>
   </div>
 </div>
@@ -3179,7 +3143,8 @@ ${localSectionHtml}
           <div class="pricing-note">${escapeHtml(TARIFF_SUMMARY.monthly)}</div>
         </div>
         <div id="price-yearly">
-          <div class="pricing-price">${PRICE_YEARLY}<span>/Monat</span></div>
+          <div class="pricing-price">${PRICE_INTRO}<span>/Monat</span></div>
+          <div class="pricing-note"><s>${PRICE_YEARLY}/Monat</s> regulär</div>
           <div class="pricing-note">${escapeHtml(TARIFF_SUMMARY.yearly)}</div>
         </div>
         <ul class="pricing-features">
@@ -3216,7 +3181,7 @@ ${localSectionHtml}
       </div>
       <div class="comp-row"><div>Einmalige Kosten</div><div>2.000 – 8.000 €</div><div>0 €</div></div>
       <div class="comp-row"><div>Zeit bis zur fertigen Website</div><div>4 – 12 Wochen</div><div>3 Minuten</div></div>
-      <div class="comp-row"><div>Monatliche Kosten</div><div>50 – 150 € Hosting &amp; Wartung</div><div>${PRICE_YEARLY}*</div></div>
+      <div class="comp-row"><div>Monatliche Kosten</div><div>50 – 150 € Hosting &amp; Wartung</div><div>${PRICE_INTRO}*</div></div>
       <div class="comp-row"><div>Änderungen &amp; Updates</div><div>Stundenabrechnung (~80 €/h)</div><div>Inklusive</div></div>
       <div class="comp-row"><div>Vertragslaufzeit</div><div>Oft 12–24 Monate</div><div>${escapeHtml(TERM_COMPARISON)}</div></div>
       <div class="comp-row"><div>DSGVO &amp; Impressum</div><div>Meist kostenpflichtig extra</div><div>Automatisch inklusive</div></div>

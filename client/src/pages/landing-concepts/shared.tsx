@@ -6,6 +6,7 @@ import {
   ADDON_TERM_NOTE,
   PRICE_CARD_NOTE,
   PRICE_FULL,
+  PRICE_INTRO,
   PRICE_MONTHLY,
   PRICE_YEARLY,
   TARIFF_LABEL,
@@ -89,9 +90,14 @@ export function Price({ dark = false }: { dark?: boolean }) {
         </button>
       </div>
       <p className="lc-price-value">
-        {yearly ? PRICE_YEARLY : PRICE_MONTHLY}
+        {yearly ? PRICE_INTRO : PRICE_MONTHLY}
         <span>/ Monat</span>
       </p>
+      {yearly && (
+        <p className="lc-extra">
+          <s>{PRICE_YEARLY}/Monat</s> regulär
+        </p>
+      )}
       <p>{PRICE_CARD_NOTE[yearly ? "yearly" : "monthly"]}</p>
       <ul>
         <li>Deine Website mit individuellem Design</li>

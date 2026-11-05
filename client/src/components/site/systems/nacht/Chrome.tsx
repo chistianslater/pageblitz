@@ -20,6 +20,7 @@ import {
   nachtShort,
 } from "./facts";
 import { Icon, wayIcon } from "./icons";
+import { BrandLogo } from "../shared/BrandLogo";
 
 /**
  * Kopf, Fuß und Handy-Leiste von Nacht nach Systemblatt 9–14: Kopf mit
@@ -80,10 +81,18 @@ function Brand({ href }: { href: string }) {
   const { name, mark } = entryName(data, blueprint);
   return (
     <a className="nc-brand" href={href} aria-label={name}>
-      <span className="nc-mono" aria-hidden="true">
-        {monogramOf(mark)}
-      </span>
-      <span className="nc-mark">{mark}</span>
+      <BrandLogo
+        data={data}
+        decorative
+        fallback={
+          <>
+            <span className="nc-mono" aria-hidden="true">
+              {monogramOf(mark)}
+            </span>
+            <span className="nc-mark">{mark}</span>
+          </>
+        }
+      />
     </a>
   );
 }
@@ -155,10 +164,18 @@ export function NachtFoot({ basePath }: { basePath: string }) {
   return (
     <footer className="nc-foot">
       <div className="nc-wrap">
-        <span className="nc-mono nc-mono--foot" aria-hidden="true">
-          {monogramOf(mark)}
-        </span>
-        <p className="nc-foot-name">{name}</p>
+        <BrandLogo
+          data={data}
+          footer
+          fallback={
+            <>
+              <span className="nc-mono nc-mono--foot" aria-hidden="true">
+                {monogramOf(mark)}
+              </span>
+              <p className="nc-foot-name">{name}</p>
+            </>
+          }
+        />
         <div className="nc-foot-cols">
           {((tel && contact?.phone) || (mail && contact?.email)) && (
             <div className="nc-foot-col">

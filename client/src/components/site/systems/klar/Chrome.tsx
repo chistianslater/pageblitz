@@ -16,6 +16,7 @@ import {
   newTabIfMaps,
 } from "../shared";
 import { SYS_ACTIONS, SYS_DOCK } from "../shared/dockAutoHide";
+import { BrandLogo } from "../shared/BrandLogo";
 import { hoursLabel, klarActions, monogram, shortLabel } from "./facts";
 import { isClosedText, realHours } from "./hours";
 import { Icon, wayIcon } from "./icons";
@@ -94,16 +95,29 @@ function Brand({ href, home = false }: { href?: string; home?: boolean }) {
   const name = nameOf(data);
   const long = name.length > BRAND_LONG;
   const inner = (
-    <>
-      <span className="kl-logo" aria-hidden="true">
-        {monogram(name)}
-      </span>
-      <span className={long ? "kl-mark kl-mark--long" : "kl-mark"}>{name}</span>
-    </>
+    <BrandLogo
+      data={data}
+      decorative={!!href}
+      footer={!href}
+      fallback={
+        <>
+          <span className="kl-logo" aria-hidden="true">
+            {monogram(name)}
+          </span>
+          <span className={long ? "kl-mark kl-mark--long" : "kl-mark"}>
+            {name}
+          </span>
+        </>
+      }
+    />
   );
   const cls = home ? "kl-brand kl-brand--home" : "kl-brand";
   return href ? (
-    <a className={cls} href={href}>
+    <a
+      className={cls}
+      href={href}
+      aria-label={data.logo?.kind === "image" ? name : undefined}
+    >
       {inner}
     </a>
   ) : (
@@ -134,7 +148,9 @@ export function KlarHead({
             <NavLinks items={direct} />
             {more && (
               <details className="kl-menu kl-more">
-                <summary className="kl-menu-toggle kl-more-toggle">Mehr</summary>
+                <summary className="kl-menu-toggle kl-more-toggle">
+                  Mehr
+                </summary>
                 <div className="kl-menu-panel kl-more-panel">
                   <NavLinks items={navItems.slice(NAV_SHOWN)} />
                 </div>
@@ -145,13 +161,21 @@ export function KlarHead({
         {(phone || main) && (
           <div className="kl-head-actions">
             {phone && (
-              <a className="kl-pillbtn" href={phone.href} {...newTabIfMaps(phone.href)}>
+              <a
+                className="kl-pillbtn"
+                href={phone.href}
+                {...newTabIfMaps(phone.href)}
+              >
                 <Icon name="phone" />
                 {phone.label}
               </a>
             )}
             {main && (
-              <a className="kl-btn kl-btn--p kl-btn--head" href={main.href} {...newTabIfMaps(main.href)}>
+              <a
+                className="kl-btn kl-btn--p kl-btn--head"
+                href={main.href}
+                {...newTabIfMaps(main.href)}
+              >
                 {shortLabel(main.label)}
                 <span className="kl-btn-ic">
                   <Icon name={wayIcon(main.href)} />
@@ -268,12 +292,20 @@ export function KlarDock({ anchorPrefix }: { anchorPrefix: string }) {
       {...SYS_DOCK}
     >
       {second && (
-        <a className="kl-btn kl-btn--s" href={second.href} {...newTabIfMaps(second.href)}>
+        <a
+          className="kl-btn kl-btn--s"
+          href={second.href}
+          {...newTabIfMaps(second.href)}
+        >
           <Icon name={wayIcon(second.href)} />
           {second.href.startsWith("tel:") ? "Anrufen" : second.label}
         </a>
       )}
-      <a className="kl-btn kl-btn--p" href={primary.href} {...newTabIfMaps(primary.href)}>
+      <a
+        className="kl-btn kl-btn--p"
+        href={primary.href}
+        {...newTabIfMaps(primary.href)}
+      >
         <Icon name={wayIcon(primary.href)} />
         {shortLabel(primary.label)}
       </a>

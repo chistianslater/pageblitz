@@ -69,6 +69,7 @@ import {
   type StudioEvent,
 } from "@/lib/studioEvents";
 import { trackConversion } from "@/lib/tracking";
+import type { StudioFunnelEvent } from "@shared/onboardingV2/funnel";
 import "./studio.css";
 
 /** Ereignis je geöffnetem Schritt (Funnel-Auswertung, 2026-09-19). */
@@ -84,6 +85,18 @@ const PANEL_EVENTS: Record<RailPanel, StudioEvent> = {
   publish: "schritt_freischalten",
 };
 
+const SERVER_PANEL_EVENTS: Record<RailPanel, StudioFunnelEvent> = {
+  style: "studio_panel_style",
+  photos: "studio_panel_photos",
+  texts: "studio_panel_texts",
+  structure: "studio_panel_structure",
+  offer: "studio_panel_offer",
+  legal: "studio_panel_legal",
+  addons: "studio_panel_addons",
+  versions: "studio_panel_versions",
+  publish: "studio_panel_publish",
+};
+
 /**
  * Offenes Panel in der Rail: ein Checklisten-Punkt oder — seit 2026-09-18 —
  * das Freischalten-Panel („publish"). Freischalten ist bewusst kein
@@ -95,6 +108,10 @@ type RailPanel = ChecklistItemId | "publish";
 
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
+  const funnel = trpc.onboardingV2.recordFunnelEvent.useMutation();
+  const recordFunnelEvent = (event: StudioFunnelEvent) => {
+    funnel.mutate({ token, event });
+  };
   // Sitzungs-Markierung für Clarity/GA4 (2026-09-19): Herkunft (Postkarte
   // über /k/:code → ?via=karte), Status und Designrichtung — einmal, sobald
   // der Studio-Zustand geladen ist.
@@ -115,6 +132,31 @@ export default function StudioPage({ token }: { token: string }) {
   const [activeId, setActiveIdState] = useState<RailPanel | null>(
     () => initialLocation.panel
   );
+  const readyRecorded = useRef(false);
+  const cancelledRecorded = useRef(false);
+  useEffect(() => {
+    if (!readyRecorded.current && studio.state?.doc) {
+      readyRecorded.current = true;
+      recordFunnelEvent("studio_ready");
+    }
+    if (
+      !cancelledRecorded.current &&
+      new URLSearchParams(window.location.search).get("checkout") ===
+        "cancelled"
+    ) {
+      cancelledRecorded.current = true;
+      recordFunnelEvent("studio_checkout_cancelled");
+    }
+    // Der Server dedupliziert je Website und Event.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studio.state?.websiteId]);
+  const lastRecordedPanel = useRef<RailPanel | null>(null);
+  useEffect(() => {
+    if (!activeId || lastRecordedPanel.current === activeId) return;
+    lastRecordedPanel.current = activeId;
+    recordFunnelEvent(SERVER_PANEL_EVENTS[activeId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId]);
   const [addonFocus, setAddonFocus] = useState<AddOnKey | null>(
     () => initialLocation.extra
   );
@@ -771,6 +813,7 @@ export default function StudioPage({ token }: { token: string }) {
               onStateChanged={studio.refetch}
               onOpenPanel={id => setActiveId(id)}
               onClose={() => setActiveId(null)}
+              onFunnelEvent={recordFunnelEvent}
             />
           ) : activeId === "addons" ? (
             <AddonsPanel
@@ -810,6 +853,7 @@ export default function StudioPage({ token }: { token: string }) {
                   token={token}
                   onStateChanged={studio.refetch}
                   onOpenPanel={id => setActiveId(id)}
+                  onFunnelEvent={recordFunnelEvent}
                 />
               )}
             </>

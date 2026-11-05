@@ -19,6 +19,7 @@ import type { SectionType } from "../../../../../../shared/siteContract/types";
 import { plakatActions } from "./facts";
 import { footWord, lineEm } from "./fit";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { BrandLogo } from "../shared/BrandLogo";
 
 /**
  * Lange Wortmarken (geschätzt über die gemessene 88-%-Breite, ×1,15 für
@@ -94,13 +95,18 @@ export function PlakatHead({
         <a
           className={brandIsLong(mark) ? "pk-brand pk-brand--long" : "pk-brand"}
           href={`${anchorPrefix}#${SECTION_ANCHORS.hero}`}
+          aria-label={data.logo?.kind === "image" ? nameOf(data) : undefined}
         >
-          {versalEszett(mark)}
+          <BrandLogo data={data} decorative fallback={versalEszett(mark)} />
         </a>
         <nav className="pk-nav" aria-label="Hauptnavigation">
           <NavLinks items={navItems} />
           {primary && (
-            <a className="pk-btn pk-btn--head" href={primary.href} {...newTabIfMaps(primary.href)}>
+            <a
+              className="pk-btn pk-btn--head"
+              href={primary.href}
+              {...newTabIfMaps(primary.href)}
+            >
               {primary.label}
               <i aria-hidden="true">→</i>
             </a>
@@ -168,19 +174,25 @@ export function PlakatFoot({ basePath }: { basePath: string }) {
             </div>
           )}
         </div>
-        <div className="pk-foot-fit">
-          <p
-            className="pk-foot-word"
-            aria-hidden="true"
-            style={
-              { "--pk-fit": word.widthEm.toFixed(3) } as React.CSSProperties
-            }
-          >
-            {word.lines.map(line => (
-              <span key={line}>{line}</span>
-            ))}
-          </p>
-        </div>
+        <BrandLogo
+          data={data}
+          footer
+          fallback={
+            <div className="pk-foot-fit">
+              <p
+                className="pk-foot-word"
+                aria-hidden="true"
+                style={
+                  { "--pk-fit": word.widthEm.toFixed(3) } as React.CSSProperties
+                }
+              >
+                {word.lines.map(line => (
+                  <span key={line}>{line}</span>
+                ))}
+              </p>
+            </div>
+          }
+        />
         <p className="pk-foot-legal">
           <a href={`${basePath}/impressum`}>Impressum</a>
           <a href={`${basePath}/datenschutz`}>Datenschutz</a>

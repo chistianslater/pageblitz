@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 
 vi.hoisted(() => {
   process.env.STRIPE_SECRET_KEY ||= "sk_test_dummy_for_unit_tests";
+  process.env.STRIPE_INTRO_COUPON_ID ||= "coupon_intro_test";
 });
 
 import { createStudioCheckoutSession } from "./checkout";
@@ -11,6 +12,7 @@ import {
   PLANS,
   PRICING,
   TRIAL_DAYS,
+  totalDuringIntro,
 } from "@shared/pricing";
 import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 
@@ -37,10 +39,16 @@ const baseArgs = {
   agbVersion: "2026-10-13",
 };
 
+const INTRO_ENV = { STRIPE_INTRO_COUPON_ID: "coupon_intro_test" };
+
 describe("createStudioCheckoutSession", () => {
   test("Basis-Position + je aktivem Add-on eine eigene Position; Summe der Positionen = calcTotalCents (Plan B6 Task 6: Items je Add-on für den Stripe-Sync)", async () => {
     const { stripe, create } = fakeStripe();
-    const result = await createStudioCheckoutSession(baseArgs, stripe, {});
+    const result = await createStudioCheckoutSession(
+      baseArgs,
+      stripe,
+      INTRO_ENV
+    );
 
     const expectedTotal = calcTotalCents("yearly", baseArgs.addOns);
     const call = create.mock.calls[0][0];
@@ -66,7 +74,8 @@ describe("createStudioCheckoutSession", () => {
       0
     );
     expect(sum).toBe(expectedTotal);
-    expect(result.totalCents).toBe(expectedTotal);
+    expect(result.totalCents).toBe(totalDuringIntro("yearly", expectedTotal));
+    expect(call.discounts).toEqual([{ coupon: "coupon_intro_test" }]);
     expect(result.url).toBe("https://stripe/s");
     expect(result.sessionId).toBe("cs_1");
   });
@@ -76,7 +85,10 @@ describe("createStudioCheckoutSession", () => {
     await createStudioCheckoutSession(
       { ...baseArgs, addOns: { gallery: true, team: true } },
       stripe,
-      { STRIPE_PRICE_ADDON_GALLERY: "price_gallery_live" }
+      {
+        ...INTRO_ENV,
+        STRIPE_PRICE_ADDON_GALLERY: "price_gallery_live",
+      }
     );
     const call = create.mock.calls[0][0];
     expect(call.line_items).toHaveLength(3);
@@ -105,15 +117,18 @@ describe("createStudioCheckoutSession", () => {
 
   test("Session-Metadaten im Format, das stripeWebhookHandlers.handleCheckoutCompleted liest", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, stripe, {});
+    await createStudioCheckoutSession(baseArgs, stripe, INTRO_ENV);
 
     const call = create.mock.calls[0][0];
     expect(call.metadata.websiteId).toBe("42");
     expect(call.metadata.userId).toBe("7");
     expect(call.metadata.billingInterval).toBe("yearly");
+    const regularTotal = calcTotalCents("yearly", baseArgs.addOns);
     expect(call.metadata.totalAmount).toBe(
-      calcTotalCents("yearly", baseArgs.addOns).toString()
+      totalDuringIntro("yearly", regularTotal).toString()
     );
+    expect(call.metadata.regularTotalAmount).toBe(regularTotal.toString());
+    expect(call.metadata.introOffer).toBe("50pct_6m");
     const addOns = JSON.parse(call.metadata.addOns);
     expect(addOns).toEqual({
       contactForm: false,
@@ -137,13 +152,15 @@ describe("createStudioCheckoutSession", () => {
 
   test("success_url, cancel_url, mode, trial, tax_behavior, customer_email", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, stripe, {});
+    await createStudioCheckoutSession(baseArgs, stripe, INTRO_ENV);
 
     const call = create.mock.calls[0][0];
     expect(call.success_url).toBe(
       "https://pageblitz.de/my-website?checkout=success"
     );
-    expect(call.cancel_url).toBe("https://pageblitz.de/onboarding/tok-abc");
+    expect(call.cancel_url).toBe(
+      "https://pageblitz.de/onboarding/tok-abc?checkout=cancelled"
+    );
     expect(call.mode).toBe("subscription");
     expect(call.subscription_data).toEqual({
       trial_period_days: 7,
@@ -151,6 +168,7 @@ describe("createStudioCheckoutSession", () => {
         tariff: "yearly",
         termMonths: "12",
         websiteId: "42",
+        introOffer: "50pct_6m",
         b2b_bestaetigt_at: "1790000000",
         agb_version: "2026-10-13",
         agb_akzeptiert_at: "1790000000",
@@ -166,6 +184,7 @@ describe("createStudioCheckoutSession", () => {
       { ...baseArgs, addOns: { gallery: true, team: true } },
       stripe,
       {
+        ...INTRO_ENV,
         STRIPE_TAX_RATE_ID: "txr_ust19",
         STRIPE_PRICE_ADDON_GALLERY: "price_gallery_live",
       }
@@ -179,15 +198,23 @@ describe("createStudioCheckoutSession", () => {
     expect(call.line_items[0].price_data.tax_behavior).toBe("inclusive");
     expect(call.line_items[2].price_data.unit_amount).toBe(addonPrice("team"));
     expect(call.line_items[2].price_data.tax_behavior).toBe("inclusive");
+    const regularTotal = calcTotalCents("yearly", {
+      gallery: true,
+      team: true,
+    });
     expect(call.metadata.totalAmount).toBe(
-      calcTotalCents("yearly", { gallery: true, team: true }).toString()
+      totalDuringIntro("yearly", regularTotal).toString()
     );
   });
 
   test("ohne STRIPE_TAX_RATE_ID läuft der Checkout trotzdem (kein default_tax_rates)", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { stripe, create } = fakeStripe();
-    const result = await createStudioCheckoutSession(baseArgs, stripe, {});
+    const result = await createStudioCheckoutSession(
+      baseArgs,
+      stripe,
+      INTRO_ENV
+    );
     expect(result.url).toBe("https://stripe/s");
     expect(create.mock.calls[0][0].subscription_data).not.toHaveProperty(
       "default_tax_rates"
@@ -205,6 +232,7 @@ describe("createStudioCheckoutSession", () => {
       })
     );
     const result = await createStudioCheckoutSession(baseArgs, stripe, {
+      ...INTRO_ENV,
       STRIPE_TAX_RATE_ID: "txr_ust19",
     });
     expect(result.url).toBe("https://stripe/s");
@@ -230,7 +258,11 @@ describe("createStudioCheckoutSession", () => {
 
   test("Jahrestarif: Basis 19,90 €/Monat, Metadaten tariff/termMonths, Laufzeit am Bezahl-Knopf", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession({ ...baseArgs, addOns: {} }, stripe, {});
+    await createStudioCheckoutSession(
+      { ...baseArgs, addOns: {} },
+      stripe,
+      INTRO_ENV
+    );
     const call = create.mock.calls[0][0];
     const base = call.line_items[0].price_data;
     expect(base.unit_amount).toBe(PLANS.yearly.centsPerMonth);
@@ -261,12 +293,21 @@ describe("createStudioCheckoutSession", () => {
       termMonths: "0",
     });
     expect(call.subscription_data.trial_period_days).toBe(TRIAL_DAYS);
+    expect(call.discounts).toBeUndefined();
     expect(call.custom_text.submit.message).toBe(checkoutTermLine("monthly"));
+  });
+
+  test("Jahrestarif ohne konfigurierten Coupon bricht vor Stripe ab", async () => {
+    const { stripe, create } = fakeStripe();
+    await expect(
+      createStudioCheckoutSession(baseArgs, stripe, {})
+    ).rejects.toThrow("STRIPE_INTRO_COUPON_ID fehlt");
+    expect(create).not.toHaveBeenCalled();
   });
 
   test("B2B-Bestätigung landet in Session- und Subscription-Metadaten", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, stripe, {});
+    await createStudioCheckoutSession(baseArgs, stripe, INTRO_ENV);
     const call = create.mock.calls[0][0];
     expect(call.metadata.b2b_bestaetigt_at).toBe("1790000000");
     expect(call.subscription_data.metadata.b2b_bestaetigt_at).toBe(
@@ -276,7 +317,7 @@ describe("createStudioCheckoutSession", () => {
 
   test("AGB-Fassung und Zeitpunkt landen in Session- und Subscription-Metadaten", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, stripe, {});
+    await createStudioCheckoutSession(baseArgs, stripe, INTRO_ENV);
     const call = create.mock.calls[0][0];
     for (const meta of [call.metadata, call.subscription_data.metadata]) {
       expect(meta.agb_version).toBe("2026-10-13");
@@ -287,6 +328,7 @@ describe("createStudioCheckoutSession", () => {
   test("keine Stripe-consent_collection — auch nicht mit alter STRIPE_TERMS_URL (Account mit anderen Produkten geteilt)", async () => {
     const { stripe, create } = fakeStripe();
     await createStudioCheckoutSession(baseArgs, stripe, {
+      ...INTRO_ENV,
       STRIPE_TERMS_URL: "https://pageblitz.de/agb",
     });
     const call = create.mock.calls[0][0];

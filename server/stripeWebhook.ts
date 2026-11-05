@@ -28,6 +28,7 @@ import {
   syncCancellationFromStripe,
 } from "./subscriptionTerm";
 import { provisionUmamiForWebsite } from "./umamiProvisioning";
+import { recordStudioFunnelEvent } from "./onboardingV2/funnel";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-02-25.clover",
@@ -83,6 +84,13 @@ export function registerStripeWebhook(app: Express) {
               getUserByEmail,
               stripeCompat,
             });
+            const websiteId = Number(session.metadata?.websiteId);
+            if (Number.isInteger(websiteId) && websiteId > 0) {
+              await recordStudioFunnelEvent(
+                websiteId,
+                "studio_purchase_completed"
+              );
+            }
             break;
           }
 
