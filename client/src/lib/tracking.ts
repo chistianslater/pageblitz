@@ -18,7 +18,10 @@
  *   Replace labels below once Conversion Actions exist in Google Ads.
  */
 
+import { hasAnalyticsConsent } from "./consent";
+
 const ADS_ID = "AW-16545728698";
+const PURCHASE_TRACKED_SESSION_KEY = "pageblitz_purchase_tracked";
 
 // Direct Google Ads conversion labels.
 // Replace with individual labels from Google Ads Conversion Actions.
@@ -42,6 +45,43 @@ type ConversionEvent =
   | "qualify_lead"
   | "close_convert_lead"
   | "purchase";
+
+/** Öffentlicher Einstieg in den Builder, getrennt nach sichtbarem CTA-Text. */
+export function trackCtaClick(ctaText: string): void {
+  if (!hasAnalyticsConsent()) return;
+  const g = (window as any).gtag;
+  if (typeof g !== "function") return;
+
+  g("event", "cta_clicked", {
+    cta_text: ctaText.trim(),
+    cta_location: window.location.pathname,
+    transport_type: "beacon",
+  });
+}
+
+/** Ein neuer Stripe-Checkout darf beim Erfolg genau ein Kaufereignis senden. */
+export function resetPurchaseTracking(): void {
+  try {
+    sessionStorage.removeItem(PURCHASE_TRACKED_SESSION_KEY);
+  } catch {
+    // Tracking darf den Checkout nie blockieren.
+  }
+}
+
+export function trackPurchaseOnce(): boolean {
+  const g = (window as any).gtag;
+  if (typeof g !== "function") return false;
+  try {
+    if (sessionStorage.getItem(PURCHASE_TRACKED_SESSION_KEY) === "1") {
+      return false;
+    }
+    sessionStorage.setItem(PURCHASE_TRACKED_SESSION_KEY, "1");
+  } catch {
+    // Ohne Session Storage weiterhin einmal für diesen Seitenaufruf senden.
+  }
+  trackConversion("purchase");
+  return true;
+}
 
 /**
  * Fire a conversion event to both GA4 and Google Ads.

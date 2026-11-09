@@ -1,4 +1,4 @@
-import { Redirect, Route, Switch, useLocation } from "wouter";
+import { Redirect, Route, Switch, useLocation, useSearch } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
 import { BrandMark } from "@/components/landing/primitives";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -294,12 +294,14 @@ function ScrollToTop() {
 
 function AppContent() {
   const [location] = useLocation();
+  const search = useSearch();
   // Kunden-Website-Routen: kein PageBlitz-Banner oder Pageblitz-Tracking
   // (auch bei Subdomain-Zugriff).
   const isCustomerSite =
     location.startsWith("/site/") || !!getCustomerSubdomain();
   const measurementEnabled =
-    !isCustomerSite && !isInternalAnalyticsPath(location);
+    !isCustomerSite &&
+    !isInternalAnalyticsPath(`${location}${search ? `?${search}` : ""}`);
 
   // Interne Bereiche dürfen die Vertriebsdaten nicht verfälschen; beim
   // Wechsel zurück in den Funnel wird GA wieder aktiviert.

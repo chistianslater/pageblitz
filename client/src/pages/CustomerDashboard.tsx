@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import HelpWidget from "@/components/HelpWidget";
-import { trackConversion } from "@/lib/tracking";
+import { trackPurchaseOnce } from "@/lib/tracking";
+import { hasAnalyticsConsent, initConsent } from "@/lib/consent";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
 import {
@@ -275,8 +276,12 @@ export default function CustomerDashboard() {
 
   // Google Ads Conversion: Kauf nach Stripe-Checkout
   useEffect(() => {
-    if (_isCheckoutSuccess) {
-      trackConversion("purchase");
+    if (_isCheckoutSuccess && hasAnalyticsConsent()) {
+      // Child-Effekte laufen bei der Stripe-Rückkehr vor AppContent. Daher
+      // GA4 hier synchron konfigurieren, bevor das Kaufereignis eingereiht
+      // wird; initConsent ist idempotent.
+      initConsent(true);
+      trackPurchaseOnce();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

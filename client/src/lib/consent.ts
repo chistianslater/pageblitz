@@ -61,9 +61,29 @@ export function saveConsent(data: Omit<ConsentData, "timestamp">): void {
  * So werden Skripte bei wiederkehrenden Besuchern sofort geladen.
  */
 export function isInternalAnalyticsPath(pathname: string): boolean {
+  const url = new URL(pathname, "https://pageblitz.de");
+  // Die Stripe-Rückkehr ist die einzige Dashboard-Ansicht, die zum
+  // Vertriebsfunnel gehört. Ohne diese Ausnahme kann `purchase` nach der
+  // externen Weiterleitung nicht in GA4 ankommen.
+  if (
+    url.pathname === "/my-website" &&
+    url.searchParams.get("checkout") === "success"
+  ) {
+    return false;
+  }
   return INTERNAL_ANALYTICS_PATHS.some(
-    path => pathname === path || pathname.startsWith(`${path}/`)
+    path => url.pathname === path || url.pathname.startsWith(`${path}/`)
   );
+}
+
+/** Stripe Checkout darf die ursprüngliche Kampagne nicht überschreiben. */
+export function shouldIgnoreAnalyticsReferrer(referrer: string): boolean {
+  if (!referrer) return false;
+  try {
+    return new URL(referrer).hostname.toLowerCase() === "checkout.stripe.com";
+  } catch {
+    return false;
+  }
 }
 
 /** Pageblitz-Messung in Admin-, Login- und Kundenbereichen sicher abschalten. */
@@ -149,11 +169,14 @@ function injectGoogleAnalytics(): void {
 
   const s2 = document.createElement("script");
   s2.id = "pb-ga-init";
+  const config = shouldIgnoreAnalyticsReferrer(document.referrer)
+    ? { ignore_referrer: true }
+    : {};
   s2.textContent = [
     "window.dataLayer = window.dataLayer || [];",
     "function gtag(){dataLayer.push(arguments);}",
     "gtag('js', new Date());",
-    `gtag('config', '${GA4_MEASUREMENT_ID}');`,
+    `gtag('config', '${GA4_MEASUREMENT_ID}', ${JSON.stringify(config)});`,
   ].join("\n");
   document.head.appendChild(s2);
 }

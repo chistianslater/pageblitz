@@ -15,6 +15,7 @@ import {
 import { CONTACT_EMAIL } from "@shared/const";
 import { HOME_FAQ_VISIBLE } from "@shared/faq";
 import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
+import { trackCtaClick } from "@/lib/tracking";
 
 export function Logo() {
   return (
@@ -35,7 +36,12 @@ export function StartForm({
   placeholder?: string;
 }) {
   return (
-    <form className="lc-start" action="/start" method="get">
+    <form
+      className="lc-start"
+      action="/start"
+      method="get"
+      onSubmit={() => trackCtaClick(label)}
+    >
       <input
         type="hidden"
         name="billing"
@@ -107,6 +113,7 @@ export function Price({ dark = false }: { dark?: boolean }) {
       <a
         className="lc-button"
         href={`/start?billing=${yearly ? "yearly" : "monthly"}`}
+        onClick={() => trackCtaClick("Erst kostenlos ansehen")}
       >
         Erst kostenlos ansehen
         <ArrowRight size={18} />

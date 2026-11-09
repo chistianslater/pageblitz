@@ -23,7 +23,7 @@ import type { StudioState } from "../../../../server/onboardingV2/state";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import { markStudioCheckoutStarted } from "./exitIntent";
 import { trackStudioEvent } from "@/lib/studioEvents";
-import { trackConversion } from "@/lib/tracking";
+import { resetPurchaseTracking, trackConversion } from "@/lib/tracking";
 import type { StudioFunnelEvent } from "@shared/onboardingV2/funnel";
 
 /** Offener Pflichtpunkt — klickbar: Checklisten-Panel bzw. E-Mail-Feld. */
@@ -248,6 +248,7 @@ export function CheckoutBar({
         onSuccess: ({ url }) => {
           trackStudioEvent("kauf_gestartet");
           trackConversion("close_convert_lead");
+          resetPurchaseTracking();
           window.location.assign(url);
         },
       }

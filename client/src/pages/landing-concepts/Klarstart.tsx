@@ -24,6 +24,7 @@ import {
 import ClearFeatures from "./ClearFeatures";
 import TypingStart from "./TypingStart";
 import BuildStory from "./BuildStory";
+import { trackCtaClick } from "@/lib/tracking";
 import "./clear-flow.css";
 // Branchenbeispiele: Links auf die System-Demos, Bilder noch alt [E4].
 const choices = LANDING_SHOWROOM;
@@ -212,7 +213,11 @@ export default function Klarstart() {
           {/* Fuehrt in den Funnel, nicht zum Formular am Seitenende: wer oben
               klickt, will anfangen — nicht scrollen. /start ohne ?name= zeigt
               dort die eigene Betriebssuche. */}
-          <a className="lc-button" href={startHref(true)}>
+          <a
+            className="lc-button"
+            href={startHref(true)}
+            onClick={() => trackCtaClick("Kostenlos starten")}
+          >
             Kostenlos starten <ArrowRight size={16} />
           </a>
         </span>
